@@ -1,0 +1,13 @@
+# Ignore .env files
+*.env
+*.venv
+
+# Ignore data files
+data/
+
+# Ignore compiled Python files
+**/__pycache__/
+*.pyc
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
