@@ -1,5 +1,5 @@
 """
-Scraper.py
+scraper.py
 
 Module to scrape data from the web and return it in a structured format.
 """

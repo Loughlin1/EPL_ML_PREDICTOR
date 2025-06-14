@@ -28,28 +28,29 @@ Workflow:
 """
 import pandas as pd
 import numpy as np
-import pickle
 import json
 
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
+from utils.data_processing import load_data, clean_data
+from backend.utils.feature_engineering import (
+    encode_team_name_features,
+    encode_venue_name_feature,
+    save_encoder_to_file,
+    calculate_rolling_stats,
+    calculate_points
+)
+from backend.utils.data_processing import load_data, clean_data, merge_rolling_stats
+from backend.utils.model_training import train_model
 
 ########### Loading the Data #############
 file_paths = ['2014-15.csv', '2015-16.csv', '2016-17.csv','2017-18.csv', '2018-19.csv', '2019-20.csv', '2020-21.csv', '2021-22.csv', '2022-23.csv', '2023-24.csv']
 # headers = ['Day', 'Date', 'Time', 'HomeTeam', 'HomeOdds', 'Score', 'AwayOdds', 'AwayTeam', 'Attendance', 'Stadium', 'Referee', 'Report']
-dfs = [pd.read_csv('./data/'+ file, index_col=0) for file in file_paths]
-df = pd.concat(dfs, ignore_index=False)
-##########################################
+
+df = load_data(file_paths)
 
 ########### Data Cleaning #############
-df.drop(columns=['Notes', 'Match Report', 'xG', 'xG.1', 'Attendance'], inplace=True)
-df.rename(columns={'Home':'HomeTeam', 'Away': 'AwayTeam'}, inplace=True)
-df.dropna(subset=['Day'], inplace=True) # Dropping any NaN rows in the data
+df = clean_data(df)
 
-df['Date'] = pd.to_datetime(df['Date'], format="%Y-%m-%d")
-df['Wk'] = df['Wk'].astype(int)
 
 ### Adding Features
 df[['FTHG', 'FTAG']] = df['Score'].str.split('–', expand=True).astype(int)  # Full-Time Home Goals and Full-Time Away Goals
@@ -68,32 +69,18 @@ df['Season'] = df['Season'].astype(str) + '/' + (df['Season'] + 1).astype(str).s
 
 ###### Encoding ####################
 # Encode categorical features
-all_teams = pd.concat([df['HomeTeam'],df['AwayTeam']]).unique()
-all_teams = np.append(all_teams, 'Ipswich Town') # Adding team since it was promoted
-
-from sklearn.preprocessing import LabelEncoder
-encoder = LabelEncoder()
-encoder.fit(all_teams)
-
-df['HomeTeamEncoded'] = encoder.transform(df['HomeTeam'])
-df['AwayTeamEncoded'] = encoder.transform(df['AwayTeam'])
+team_encoder = LabelEncoder()
+df, encoder = encode_team_name_features(df, team_encoder)
 
 # Save the encoder
-with open('./Encoders/team_encoder.pkl', 'wb') as file:
-    pickle.dump(encoder, file)
+LABEL_ENCODER_FILEPATH = './Encoders/team_encoder.pkl'
+save_encoder_to_file(team_encoder, filepath=LABEL_ENCODER_FILEPATH)
 
 # Encoding Venue
 venue_encoder = LabelEncoder()
-venues = df['Venue'].unique()
-venues = np.append(venues, 'Portman Road Stadium') # Adding new stadiums
-# print(f"The stadiums: \n {venues}")
-
-venue_encoder.fit(venues)
-df['venue_code'] = venue_encoder.transform(df['Venue'])
-
-# Save the encoder
-with open('./Encoders/venue_encoder.pkl', 'wb') as file:
-    pickle.dump(venue_encoder, file)
+df, venue_encoder = encode_venue_name_feature(df, venue_encoder)
+VENUE_ENCODER_FILEPATH = "./Encoders/venue_encoder.pkl"
+save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
 
 # Encoding day and hour
 df["hour"] = df["Time"].str.replace(":+", "", regex=True).astype("int")  # Time that matches play may be a factor - regex to reformat from "hh:mm" to "hh"
@@ -155,21 +142,8 @@ def rolling_stats(df, team_name):
 
     return df
 
-def merge_rolling_stats(teams):
-    rolling_dfs = []
 
-    for team in teams:
-        df = pd.read_csv('./data/shooting_data/'+ team + '.csv')
-        rolling_df = rolling_stats(df, teams[team])
-        rolling_dfs.append(rolling_df)
-    
-    combined_df = pd.concat(rolling_dfs, ignore_index=False)
-    merged_df = combined_df.groupby(['Date', 'HomeTeam', 'AwayTeam'], as_index=False).first()
-    merged_df = merged_df.drop(['G-xG', 'npxG', 'npxG/Sh', 'np:G-xG', 'xG', 'Match Report', 'Match Report.1'], axis=1)
-
-    return merged_df
-
-rolling_df = merge_rolling_stats(teams)
+rolling_df = merge_rolling_stats(data_base_filepath="./data/shooting_data", teams=teams)
 result = pd.merge(df, rolling_df, how="left", on=["Day","Date", "Time", "HomeTeam", "AwayTeam"], suffixes=('','_y') )
 
 df = result
@@ -177,20 +151,6 @@ columns_with_nan = df.columns[df.isna().any()].tolist()
 
 #######################################################
 
-##### Calculating current form with a rolling Points Per Game (PPG) of past 3 games ######
-
-def calculate_points(row):
-    """Function to calculate points for each team in each game"""
-    if row['FTHG'] > row['FTAG']:  # Home team wins
-        row['HomePoints'] = 3
-        row['AwayPoints'] = 0
-    elif row['FTHG'] < row['FTAG']:  # Away team wins
-        row['HomePoints'] = 0
-        row['AwayPoints'] = 3
-    else:  # Draw
-        row['HomePoints'] = 1
-        row['AwayPoints'] = 1
-    return row
 
 df = df.apply(calculate_points, axis=1) # Apply the points calculation to each row
 
@@ -225,18 +185,4 @@ y = df[labels]  # Predicting home and away goals
 
 X.loc[X.isna().any(axis=1),rolling_home_cols] = 0 # Luton Town had their third game in Week 4 of 2023-24 season
 
-from sklearn.preprocessing import StandardScaler
-# Scale your features
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
-
-######################################################
-
-######### Train/Test split ###########################
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train) # Train the model
-y_pred = model.predict(X_test) # Predict on test data
-
-######################################################
+model, y_pred = train_model(X, y)
