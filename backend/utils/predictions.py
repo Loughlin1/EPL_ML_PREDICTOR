@@ -52,7 +52,7 @@ def get_predictions(future_matches: pd.DataFrame, logger: logging.Logger) -> pd.
     ### Encoding features
     team_encoder = pickle.load(open(TEAM_ENCODER_FILEPATH, 'rb'))
     future_matches = encode_team_name_features(future_matches, encoder=team_encoder)
-    venue_encoder = pickle.load(open(TEAM_ENCODER_FILEPATH, 'rb'))
+    venue_encoder = pickle.load(open(VENUE_ENCODER_FILEPATH, 'rb'))
     future_matches = encode_venue_name_feature(future_matches, encoder=venue_encoder)
 
     # Merge with rolling stats

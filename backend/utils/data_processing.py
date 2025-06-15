@@ -3,17 +3,11 @@ backend/utils/data_processing.py
 
 """
 
-import os
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
-
 import pandas as pd
-
 from backend.config import FIXTURES_TRAINING_DATA_DIR
 
 
-def load_training_data(file_paths: list):
+def load_training_data():
     file_paths = [
         "2014-15.csv",
         "2015-16.csv",
