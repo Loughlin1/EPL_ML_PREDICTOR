@@ -6,7 +6,10 @@ This module contains the Streamlit application for displaying the home page of t
 
 import streamlit as st
 
-from utils.st_helper import initialize_session_state, previous_matchweek, next_matchweek, scrape_fixtures
+from utils.st_helper import initialize_session_state, previous_matchweek, next_matchweek
+
+# Set the page layout to wide
+st.set_page_config(page_title="EPL Match Result Predictor", layout="wide")
 
 # Initialize session state
 initialize_session_state()
@@ -27,16 +30,16 @@ st.write(f'Superbru points all weeks so far: {st.session_state.all_points}')
 
 st.dataframe(st.session_state.styled_df, hide_index=True, column_order=columns)
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
-    st.button("⏪ Last Matchweek", on_click=previous_matchweek)
+    if st.session_state.matchweek_no > 1:
+        st.button("⏪ Last Matchweek", on_click=previous_matchweek)
 
 with col2:
-    st.button('Next Matchweek ⏩', on_click=next_matchweek)
+    if st.session_state.matchweek_no < 38:
+        st.button('Next Matchweek ⏩', on_click=next_matchweek)
 
-with col3:
-    st.button('Refresh Data 🔄', on_click=scrape_fixtures)
 
 # # Schedule to fetch new data every hour
 # schedule.every().hour.do(scrape_fixtures)

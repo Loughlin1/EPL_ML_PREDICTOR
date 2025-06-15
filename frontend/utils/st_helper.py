@@ -39,6 +39,7 @@ def initialize_session_state() -> None:
             fixtures, matchweek_no = get_this_week(st.session_state.all_fixtures)
             if matchweek_no is None:
                 scrape_fixtures()
+                fixtures, matchweek_no = get_this_week(st.session_state.all_fixtures)
             st.session_state.matchweek_no = matchweek_no
             st.session_state.fixtures = fixtures
             st.session_state.points = get_superbru_points(get_predictions(fixtures))
@@ -55,9 +56,8 @@ def previous_matchweek() -> None:
     Callback function for "Last Matchweek" button.
     Decrements the matchweek number and updates fixtures and points.
     """
-    if st.session_state.matchweek_no > 1:
-        st.session_state.matchweek_no -= 1
-        update_fixtures_and_points()
+    st.session_state.matchweek_no -= 1
+    update_fixtures_and_points()
 
 
 def next_matchweek() -> None:

@@ -58,6 +58,11 @@ def get_this_week(df: pd.DataFrame) -> pd.DataFrame:
     df['Date'] = pd.to_datetime(df['Date'], format="%Y-%m-%d").dt.date
     today = datetime.today().date()
 
+    has_season_ended = not df[df['Wk'] == 38].dropna(subset=['Score'], how='all').empty
+    if has_season_ended:
+       result_df = df[df['Wk'] == 38]
+       return  result_df, 38        
+
     def find_matching_rows(date) -> tuple[pd.DataFrame, int]:
         matched_row = df[df['Date'] == date]
         if not matched_row.empty:
