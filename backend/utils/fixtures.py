@@ -53,7 +53,6 @@ def get_this_week(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame containing fixtures for the current week.
     """
-    df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d").dt.date
     today = datetime.today().date()
 
     has_season_ended = not df[df["Wk"] == 38].dropna(subset=["Score"], how="all").empty

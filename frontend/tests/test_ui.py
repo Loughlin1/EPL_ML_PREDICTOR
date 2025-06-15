@@ -1,56 +1,53 @@
+import os
+
 import pytest
-from streamlit.runtime.scriptrunner import ScriptRunnerEvent
-from streamlit.testing import TestRunner
+from streamlit.testing.v1 import AppTest
 
 
-# Mock function to simulate running a Streamlit script
-def run_streamlit_script(script_path):
-    runner = TestRunner(script_path)
-    runner.start()
-    events = list(runner.get_events())
-    runner.stop()
-    return events
-
-
+# Dynamically compute the path to Home.py (your Streamlit app)
 @pytest.fixture
 def sample_script_path():
-    # Replace with the actual path to your Streamlit script
-    return "/Users/loughlindavidson/Documents/development/EPL_project/EPL_ML_PREDICTOR/frontend/app.py"
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    return os.path.join(parent_dir, "Home.py")
 
 
-def test_streamlit_script_runs_without_errors(sample_script_path):
-    events = run_streamlit_script(sample_script_path)
-    assert any(event.name == ScriptRunnerEvent.SCRIPT_STARTED for event in events), (
-        "Script did not start"
-    )
-    assert any(event.name == ScriptRunnerEvent.SCRIPT_STOPPED for event in events), (
-        "Script did not stop"
-    )
+def test_streamlit_runs_without_errors(sample_script_path):
+    app = AppTest.from_file(sample_script_path)
+    app.run()
+    assert app.exception is None, "Streamlit app raised an exception"
+    assert app.status == "COMPLETE", "Streamlit app did not complete execution"
 
 
-def test_streamlit_ui_elements_render(sample_script_path):
-    events = run_streamlit_script(sample_script_path)
-    assert any(event.name == ScriptRunnerEvent.DELTA_GENERATED for event in events), (
-        "UI elements were not rendered"
-    )
+def test_streamlit_renders_ui(sample_script_path):
+    app = AppTest.from_file(sample_script_path)
+    app.run()
+    assert app.status == "COMPLETE", "Streamlit app failed to complete"
+    assert app.deltas, "No UI elements rendered (deltas are empty)"
 
 
 def test_streamlit_no_exceptions(sample_script_path):
-    events = run_streamlit_script(sample_script_path)
-    assert not any(
-        event.name == ScriptRunnerEvent.SCRIPT_EXCEPTION_RAISED for event in events
-    ), "Script raised an exception"
+    app = AppTest.from_file(sample_script_path)
+    app.run()
+    assert app.exception is None, "Streamlit app raised an exception"
 
 
 def test_streamlit_fetches_prediction(sample_script_path, mocker):
+    # Mock the response from requests.get
     mock_response = {"prediction": "Sample prediction"}
     mocker.patch(
         "requests.get",
         return_value=mocker.Mock(status_code=200, json=lambda: mock_response),
     )
 
-    events = run_streamlit_script(sample_script_path)
-    assert any(event.name == ScriptRunnerEvent.DELTA_GENERATED for event in events), (
-        "UI elements were not rendered"
+    app = AppTest.from_file(sample_script_path)
+    app.run()
+
+    assert app.status == "COMPLETE", "Streamlit app failed to run"
+    assert app.deltas, "No UI elements rendered"
+
+    # Optional: Check if the prediction string appears
+    prediction_found = any(
+        "Sample prediction" in str(delta) for delta in app.deltas
     )
-    # Additional assertions can be added to verify the prediction is displayed
+    assert prediction_found, "Prediction not found in UI output"

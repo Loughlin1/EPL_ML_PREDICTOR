@@ -77,6 +77,7 @@ def get_predictions(
     future_matches = add_season_column(future_matches)
     future_matches = encode_season_column(future_matches)
     future_matches = encode_day_of_week(future_matches)
+    print(future_matches)
     # Features
     X = future_matches[features]
     logger.info("\n Features going into the model are: \n")

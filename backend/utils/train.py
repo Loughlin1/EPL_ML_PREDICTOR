@@ -70,12 +70,12 @@ save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
 
 # Encoding day and hour
 df = encode_day_of_week(df)
-df = encode_season_column(df)
 
 ###### Adding Features #################
 df = split_score_column(df)  # Reuse the new function
 df = calculate_result(df)
 df = add_season_column(df)
+df = encode_season_column(df)
 df = add_hour_feature(df)
 
 # Adding rolling shooting stats

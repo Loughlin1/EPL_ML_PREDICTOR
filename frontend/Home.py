@@ -8,8 +8,8 @@ import logging
 
 import streamlit as st
 
-from logging_config import setup_logging
-from utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
+from frontend.logging_config import setup_logging
+from frontend.utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
 
 # Logging
 LOGGER_NAME = "streamlit_ui"
@@ -36,12 +36,12 @@ columns = [
     "Day",
     "Date",
     "Time",
-    "Home",
+    "HomeTeam",
     "Score",
     "Result",
     "PredScore",
     "PredResult",
-    "Away",
+    "AwayTeam",
     "Venue",
 ]
 st.write(f"Superbru points this week: {st.session_state.points}")
@@ -49,7 +49,14 @@ st.write(f"Superbru points all weeks so far: {st.session_state.all_points}")
 # st.write(f'Global Top is {st.session_state.global_top_points} points')
 # st.write(f'Global 250th is {st.session_state.global_top_250_points} points')
 
-st.dataframe(st.session_state.styled_df, hide_index=True, column_order=columns)
+st.dataframe(
+    st.session_state.styled_df,
+    hide_index=True,
+    column_order=columns, 
+    column_config={
+        "Date": st.column_config.DatetimeColumn(format="DD/MM/YYYY")
+    }
+)
 
 col1, col2 = st.columns(2)
 
