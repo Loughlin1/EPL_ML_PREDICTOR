@@ -1,10 +1,23 @@
 import os
+import logging
 import json
 import pickle
 import pandas as pd
 
-from .data_processing import merge_rolling_stats, calculate_result, add_ppg_features
-from .feature_engineering import calculate_match_points
+from .data_processing import clean_data
+from .feature_engineering import (
+    calculate_result,
+    calculate_match_points,
+    split_score_column,
+    create_rolling_stats,
+    add_rolling_stats,
+    add_ppg_features,
+    add_season_column,
+    encode_season_column,
+    add_hour_feature,
+    encode_team_name_features,
+    encode_venue_name_feature
+)
 from .train import model, features
 from ..config import (
     TEAMS_2024_FILEPATH,
@@ -29,62 +42,39 @@ def make_prediction(model, input_data):
     ...
 
 
-def get_predictions(future_matches: pd.DataFrame) -> pd.DataFrame:
+def get_predictions(future_matches: pd.DataFrame, logger: logging.Logger) -> pd.DataFrame:
     """Generates predictions for future matches based on the trained model and input features."""
     
     ## Cleaning matches to predict
-    future_matches['Date'] = pd.to_datetime(future_matches['Date'], format="%Y-%m-%d")
+    future_matches = clean_data(future_matches)
     future_matches.dropna(subset=['Date'], inplace=True)
-    future_matches.dropna(subset=['Date'], inplace=True) 
-
-    future_matches['Wk'] = future_matches['Wk'].astype(int)
 
     ### Encoding features
-    # Loading team encoder from file
-    with open(TEAM_ENCODER_FILEPATH, 'rb') as file:
-        loaded_encoder = pickle.load(file)
-    
-    # Transform using the loaded encoder
-    future_matches['HomeTeam'] = future_matches['Home']
-    future_matches['AwayTeam'] = future_matches['Away']
-    future_matches['HomeTeamEncoded'] = loaded_encoder.transform(future_matches['Home'])
-    future_matches['AwayTeamEncoded'] = loaded_encoder.transform(future_matches['Away'])
-
-    # Loading venue encoder from file
-    with open(VENUE_ENCODER_FILEPATH, 'rb') as file:
-        venue_encoder = pickle.load(file)
-
-    # Cleaning up mismatches and changes in Stadium names before encoding
-    venue_replacements = {
-        'The American Express Stadium': 'The American Express Community Stadium',
-        "St Mary's Stadium": "St. Mary's Stadium"
-    }
-    future_matches['Venue'] = future_matches['Venue'].replace(venue_replacements)
-    future_matches['venue_code'] = venue_encoder.transform(future_matches['Venue']) # Transform using the loaded encoder
-
-    # Encoding day and hour
-    future_matches["hour"] = future_matches["Time"].fillna('00').str[:2].astype(float)
-    future_matches["day_code"] = future_matches["Date"].dt.dayofweek # Gives each day of the week a code e.g. Mon = 0, Tues = 2, ....
+    team_encoder = pickle.load(open(TEAM_ENCODER_FILEPATH, 'rb'))
+    future_matches = encode_team_name_features(future_matches, encoder=team_encoder)
+    venue_encoder = pickle.load(open(TEAM_ENCODER_FILEPATH, 'rb'))
+    future_matches = encode_venue_name_feature(future_matches, encoder=venue_encoder)
 
     # Merge with rolling stats
-    rolling_df = merge_rolling_stats(SHOOTING_TEST_DATA_DIR, teams_2024)
-    future_matches = pd.merge(future_matches, rolling_df, how="left", on=["Day","Date", "Time", "HomeTeam", "AwayTeam"], suffixes=('','_y') )
-   
-    future_matches['season'] = '2024/25'
-    future_matches['season_encoded'] = 11
+    rolling_df = create_rolling_stats(SHOOTING_TEST_DATA_DIR, teams_2024)
+    future_matches = add_rolling_stats(future_matches, rolling_df)
 
-    # Extracting the scores
-    future_matches[['FTHG', 'FTAG']] = future_matches['Score'].str.extract(r'(\d+)[^\d]+(\d+)').astype('Int64')
-    # Compute Result
-    future_matches['Result'] = future_matches.apply(calculate_result, axis=1)
-    # Adding PPG (form) features
+    future_matches = add_season_column(future_matches)
+    future_matches = encode_season_column(future_matches)
+    future_matches = add_hour_feature()
+    # Adding features
+    future_matches = split_score_column(future_matches)
+    future_matches = calculate_result(future_matches)
     future_matches = calculate_match_points(future_matches)
     future_matches = add_ppg_features(future_matches, teams_2024)
+    future_matches = add_hour_feature(future_matches)
+    future_matches = add_season_column(future_matches)
+    future_matches = encode_season_column(future_matches)
 
     # Features
     X = future_matches[features]
-    print("\n Features going into the model are: \n")
-    print(X.info())
+    logger.info("\n Features going into the model are: \n")
+    logger.info(X.info())
     # y = future_matches[labels]  # Predicting home and away goals
 
     future_scores = model.predict(X)

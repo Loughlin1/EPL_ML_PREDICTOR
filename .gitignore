@@ -4,6 +4,7 @@
 *.pyc
 *.ipynb_checkpoints/
 **/.pytest_cache/
+*.log
 
 # Ignore data files
 data/

@@ -3,17 +3,23 @@ Home.py
 
 This module contains the Streamlit application for displaying the home page of the EPL Match Result Model.
 """
-
+import logging
 import streamlit as st
 
 from utils.st_helper import initialize_session_state, previous_matchweek, next_matchweek
+from logging_config import setup_logging
+
+# Logging
+LOGGER_NAME = "streamlit_ui"
+setup_logging(LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
+
 
 # Set the page layout to wide
 st.set_page_config(page_title="EPL Match Result Predictor", layout="wide")
 
 # Initialize session state
-initialize_session_state()
-
+initialize_session_state(logger)
 # Title and Description
 st.title('⚽️ EPL Match Result Predictor')
 st.markdown('This is a web app to visualise match result predictions and calculate how many points it would score based on Superbru app')
