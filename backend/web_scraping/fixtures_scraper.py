@@ -3,18 +3,20 @@ fixtures_scraper.py
 
     Module to scrape fixtures data from the web and return it in a structured format.
 """
-import os
-import sys
-import pandas as pd
-import time
+
 import json
+import os
+import time
+
+import pandas as pd
+from dotenv import load_dotenv
 
 from backend.config import (
     FIXTURES_TEST_DATA_FILEPATH,
     SHOOTING_TEST_DATA_DIR,
-    TEAMS_IDS_2024_FILEPATH
+    TEAMS_IDS_2024_FILEPATH,
 )
-from dotenv import load_dotenv
+
 load_dotenv()
 
 # GLOBAL VARIABLES
@@ -36,7 +38,7 @@ def scrape_teams_stats(seasons, squad_id, team_name):
         f"{FOOTBALL_SHOOTING_DATA_BASE_URL}/{squad_id}/{season}/matchlogs/c9/shooting/{team_name}-Match-Logs-Premier-League"
         for season in seasons
     ]
-    
+
     dfs = []
     for url in urls:
         df = scrape_season_stats(url)
@@ -59,7 +61,7 @@ def scrape_all_teams_stats(seasons, team_ids):
         scrape_teams_stats(seasons, id, team)
         if counter == 3:
             time.sleep(10)
-        counter +=1
+        counter += 1
 
 
 def scrape_fixtures() -> None:
@@ -70,6 +72,5 @@ def scrape_fixtures() -> None:
 
     # fetch shooting stats for each team
     teams_2024 = json.load(open(TEAMS_IDS_2024_FILEPATH))
-    scrape_all_teams_stats(['2024-2025'], teams_2024)
+    scrape_all_teams_stats(["2024-2025"], teams_2024)
     time.sleep(10)
-

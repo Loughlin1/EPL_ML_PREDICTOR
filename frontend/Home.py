@@ -3,11 +3,13 @@ Home.py
 
 This module contains the Streamlit application for displaying the home page of the EPL Match Result Model.
 """
+
 import logging
+
 import streamlit as st
 
-from utils.st_helper import initialize_session_state, previous_matchweek, next_matchweek
 from logging_config import setup_logging
+from utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
 
 # Logging
 LOGGER_NAME = "streamlit_ui"
@@ -21,16 +23,29 @@ st.set_page_config(page_title="EPL Match Result Predictor", layout="wide")
 # Initialize session state
 initialize_session_state(logger)
 # Title and Description
-st.title('⚽️ EPL Match Result Predictor')
-st.markdown('This is a web app to visualise match result predictions and calculate how many points it would score based on Superbru app')
+st.title("⚽️ EPL Match Result Predictor")
+st.markdown(
+    "This is a web app to visualise match result predictions and calculate how many points it would score based on Superbru app"
+)
 
 # Display header for the selected matchweek
 st.subheader(f"Matchweek {int(st.session_state.matchweek_no)} Results")
 
 # Display points and the styled dataframe
-columns = ['Day', 'Date', 'Time', 'Home', 'Score', 'Result', 'PredScore', 'PredResult', 'Away', 'Venue']
-st.write(f'Superbru points this week: {st.session_state.points}')
-st.write(f'Superbru points all weeks so far: {st.session_state.all_points}')
+columns = [
+    "Day",
+    "Date",
+    "Time",
+    "Home",
+    "Score",
+    "Result",
+    "PredScore",
+    "PredResult",
+    "Away",
+    "Venue",
+]
+st.write(f"Superbru points this week: {st.session_state.points}")
+st.write(f"Superbru points all weeks so far: {st.session_state.all_points}")
 # st.write(f'Global Top is {st.session_state.global_top_points} points')
 # st.write(f'Global 250th is {st.session_state.global_top_250_points} points')
 
@@ -44,7 +59,7 @@ with col1:
 
 with col2:
     if st.session_state.matchweek_no < 38:
-        st.button('Next Matchweek ⏩', on_click=next_matchweek)
+        st.button("Next Matchweek ⏩", on_click=next_matchweek)
 
 
 # # Schedule to fetch new data every hour

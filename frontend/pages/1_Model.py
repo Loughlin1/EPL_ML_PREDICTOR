@@ -9,12 +9,13 @@ import streamlit as st
 # Set the page layout to wide
 st.set_page_config(page_title="EPL Match Result Predictor", layout="wide")
 
+
 def main():
     """
     Main function to run the Streamlit app.
     """
     # Title and Description
-    st.title('⚽️ EPL Match Result Model')
+    st.title("⚽️ EPL Match Result Model")
     st.markdown("""
     ## Model Explanation
 
@@ -62,7 +63,10 @@ def main():
     The combination of these steps ensures that the model is robust, accurate, and capable of providing valuable insights into match outcomes in the English Premier League.
     """)
 
-    st.link_button(label="GitHub Link with ipynb", url="https://github.com/Loughlin1/EPL_ML_PREDICTOR/tree/main")
+    st.link_button(
+        label="GitHub Link with ipynb",
+        url="https://github.com/Loughlin1/EPL_ML_PREDICTOR/tree/main",
+    )
 
 
 if __name__ == "__main__":
