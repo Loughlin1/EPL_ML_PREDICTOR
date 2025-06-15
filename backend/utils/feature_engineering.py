@@ -73,7 +73,9 @@ def add_hour_feature(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def create_teams_rolling_stats(df: pd.DataFrame, team_name: str) -> pd.DataFrame:
+def create_team_rolling_shooting_stats(
+    df: pd.DataFrame, team_name: str
+) -> pd.DataFrame:
     """Creates rolling averages statistics for a given team's dataframe."""
     df.dropna(subset=["Date"], inplace=True)
 
@@ -128,12 +130,14 @@ def create_teams_rolling_stats(df: pd.DataFrame, team_name: str) -> pd.DataFrame
     return df
 
 
-def create_rolling_stats(data_base_filepath: str, teams: List[str]) -> pd.DataFrame:
+def create_rolling_shooting_stats(
+    data_base_filepath: str, teams: List[str]
+) -> pd.DataFrame:
     """Merges rolling statistics for all teams into a single dataframe."""
     rolling_dfs = []
     for team in teams:
         df = pd.read_csv(f"{data_base_filepath}/{team}.csv")
-        rolling_df = create_teams_rolling_stats(df, teams[team])
+        rolling_df = create_team_rolling_shooting_stats(df, teams[team])
         rolling_dfs.append(rolling_df)
 
     combined_df = pd.concat(rolling_dfs, ignore_index=False)
@@ -143,7 +147,9 @@ def create_rolling_stats(data_base_filepath: str, teams: List[str]) -> pd.DataFr
     return merged_df
 
 
-def add_rolling_stats(df: pd.DataFrame, rolling_df: pd.DataFrame) -> pd.DataFrame:
+def add_rolling_shooting_stats(
+    df: pd.DataFrame, rolling_df: pd.DataFrame
+) -> pd.DataFrame:
     return pd.merge(
         df,
         rolling_df,

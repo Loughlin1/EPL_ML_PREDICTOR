@@ -39,29 +39,23 @@ from backend.utils.feature_encoding import (
 from backend.utils.feature_engineering import (
     add_hour_feature,
     add_ppg_features,
-    add_rolling_stats,
+    add_rolling_shooting_stats,
     add_season_column,
     calculate_match_points,
     calculate_result,
-    create_rolling_stats,
+    create_rolling_shooting_stats,
     split_score_column,
 )
 from backend.utils.model_training import train_model
+
+teams = json.load(open(TEAMS_TRAINING_FILEPATH))  # Doesn't contain Ipswich Town
+
 
 ########### Loading the Data #############
 df = load_training_data()
 
 ########### Data Cleaning #############
 df = clean_data(df)
-
-### Adding Features
-df = split_score_column(df)  # Reuse the new function
-df = calculate_result(df)
-df = add_season_column(df)
-df = add_hour_feature(df)
-
-####################################
-
 
 ###### Encoding ####################
 # Encode categorical features
@@ -77,19 +71,20 @@ save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
 # Encoding day and hour
 df = encode_day_of_week(df)
 df = encode_season_column(df)
-#######################################################
 
-teams = json.load(open(TEAMS_TRAINING_FILEPATH))  # Doesn't contain Ipswich Town
+###### Adding Features #################
+df = split_score_column(df)  # Reuse the new function
+df = calculate_result(df)
+df = add_season_column(df)
+df = add_hour_feature(df)
 
-rolling_df = create_rolling_stats(SHOOTING_TRAINING_DATA_DIR, teams=teams)
-df = add_rolling_stats(df, rolling_df)
-columns_with_nan = df.columns[df.isna().any()].tolist()
+# Adding rolling shooting stats
+rolling_df = create_rolling_shooting_stats(SHOOTING_TRAINING_DATA_DIR, teams=teams)
+df = add_rolling_shooting_stats(df, rolling_df)
+# columns_with_nan = df.columns[df.isna().any()].tolist()
 
 df = calculate_match_points(df)
 df = add_ppg_features(df, teams)
-
-##########################################################################################
-
 
 ####### Features and Labels ###########################
 # Features and labels

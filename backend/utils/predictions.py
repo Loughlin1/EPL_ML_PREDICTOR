@@ -20,11 +20,11 @@ from .feature_encoding import (
 from .feature_engineering import (
     add_hour_feature,
     add_ppg_features,
-    add_rolling_stats,
+    add_rolling_shooting_stats,
     add_season_column,
     calculate_match_points,
     calculate_result,
-    create_rolling_stats,
+    create_rolling_shooting_stats,
     split_score_column,
 )
 from .train import features, model
@@ -65,8 +65,8 @@ def get_predictions(
     future_matches = encode_venue_name_feature(future_matches, encoder=venue_encoder)
 
     # Merge with rolling stats
-    rolling_df = create_rolling_stats(SHOOTING_TEST_DATA_DIR, teams_2024)
-    future_matches = add_rolling_stats(future_matches, rolling_df)
+    rolling_df = create_rolling_shooting_stats(SHOOTING_TEST_DATA_DIR, teams_2024)
+    future_matches = add_rolling_shooting_stats(future_matches, rolling_df)
 
     # Adding features
     future_matches = split_score_column(future_matches)

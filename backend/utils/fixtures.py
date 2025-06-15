@@ -1,8 +1,8 @@
 """
 backend/utils/fixtures.py
 
-This module provides utility functions for 
-    - sorting fixtures by week 
+This module provides utility functions for
+    - sorting fixtures by week
     - analyzing football match fixtures and predictions.
 """
 
@@ -82,7 +82,7 @@ def get_this_week(df: pd.DataFrame) -> pd.DataFrame:
 
 def highlight_rows(s) -> pd.DataFrame:
     """
-    Highlights rows in a DataFrame based on 
+    Highlights rows in a DataFrame based on
     the comparison of actual and predicted results and scores.
 
     Parameters:

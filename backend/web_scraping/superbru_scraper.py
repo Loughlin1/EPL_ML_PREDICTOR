@@ -81,9 +81,7 @@ def get_top_points() -> tuple:
     time.sleep(1)
     table = driver.find_element(
         By.XPATH,
-        (
-            "/html/body/main/div/div[2]/div/div[3]/div[2]/div/div[2]/table"
-        ),
+        ("/html/body/main/div/div[2]/div/div[3]/div[2]/div/div[2]/table"),
     )
     html = table.get_attribute("outerHTML")
 
