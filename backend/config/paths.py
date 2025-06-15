@@ -1,10 +1,5 @@
 import os
 
-FRONTEND_PORT = 8501
-BACKEND_PORT = 8000
-BACKEND_URL = f"http://localhost:{BACKEND_PORT}"
-
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 

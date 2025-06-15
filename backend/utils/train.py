@@ -20,7 +20,7 @@ Workflow:
 
 import json
 
-from backend.config import (
+from backend.config.paths import (
     SHOOTING_TRAINING_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_TRAINING_FILEPATH,

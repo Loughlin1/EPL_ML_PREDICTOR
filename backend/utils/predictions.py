@@ -4,7 +4,7 @@ import pickle
 
 import pandas as pd
 
-from ..config import (
+from ..config.paths import (
     SHOOTING_TEST_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_2024_FILEPATH,

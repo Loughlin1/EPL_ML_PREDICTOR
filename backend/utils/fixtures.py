@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from backend.config import FIXTURES_TEST_DATA_FILEPATH
+from backend.config.paths import FIXTURES_TEST_DATA_FILEPATH
 
 
 def get_fixtures() -> pd.DataFrame:
