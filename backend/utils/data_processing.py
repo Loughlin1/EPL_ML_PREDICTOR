@@ -8,9 +8,11 @@ parent_dir = os.path.dirname(current_dir)
 
 import pandas as pd
 
+from backend.config import FIXTURES_TRAINING_DATA_DIR
 
-def load_data(file_paths):
-    dfs = [pd.read_csv('./data/' + file, index_col=0) for file in file_paths]
+
+def load_data(file_paths: list):
+    dfs = [pd.read_csv(f"{FIXTURES_TRAINING_DATA_DIR}/{file}", index_col=0) for file in file_paths]
     return pd.concat(dfs, ignore_index=False)
 
 

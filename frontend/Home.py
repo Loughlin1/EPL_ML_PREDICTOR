@@ -5,70 +5,11 @@ This module contains the Streamlit application for displaying the home page of t
 """
 
 import streamlit as st
-import pandas as pd
-import schedule
-import time
 
-from backend.utils.predictions import get_predictions
-from backend.utils.fixtures import get_fixtures, get_weeks_fixtures, get_this_week, highlight_rows
-from backend.utils.superbru_points_calculator import get_superbru_points
-from backend.utils.scraper import scrape_fixtures, get_top_points
-
-
-def initialize_session_state() -> None:
-    """
-    Initialize session state for matchweek number, fixtures, and points.
-    """
-    if "all_fixtures" not in st.session_state or "all_points" not in st.session_state or "all_predictions" not in st.session_state:
-        all_fixtures = get_fixtures()
-        st.session_state.all_fixtures = all_fixtures
-        st.session_state.all_predictions = get_predictions(all_fixtures)
-        st.session_state.all_points = get_superbru_points(st.session_state.all_predictions)
-
-    if 'matchweek_no' not in st.session_state:
-        fixtures, matchweek_no = get_this_week(st.session_state.all_fixtures)
-        st.session_state.matchweek_no = matchweek_no
-        st.session_state.fixtures = fixtures
-        st.session_state.points = get_superbru_points(get_predictions(fixtures))
-        st.session_state.styled_df = get_predictions(fixtures).style.apply(highlight_rows, axis=None)
-
-    # if "global_top_points" not in st.session_state or "global_top_250_points":
-    #     global_top_points, global_top_250_points = get_top_points()
-    #     st.session_state.global_top_points = global_top_points
-    #     st.session_state.global_top_250_points = global_top_250_points
+from utils.st_helper import initialize_session_state, previous_matchweek, next_matchweek, scrape_fixtures
 
 # Initialize session state
 initialize_session_state()
-
-
-def previous_matchweek() -> None:
-    """
-    Callback function for "Last Matchweek" button.
-    Decrements the matchweek number and updates fixtures and points.
-    """
-    if st.session_state.matchweek_no > 1:
-        st.session_state.matchweek_no -= 1
-        update_fixtures_and_points()
-
-
-def next_matchweek() -> None:
-    """
-    Callback function for "Next Matchweek" button.
-    Increments the matchweek number and updates fixtures and points.
-    """
-    st.session_state.matchweek_no += 1
-    update_fixtures_and_points()
-
-
-def update_fixtures_and_points() -> None:
-    """
-    Update fixtures and points based on the current matchweek.
-    """
-    df = get_weeks_fixtures(st.session_state.all_predictions, st.session_state.matchweek_no)
-    st.session_state.fixtures = df
-    st.session_state.points = get_superbru_points(df)
-    st.session_state.styled_df = df.style.apply(highlight_rows, axis=None)
-
 
 # Title and Description
 st.title('⚽️ EPL Match Result Predictor')

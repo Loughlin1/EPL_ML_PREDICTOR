@@ -1,18 +1,20 @@
-
-
 import os
 import json
 import pickle
+import pandas as pd
 
 from .data_processing import merge_rolling_stats, calculate_result, add_ppg_features
-from .feature_engineering import calculate_points
+from .feature_engineering import calculate_match_points
+from .train import model, features
+from ..config import (
+    TEAMS_2024_FILEPATH,
+    VENUE_ENCODER_FILEPATH,
+    TEAM_ENCODER_FILEPATH,
+    SHOOTING_TEST_DATA_DIR
+)
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
+teams_2024 = json.load(open(TEAMS_2024_FILEPATH))
 
-teams_2024 = json.load(open(f"{parent_dir}/Encoders/teams_2024.json"))
-VENUE_ENCODER_FILEPATH = f'{parent_dir}/Encoders/venue_encoder.pkl'
-TEAM_ENCODER_FILEPATH = f'{parent_dir}/Encoders/team_encoder.pkl'
 
 def load_model(model_path: str):
     # Loads a machine learning model from a file
@@ -65,8 +67,7 @@ def get_predictions(future_matches: pd.DataFrame) -> pd.DataFrame:
     future_matches["day_code"] = future_matches["Date"].dt.dayofweek # Gives each day of the week a code e.g. Mon = 0, Tues = 2, ....
 
     # Merge with rolling stats
-    data_base_filepath = f'{parent_dir}/data/shooting_data_2024'
-    rolling_df = merge_rolling_stats(teams_2024)
+    rolling_df = merge_rolling_stats(SHOOTING_TEST_DATA_DIR, teams_2024)
     future_matches = pd.merge(future_matches, rolling_df, how="left", on=["Day","Date", "Time", "HomeTeam", "AwayTeam"], suffixes=('','_y') )
    
     future_matches['season'] = '2024/25'
@@ -77,7 +78,7 @@ def get_predictions(future_matches: pd.DataFrame) -> pd.DataFrame:
     # Compute Result
     future_matches['Result'] = future_matches.apply(calculate_result, axis=1)
     # Adding PPG (form) features
-    future_matches.apply(calculate_points, axis=1) # Apply the points calculation to each row
+    future_matches = calculate_match_points(future_matches)
     future_matches = add_ppg_features(future_matches, teams_2024)
 
     # Features

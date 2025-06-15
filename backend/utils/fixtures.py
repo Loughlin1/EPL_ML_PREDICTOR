@@ -10,13 +10,12 @@ Functions:
     - highlight_rows(s): Highlights rows in a DataFrame based on the comparison of actual and predicted results and scores.
 """
 
-import os
-import sys
 import pandas as pd
 from datetime import datetime, timedelta
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+
+from backend.config import (
+    FIXTURES_TEST_DATA_FILEPATH
+)
 
 
 def get_fixtures() -> pd.DataFrame:
@@ -26,7 +25,7 @@ def get_fixtures() -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame containing the fixtures data.
     """
-    df = pd.read_csv(f'{parent_dir}/data/2024-25.csv', index_col=0)
+    df = pd.read_csv(FIXTURES_TEST_DATA_FILEPATH, index_col=0)
     df.dropna(thresh=7, inplace=True) # Dropping any NaN rows in the data
     return df
 
@@ -59,23 +58,23 @@ def get_this_week(df: pd.DataFrame) -> pd.DataFrame:
     df['Date'] = pd.to_datetime(df['Date'], format="%Y-%m-%d").dt.date
     today = datetime.today().date()
 
-    def find_matching_rows(date):
+    def find_matching_rows(date) -> tuple[pd.DataFrame, int]:
         matched_row = df[df['Date'] == date]
         if not matched_row.empty:
             matching_week = matched_row['Wk'].values[0]
             result_df = df[df['Wk'] == matching_week]
             return result_df, matching_week
         else:
-            return None
+            return None, None
     
     # Iterate over the last 7 days (including today)
     result_df = None
     for i in range(7):
         check_date = today - timedelta(days=i)
-        result_df = find_matching_rows(check_date)
+        result_df, matchweek_no = find_matching_rows(check_date)
         if result_df is not None:
             break
-    return result_df
+    return result_df, matchweek_no
 
 
 def highlight_rows(s) -> pd.DataFrame:

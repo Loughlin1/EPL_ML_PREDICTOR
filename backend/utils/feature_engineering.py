@@ -36,15 +36,10 @@ def calculate_rolling_stats(df, teams):
     return df
 
 
-def calculate_points(row):
+def calculate_match_points(df):
     """Function to calculate points for each team in each game"""
-    if row['FTHG'] > row['FTAG']:  # Home team wins
-        row['HomePoints'] = 3
-        row['AwayPoints'] = 0
-    elif row['FTHG'] < row['FTAG']:  # Away team wins
-        row['HomePoints'] = 0
-        row['AwayPoints'] = 3
-    else:  # Draw
-        row['HomePoints'] = 1
-        row['AwayPoints'] = 1
-    return row
+    df.loc[pd.isna(df['FTHG']) | pd.isna(df['FTAG']), ['HomePoints', 'AwayPoints']] = None
+    df.loc[df['FTHG'] > df['FTAG'], ['HomePoints', 'AwayPoints']] = [3, 0]  # Home team wins
+    df.loc[df['FTHG'] < df['FTAG'], ['HomePoints', 'AwayPoints']] = [0, 3]  # Away team wins
+    df.loc[df['FTHG'] == df['FTAG'], ['HomePoints', 'AwayPoints']] = [1, 1]  # Draw
+    return df

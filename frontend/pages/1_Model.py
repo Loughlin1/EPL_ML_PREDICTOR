@@ -5,7 +5,6 @@ This module contains the Streamlit application for displaying the EPL Match Resu
 """
 
 import streamlit as st
-import pandas as pd
 
 
 def main():

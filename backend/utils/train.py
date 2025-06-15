@@ -1,17 +1,9 @@
 """
-Train.py
+train.py
 
 This script performs data loading, cleaning, feature engineering, encoding, and model training for predicting 
 full-time home and away goals in English Premier League matches using a RandomForestRegressor.
-Modules:
-    - pandas
-    - numpy
-    - pickle
-    - json
-    - sklearn.model_selection
-    - sklearn.preprocessing
-    - sklearn.ensemble
-    - sklearn.metrics
+
 Functions:
     - rolling_stats(df, team_name): Calculates rolling averages for shooting statistics for a given team.
     - merge_rolling_stats(teams): Merges rolling statistics for all teams into a single DataFrame.
@@ -26,21 +18,27 @@ Workflow:
     7. Split the data into training and testing sets.
     8. Train a RandomForestRegressor model and make predictions on the test set.
 """
+import json
 import pandas as pd
 import numpy as np
-import json
 
 from sklearn.preprocessing import LabelEncoder
-from utils.data_processing import load_data, clean_data
+
 from backend.utils.feature_engineering import (
     encode_team_name_features,
     encode_venue_name_feature,
     save_encoder_to_file,
     calculate_rolling_stats,
-    calculate_points
+    calculate_match_points
 )
 from backend.utils.data_processing import load_data, clean_data, merge_rolling_stats
 from backend.utils.model_training import train_model
+from backend.config import (
+    TEAMS_TRAINING_FILEPATH,
+    TEAM_ENCODER_FILEPATH,
+    VENUE_ENCODER_FILEPATH,
+    SHOOTING_TRAINING_DATA_DIR
+)
 
 ########### Loading the Data #############
 file_paths = ['2014-15.csv', '2015-16.csv', '2016-17.csv','2017-18.csv', '2018-19.csv', '2019-20.csv', '2020-21.csv', '2021-22.csv', '2022-23.csv', '2023-24.csv']
@@ -71,15 +69,11 @@ df['Season'] = df['Season'].astype(str) + '/' + (df['Season'] + 1).astype(str).s
 # Encode categorical features
 team_encoder = LabelEncoder()
 df, encoder = encode_team_name_features(df, team_encoder)
-
-# Save the encoder
-LABEL_ENCODER_FILEPATH = './Encoders/team_encoder.pkl'
-save_encoder_to_file(team_encoder, filepath=LABEL_ENCODER_FILEPATH)
+save_encoder_to_file(team_encoder, filepath=TEAM_ENCODER_FILEPATH)
 
 # Encoding Venue
 venue_encoder = LabelEncoder()
 df, venue_encoder = encode_venue_name_feature(df, venue_encoder)
-VENUE_ENCODER_FILEPATH = "./Encoders/venue_encoder.pkl"
 save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
 
 # Encoding day and hour
@@ -91,7 +85,7 @@ df['season_encoded'] = df['Season'].rank(method='dense').astype(int)
 
 ####### Rolling Avg Shooting Stats ####################
 
-teams = json.load(open('./Encoders/training_teams.json')) # Doesn't contain Ipswich Town
+teams = json.load(open(TEAMS_TRAINING_FILEPATH)) # Doesn't contain Ipswich Town
 
 def rolling_stats(df, team_name):
     df.dropna(subset=['Date'], inplace=True) 
@@ -143,7 +137,9 @@ def rolling_stats(df, team_name):
     return df
 
 
-rolling_df = merge_rolling_stats(data_base_filepath="./data/shooting_data", teams=teams)
+rolling_df = merge_rolling_stats(
+    data_base_filepath=SHOOTING_TRAINING_DATA_DIR, teams=teams
+)
 result = pd.merge(df, rolling_df, how="left", on=["Day","Date", "Time", "HomeTeam", "AwayTeam"], suffixes=('','_y') )
 
 df = result
@@ -152,7 +148,7 @@ columns_with_nan = df.columns[df.isna().any()].tolist()
 #######################################################
 
 
-df = df.apply(calculate_points, axis=1) # Apply the points calculation to each row
+df = calculate_match_points(df)
 
 for team in teams.values():
     # Get all the matches of a team
