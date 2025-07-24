@@ -49,8 +49,9 @@ from backend.data_processing.feature_engineering import (
     calculate_result,
     split_score_column,
 )
+from backend.models.save_load import save_model
 
-from .config import FEATURES, rolling_home_cols
+from backend.models.config import FEATURES, rolling_home_cols
 
 teams = json.load(open(TEAMS_TRAINING_FILEPATH))  # Doesn't contain Ipswich Town
 
@@ -82,6 +83,11 @@ def train_pipeline():
     df = calculate_match_points(df)
     df = add_ppg_features(df, teams)
 
+    # Cleaning up Rolling Home Columns
+    df.loc[df.isna().any(axis=1), rolling_home_cols] = (
+        0  # Luton Town had their third game in Week 4 of 2023-24 season
+    )
+
     # Define features and labels    
     features = FEATURES
     labels = ["FTHG", "FTAG"]
@@ -92,10 +98,6 @@ def train_pipeline():
     # Scaling features
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
-
-    X.loc[X.isna().any(axis=1), rolling_home_cols] = (
-        0  # Luton Town had their third game in Week 4 of 2023-24 season
-    )
 
     # Train-test split
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)

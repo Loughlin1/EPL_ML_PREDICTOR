@@ -15,4 +15,5 @@ FEATURES = [
     "PPG_rolling_h",
     "PPG_rolling_a",
 ]
-FEATURES.extend(rolling_home_cols).extend(rolling_away_cols)
+FEATURES.extend(rolling_home_cols)
+FEATURES.extend(rolling_away_cols)
