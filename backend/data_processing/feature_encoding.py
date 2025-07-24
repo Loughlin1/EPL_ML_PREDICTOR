@@ -27,7 +27,6 @@ def fit_venue_encoder(df: pd.DataFrame) -> LabelEncoder:
     venue_encoder.fit(venues)
     return venue_encoder
 
-
 def encode_venue_name_feature(df: pd.DataFrame, encoder: LabelEncoder) -> pd.DataFrame:
     # Cleaning up mismatches and changes in Stadium names before encoding
     venue_replacements = {
@@ -37,6 +36,10 @@ def encode_venue_name_feature(df: pd.DataFrame, encoder: LabelEncoder) -> pd.Dat
     df['Venue'] = df['Venue'].replace(venue_replacements)
     df['venue_code'] = encoder.transform(df['Venue'])
     return df
+
+
+def load_encoder_file(filepath: str):
+    return pickle.load(open(filepath, "rb"))
 
 
 def save_encoder_to_file(encoder: LabelEncoder, filepath: str) -> None:

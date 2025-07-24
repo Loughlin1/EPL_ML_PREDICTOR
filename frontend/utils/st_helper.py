@@ -19,13 +19,13 @@ parent_dir = os.path.dirname(current_dir)
 project_dir = os.path.dirname(parent_dir)
 sys.path.append(project_dir)
 
+from backend.models.predict import get_predictions
 from backend.utils.fixtures import (
     get_fixtures,
     get_this_week,
     get_this_weeks_fixtures,
     highlight_rows,
 )
-from backend.utils.predictions import get_predictions
 from backend.utils.superbru_points_calculator import get_superbru_points
 from backend.web_scraping.fixtures_scraper import scrape_fixtures
 
@@ -35,18 +35,12 @@ def initialize_session_state(logger: logging.Logger) -> None:
     Initialize session state for matchweek number, fixtures, and points.
     """
     with st.spinner("Loading data..."):
-        if (
-            "all_fixtures" not in st.session_state
-            or "all_points" not in st.session_state
-            or "all_predictions" not in st.session_state
-        ):
+        if "all_fixtures" not in st.session_state or "all_points" not in st.session_state or "all_predictions" not in st.session_state:
             all_fixtures = get_fixtures()
             print(all_fixtures)
             st.session_state.all_fixtures = all_fixtures
             st.session_state.all_predictions = get_predictions(all_fixtures, logger)
-            st.session_state.all_points = get_superbru_points(
-                st.session_state.all_predictions
-            )
+            st.session_state.all_points = get_superbru_points(st.session_state.all_predictions)
 
         if "matchweek_no" not in st.session_state:
             fixtures, matchweek_no = get_this_week(st.session_state.all_fixtures)
@@ -54,13 +48,9 @@ def initialize_session_state(logger: logging.Logger) -> None:
                 scrape_fixtures()
                 fixtures, matchweek_no = get_this_week(st.session_state.all_fixtures)
             st.session_state.matchweek_no = matchweek_no
-            predictions = get_this_weeks_fixtures(
-                st.session_state.all_predictions, matchweek_no 
-            )
+            predictions = get_this_weeks_fixtures(st.session_state.all_predictions, matchweek_no)
             st.session_state.points = get_superbru_points(predictions)
-            st.session_state.styled_df = predictions.style.apply(
-                highlight_rows, axis=None
-            )
+            st.session_state.styled_df = predictions.style.apply(highlight_rows, axis=None)
 
         # if "global_top_points" not in st.session_state or "global_top_250_points":
         #     global_top_points, global_top_250_points = get_top_points()
@@ -90,9 +80,7 @@ def update_fixtures_and_points() -> None:
     """
     Update fixtures and points based on the current matchweek.
     """
-    df = get_this_weeks_fixtures(
-        st.session_state.all_predictions, st.session_state.matchweek_no
-    )
+    df = get_this_weeks_fixtures(st.session_state.all_predictions, st.session_state.matchweek_no)
     st.session_state.fixtures = df
     st.session_state.points = get_superbru_points(df)
     st.session_state.styled_df = df.style.apply(highlight_rows, axis=None)

@@ -4,7 +4,6 @@ backend/utils/data_processing.py
 """
 
 import pandas as pd
-
 from backend.config.paths import FIXTURES_TRAINING_DATA_DIR
 
 

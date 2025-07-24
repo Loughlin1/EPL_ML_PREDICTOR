@@ -47,7 +47,5 @@ def test_streamlit_fetches_prediction(sample_script_path, mocker):
     assert app.deltas, "No UI elements rendered"
 
     # Optional: Check if the prediction string appears
-    prediction_found = any(
-        "Sample prediction" in str(delta) for delta in app.deltas
-    )
+    prediction_found = any("Sample prediction" in str(delta) for delta in app.deltas)
     assert prediction_found, "Prediction not found in UI output"

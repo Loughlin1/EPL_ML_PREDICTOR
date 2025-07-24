@@ -24,9 +24,7 @@ st.set_page_config(page_title="EPL Match Result Predictor", layout="wide")
 initialize_session_state(logger)
 # Title and Description
 st.title("⚽️ EPL Match Result Predictor")
-st.markdown(
-    "This is a web app to visualise match result predictions and calculate how many points it would score based on Superbru app"
-)
+st.markdown("This is a web app to visualise match result predictions and calculate how many points it would score based on Superbru app")
 
 # Display header for the selected matchweek
 st.subheader(f"Matchweek {int(st.session_state.matchweek_no)} Results")
@@ -50,12 +48,7 @@ st.write(f"Superbru points all weeks so far: {st.session_state.all_points}")
 # st.write(f'Global 250th is {st.session_state.global_top_250_points} points')
 
 st.dataframe(
-    st.session_state.styled_df,
-    hide_index=True,
-    column_order=columns, 
-    column_config={
-        "Date": st.column_config.DatetimeColumn(format="DD/MM/YYYY")
-    }
+    st.session_state.styled_df, hide_index=True, column_order=columns, column_config={"Date": st.column_config.DatetimeColumn(format="DD/MM/YYYY")}
 )
 
 col1, col2 = st.columns(2)

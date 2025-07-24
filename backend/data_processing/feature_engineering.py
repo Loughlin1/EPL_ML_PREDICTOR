@@ -148,8 +148,9 @@ def create_rolling_shooting_stats(
 
 
 def add_rolling_shooting_stats(
-    df: pd.DataFrame, rolling_df: pd.DataFrame
+    df: pd.DataFrame, shooting_data_dir: str, teams: List[str]
 ) -> pd.DataFrame:
+    rolling_df = create_rolling_shooting_stats(shooting_data_dir, teams)
     return pd.merge(
         df,
         rolling_df,
