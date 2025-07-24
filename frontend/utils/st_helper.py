@@ -14,20 +14,15 @@ import sys
 
 import streamlit as st
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
-project_dir = os.path.dirname(parent_dir)
-sys.path.append(project_dir)
-
-from backend.models.predict import get_predictions
-from backend.utils.fixtures import (
-    get_fixtures,
+from ...backend.app.services.models.predict import get_predictions
+from ...backend.app.services.utils.fixtures import (
+    get_fixtures_data,
     get_this_week,
     get_this_weeks_fixtures,
     highlight_rows,
 )
-from backend.utils.superbru_points_calculator import get_superbru_points
-from backend.web_scraping.fixtures_scraper import scrape_fixtures
+from ...backend.app.services.utils.superbru_points_calculator import get_superbru_points
+from ...backend.app.services.web_scraping.fixtures_scraper import scrape_fixtures
 
 
 def initialize_session_state(logger: logging.Logger) -> None:
@@ -36,7 +31,7 @@ def initialize_session_state(logger: logging.Logger) -> None:
     """
     with st.spinner("Loading data..."):
         if "all_fixtures" not in st.session_state or "all_points" not in st.session_state or "all_predictions" not in st.session_state:
-            all_fixtures = get_fixtures()
+            all_fixtures = get_fixtures_data()
             print(all_fixtures)
             st.session_state.all_fixtures = all_fixtures
             st.session_state.all_predictions = get_predictions(all_fixtures, logger)

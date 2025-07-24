@@ -1,5 +1,5 @@
 """
-backend/utils/fixtures.py
+backend/app/services/utils/fixtures.py
 
 This module provides utility functions for
     - sorting fixtures by week
@@ -7,13 +7,12 @@ This module provides utility functions for
 """
 
 from datetime import datetime, timedelta
-
 import pandas as pd
 
-from backend.config.paths import FIXTURES_TEST_DATA_FILEPATH
+from app.core.config.paths import FIXTURES_TEST_DATA_FILEPATH
 
 
-def get_fixtures() -> pd.DataFrame:
+def get_fixtures_data() -> pd.DataFrame:
     """
     Reads the fixtures data from a CSV file,
     drops rows with NaN values, and returns the DataFrame.

@@ -1,12 +1,13 @@
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
-from backend.data_processing.data_loader import load_validation_data
-from backend.models.save_load import load_model
+from ...core.config.paths import SAVED_MODELS_DIRECTORY
+from ..data_processing.data_loader import load_validation_data
+from ..models.save_load import load_model
 
 
-def evaluate_model():
+def evaluate_model(model):
     # Load model
-    model = load_model("random_forest_model.pkl")
+    model = load_model("random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
 
     # Load validation data
     X_val, y_val = load_validation_data()

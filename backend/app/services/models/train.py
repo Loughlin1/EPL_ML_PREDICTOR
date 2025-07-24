@@ -19,19 +19,21 @@ Workflow:
 """
 
 import json
-
+import logging
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from backend.config.paths import (
+from ...core.config.paths import (
     SHOOTING_TRAINING_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_TRAINING_FILEPATH,
     VENUE_ENCODER_FILEPATH,
+    FIXTURES_TRAINING_DATA_DIR,
+    SAVED_MODELS_DIRECTORY,
 )
-from backend.data_processing.data_loader import clean_data, load_training_data
-from backend.data_processing.feature_encoding import (
+from ..data_processing.data_loader import clean_data, load_training_data
+from ..data_processing.feature_encoding import (
     encode_day_of_week,
     encode_season_column,
     encode_team_name_features,
@@ -40,7 +42,7 @@ from backend.data_processing.feature_encoding import (
     fit_venue_encoder,
     save_encoder_to_file,
 )
-from backend.data_processing.feature_engineering import (
+from ..data_processing.feature_engineering import (
     add_hour_feature,
     add_ppg_features,
     add_rolling_shooting_stats,
@@ -49,16 +51,16 @@ from backend.data_processing.feature_engineering import (
     calculate_result,
     split_score_column,
 )
-from backend.models.save_load import save_model
+from ..models.save_load import save_model
+from ..models.config import FEATURES, rolling_home_cols
 
-from backend.models.config import FEATURES, rolling_home_cols
-
-teams = json.load(open(TEAMS_TRAINING_FILEPATH))  # Doesn't contain Ipswich Town
+with open(TEAMS_TRAINING_FILEPATH, "r") as f:
+    teams = json.load(f) # Doesn't contain Ipswich Town
 
 
 def train_pipeline():
     # Load data
-    df = load_training_data()
+    df = load_training_data(FIXTURES_TRAINING_DATA_DIR)
     df = clean_data(df)
 
     ###### Encoding ####################
@@ -108,7 +110,15 @@ def train_pipeline():
     model.fit(X_train, y_train)
 
     # Save model
-    save_model(model, "random_forest_model.pkl")
+    save_model(model, "random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
+
+
+def train_model():
+    logger = logging.getLogger(__name__)
+    logger.info("Starting training pipeline...")
+    train_pipeline()
+    logger.info("Training complete. Model saved.")
+    return {"status": "success", "message": "Model trained and saved."}
 
 
 if __name__ == "__main__":

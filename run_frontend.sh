@@ -3,9 +3,8 @@
 # Ensure the script stops on error
 set -e
 
+cd frontend
+
 export PYTHONPATH=$(pwd)
 
-# Activate your virtual environment if needed
-source frontend/.venv/bin/activate
-
-streamlit run frontend/Home.py
+uv run streamlit run Home.py

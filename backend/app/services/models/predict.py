@@ -1,14 +1,18 @@
+"""
+backend/app/services/models/predict.py
+"""
 import json
 import logging
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from ..config.paths import (
+from ...core.config.paths import (
     SHOOTING_TEST_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_2024_FILEPATH,
     VENUE_ENCODER_FILEPATH,
+    SAVED_MODELS_DIRECTORY,
 )
 from ..data_processing.data_loader import clean_data
 from ..data_processing.feature_encoding import (
@@ -30,13 +34,14 @@ from ..data_processing.feature_engineering import (
 from .config import FEATURES
 from .save_load import load_model
 
-teams_2024 = json.load(open(TEAMS_2024_FILEPATH))
+with open(TEAMS_2024_FILEPATH, "r") as f:
+    teams_2024 = json.load(f)
 
 
 def predict(input_data: pd.DataFrame):
     """Generates predictions for matches based on the model and inputs"""
     # Load model
-    model = load_model("random_forest_model.pkl")
+    model = load_model("random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
 
     # Preprocess input data
     input_data = clean_data(input_data)

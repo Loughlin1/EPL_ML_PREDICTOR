@@ -8,8 +8,8 @@ import logging
 
 import streamlit as st
 
-from frontend.logging_config import setup_logging
-from frontend.utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
+from .logging_config import setup_logging
+from .utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
 
 # Logging
 LOGGER_NAME = "streamlit_ui"

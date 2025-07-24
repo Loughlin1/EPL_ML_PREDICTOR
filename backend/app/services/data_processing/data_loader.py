@@ -1,27 +1,18 @@
-"""
-backend/utils/data_processing.py
-
-"""
-
+import os
 import pandas as pd
-from backend.config.paths import FIXTURES_TRAINING_DATA_DIR
 
 
-def load_training_data():
+def load_training_data(training_data_dir: str):
+    if not os.path.exists(training_data_dir):
+        raise FileExistsError(f"The path {training_data_dir} does NOT exist.")
+
     file_paths = [
-        "2014-15.csv",
-        "2015-16.csv",
-        "2016-17.csv",
-        "2017-18.csv",
-        "2018-19.csv",
-        "2019-20.csv",
-        "2020-21.csv",
-        "2021-22.csv",
-        "2022-23.csv",
-        "2023-24.csv",
+        os.path.join(training_data_dir, f)
+        for f in os.listdir(training_data_dir)
+        if f.endswith(".csv") and os.path.isfile(os.path.join(training_data_dir, f))
     ]
     dfs = [
-        pd.read_csv(f"{FIXTURES_TRAINING_DATA_DIR}/{file}", index_col=0)
+        pd.read_csv(file, index_col=0)
         for file in file_paths
     ]
     return pd.concat(dfs, ignore_index=False)

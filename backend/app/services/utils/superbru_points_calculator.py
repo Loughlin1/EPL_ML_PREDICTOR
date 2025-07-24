@@ -1,7 +1,3 @@
-"""
-backend/utils/superbru_points_calculator.py
-"""
-
 import pandas as pd
 
 
