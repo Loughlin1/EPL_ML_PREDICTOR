@@ -7,12 +7,11 @@ import logging
 
 from app.services.models import predict as predictor
 from app.core.config.paths import TEAMS_2024_FILEPATH
+from app.schemas import MatchInput
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-class MatchInput(BaseModel):
-    data: List[Dict[str, Any]]  # List of match data rows
 
 @router.post("/predict")
 def predict_matches(request: MatchInput):
@@ -24,7 +23,7 @@ def predict_matches(request: MatchInput):
         result_df = predictor.get_predictions(df_input, logger)
 
         # Return selected columns
-        return result_df[["HomeTeam", "AwayTeam", "PredScore", "PredResult"]].to_dict(orient="records")
+        return result_df.to_dict(orient="records")
 
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")

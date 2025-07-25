@@ -62,13 +62,17 @@ EPL_ML_PREDICTOR/
 - 🏷️ Dynamic dropdown for EPL teams
 
 #### Backend Endpoints (FastAPI)
-| Method | Route       | Description                      |
-|--------|-------------|----------------------------------|
-| POST   | `/predict`  | Returns prediction from model    |
-| POST   | `/train`    | Triggers full training pipeline  |
-| GET    | `/fixtures` | Returns all or filtered fixtures |
-| GET    | `/teams`    | Returns list of EPL teams        |
-| GET    | `/status`   | Healthcheck                      |
+| Method | Route                         | Description                                  |
+|--------|-------------------------------|----------------------------------------------|
+| POST   | `/predict`                    | Returns prediction from model                |
+| POST   | `/train`                      | Triggers full training pipeline              |
+| GET    | `/fixtures`                   | Returns all or filtered fixtures             |
+| GET    | `/teams`                      | Returns list of EPL teams                    |
+| GET    | `/status`                     | Healthcheck                                  |
+| POST   | `/superbru/points`            | Returns SuperBru points based on predictions |
+| GET    | `/superbru/points/top/global` | Returns points from SuperBru leaderboard     |
+| GET    | `/matchweek`                  | Returns current/latest matchweek             |
+ 
 
 
 #### Frontend UI

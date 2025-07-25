@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import predict, train, fixtures
+from app.api.endpoints import predict, train, fixtures, matchweek, superbru
 
 app = FastAPI(
     title="EPL Predictor API",
@@ -18,9 +18,12 @@ app.add_middleware(
 )
 
 # Routers
-app.include_router(fixtures.router, prefix="/api")
 app.include_router(train.router, prefix="/api")
 app.include_router(predict.router, prefix="/api")
+app.include_router(fixtures.router, prefix="/api")
+app.include_router(matchweek.router, prefix="/api")
+app.include_router(superbru.router, prefix="/api")
+
 
 @app.get("/api/status")
 def healthcheck():

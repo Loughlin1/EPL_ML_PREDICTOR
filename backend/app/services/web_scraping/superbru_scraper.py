@@ -24,7 +24,7 @@ username = os.environ["USERNAME"]
 password = os.environ["PASSWORD"]
 
 
-def get_top_points() -> tuple:
+def get_top_points() -> tuple[int, int]:
     """Function to scrape the top points from the Superbru website."""
     # Step 1: Set up WebDriver
     options = Options()
