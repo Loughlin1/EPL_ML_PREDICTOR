@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMatchweek, getFixtures, postPredictions, postPoints } from './api';
+import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints } from './api';
 import MatchTable from './components/MatchTable';
 
 function App() {
@@ -8,6 +8,8 @@ function App() {
   const [predictions, setPredictions] = useState([]);
   const [pointsThisWeek, setPointsThisWeek] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
+  const [globalTopPoints, setGlobalTop] = useState(0);
+  const [globalTop250Points, setGlobalTop250] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,9 +27,14 @@ function App() {
         const pointsRes = await postPoints(predictionData);
         const allPts = pointsRes.data.points;
 
+        const topPtsRes = await getTopPoints();
+        const { global_top, global_top_250 } = topPtsRes.data;
+
         setAllFixtures(fixtureData);
         setPredictions(predictionData);
         setTotalPoints(allPts);
+        setGlobalTop(global_top);
+        setGlobalTop250(global_top_250);
       } catch (error) {
         console.error('Error fetching initial data', error);
       }
@@ -63,26 +70,53 @@ function App() {
   };
 
   return (
-    <div className="p-6 max-w-screen-xl mx-auto">
+    <div className="p-6 max-w-screen-xl mx-auto w-full">
       <h1 className="text-3xl font-bold mb-2">⚽️ EPL Match Result Predictor</h1>
+
       <p className="mb-6 text-gray-600">
         Visualize match predictions and Superbru scoring
       </p>
 
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Matchweek {matchweek} Results</h2>
-        <div className="space-x-2">
-          <button onClick={handlePrev} disabled={matchweek === 1} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">⏪ Last</button>
-          <button onClick={handleNext} disabled={matchweek === 38} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next ⏩</button>
+      <div className="mb-4 w-full flex items-center flex-wrap gap-4">
+        <h2 className="text-xl font-semibold whitespace-nowrap">
+          Matchweek {matchweek} Results
+        </h2>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrev}
+            disabled={matchweek === 1}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            ⏪ Last
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={matchweek === 38}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next ⏩
+          </button>
         </div>
       </div>
 
       <div className="mb-4">
-        <p>Superbru points this week: <strong>{pointsThisWeek}</strong></p>
-        <p>Superbru points all weeks so far: <strong>{totalPoints}</strong></p>
+        <p>
+          Superbru points this week: <strong>{pointsThisWeek}</strong>
+        </p>
+        <p>
+          Superbru points all weeks so far: <strong>{totalPoints}</strong>
+        </p>
+        <p>
+          Global Top points: <strong>{globalTopPoints}</strong>
+        </p>
+        <p>
+          Global Top 250 points: <strong>{globalTop250Points}</strong>
+        </p>
       </div>
 
-      <MatchTable data={filtered} />
+      <div className="overflow-auto">
+        <MatchTable data={filtered} />
+      </div>
     </div>
   );
 }

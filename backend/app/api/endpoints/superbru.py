@@ -6,12 +6,13 @@ import os
 from datetime import datetime, timedelta
 from app.schemas import MatchInput
 from app.services.utils.superbru_points_calculator import get_superbru_points
-from app.services.web_scraping.superbru_scraper import get_top_points
+from app.services.web_scraping.superbru.leaderboard_scraper import get_top_points
+
+from app.core.config.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-CACHE_PATH = "cache/leaderboard.json"
 CACHE_TTL = timedelta(hours=1)
 
 @router.post("/superbru/points")
@@ -28,7 +29,7 @@ def calculate_superbru_points(request: MatchInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/superbru/points/top/global")
+@router.get("/superbru/points/top/global")
 def get_leaderboard_points():
     """
     Get the top global points on SuperBru leaderboard.
@@ -44,6 +45,9 @@ def get_leaderboard_points():
                 }
     # Run scraper if cache is missing/expired
     global_top, global_top_250 = get_top_points()
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+
     with open(CACHE_PATH, "w") as f:
         json.dump({
             "timestamp": datetime.now().isoformat(),

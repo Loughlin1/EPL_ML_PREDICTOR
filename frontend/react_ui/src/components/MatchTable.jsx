@@ -14,8 +14,8 @@ const MatchTable = ({ data }) => {
   };
 
   return (
-    <div className="overflow-x-auto bg-white shadow rounded">
-      <table className="min-w-full text-sm table-auto border">
+    <div className="w-full max-w-6xl overflow-x-auto bg-white shadow rounded-xl">
+      <table className="min-w-full border-collapse text-sm">
         <thead className="bg-gray-100 text-left">
           <tr>
             {columns.map((col) => (
