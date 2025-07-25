@@ -10,7 +10,6 @@ import requests
 import pandas as pd
 
 from logging_config import setup_logging
-# from .utils.st_helper import initialize_session_state, next_matchweek, previous_matchweek
 
 API_BASE_URL = "http://localhost:8000/api"
 
