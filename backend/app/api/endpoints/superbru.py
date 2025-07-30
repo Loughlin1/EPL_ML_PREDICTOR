@@ -13,7 +13,7 @@ from app.core.config.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = timedelta(hours=1)
+CACHE_TTL = timedelta(days=90) #timedelta(hours=1)
 
 @router.post("/superbru/points")
 def calculate_superbru_points(request: MatchInput):
