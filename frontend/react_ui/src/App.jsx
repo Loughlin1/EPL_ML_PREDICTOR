@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints } from './api';
+import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation } from './api';
 import MatchTable from './components/MatchTable';
 
 function App() {
@@ -8,6 +8,10 @@ function App() {
   const [predictions, setPredictions] = useState([]);
   const [pointsThisWeek, setPointsThisWeek] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
+  const [totalCorrectScoresPercentage, setTotalCorrectScoresPercentage] = useState(0);
+  const [totalCorrectResultsPercentage, setTotalCorrectResultsPercentage] = useState(0);
+  const [correctScoresPercentageThisWeek, setCorrectScoresPercentageThisWeek] = useState(0);
+  const [correctResultsPercentageThisWeek, setCorrectResultsPercentageThisWeek] = useState(0);
   const [globalTopPoints, setGlobalTop] = useState(0);
   const [globalTop250Points, setGlobalTop250] = useState(0);
 
@@ -30,11 +34,15 @@ function App() {
         const topPtsRes = await getTopPoints();
         const { global_top, global_top_250 } = topPtsRes.data;
 
+        const totalEvaluationRes = await postEvaluation(predictionData);
+        console.log(totalEvaluationRes)
         setAllFixtures(fixtureData);
         setPredictions(predictionData);
         setTotalPoints(allPts);
         setGlobalTop(global_top);
         setGlobalTop250(global_top_250);
+        setTotalCorrectResultsPercentage(totalEvaluationRes.data.CorrectResults);
+        setTotalCorrectScoresPercentage(totalEvaluationRes.data.CorrectScores);
       } catch (error) {
         console.error('Error fetching initial data', error);
       }
@@ -49,6 +57,9 @@ function App() {
     try {
       const res = await postPoints(weekData);
       setPointsThisWeek(res.data.points || 0);
+      const evaluationRes = await postEvaluation(weekData);
+      setCorrectScoresPercentageThisWeek(evaluationRes.data.CorrectScores || 0);
+      setCorrectResultsPercentageThisWeek(evaluationRes.data.CorrectResults || 0);
     } catch {
       setPointsThisWeek(0);
     }
@@ -99,19 +110,40 @@ function App() {
         </div>
       </div>
 
-      <div className="mb-4">
-        <p>
-          Superbru points this week: <strong>{pointsThisWeek}</strong>
-        </p>
-        <p>
-          Superbru points all weeks so far: <strong>{totalPoints}</strong>
-        </p>
-        <p>
-          Global Top points: <strong>{globalTopPoints}</strong>
-        </p>
-        <p>
-          Global Top 250 points: <strong>{globalTop250Points}</strong>
-        </p>
+      <div className="mb-4 w-full flex items-center flex-wrap gap-10">
+        <div>
+          <h3><strong>This Week's Performance</strong></h3>
+          <p>
+            Percentage of correct scores: <strong>{correctScoresPercentageThisWeek}%</strong>
+          </p>
+          <p>
+            Percentage of correct results (W/D/L): <strong>{correctResultsPercentageThisWeek}%</strong>
+          </p>
+          <h3><strong>SuperBru This Week</strong></h3>
+
+          <p>
+            Points from predictions: <strong>{pointsThisWeek}</strong>
+          </p>
+        </div>
+        <div>
+          <h3><strong>This Season's Performance</strong></h3>
+          <p>
+            Percentage of correct scores: <strong>{totalCorrectScoresPercentage}%</strong>
+          </p>
+          <p>
+            Percentage of correct results (W/D/L): <strong>{totalCorrectResultsPercentage}%</strong>
+          </p>
+          <h3><strong>SuperBru This Season</strong></h3>
+          <p>
+            Points from predictions: <strong>{totalPoints}</strong>
+          </p>
+          <p>
+            Global Top points: <strong>{globalTopPoints}</strong>
+          </p>
+          <p>
+            Global Top 250 points: <strong>{globalTop250Points}</strong>
+          </p>
+        </div>
       </div>
 
       <div className="overflow-auto">
