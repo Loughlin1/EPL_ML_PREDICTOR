@@ -20,6 +20,7 @@ Workflow:
 
 import json
 import logging
+import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -58,11 +59,8 @@ with open(TEAMS_TRAINING_FILEPATH, "r") as f:
     teams = json.load(f) # Doesn't contain Ipswich Town
 
 
-def train_pipeline():
-    # Load data
-    df = load_training_data(FIXTURES_TRAINING_DATA_DIR)
-    df = clean_data(df)
-
+def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Preprocesses raw data for model input"""
     ###### Encoding ####################
     # Encode categorical features
     team_encoder = fit_team_name_encoder(df)
@@ -100,10 +98,15 @@ def train_pipeline():
     # Scaling features
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
+    return X, y
 
-    # Train-test split
+
+def train_pipeline():
+    # Load data
+    df = load_training_data(FIXTURES_TRAINING_DATA_DIR)
+    df = clean_data(df)
+    X, y = preprocess_data(df)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-
 
     # Train model
     model = RandomForestRegressor(n_estimators=100, random_state=42)

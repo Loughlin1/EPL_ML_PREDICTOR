@@ -65,8 +65,6 @@ def predict(input_data: pd.DataFrame):
     )
     input_data = calculate_match_points(input_data)
     input_data = add_ppg_features(input_data, teams_2024)
-    print(input_data)
-
 
     # Define features
     features = FEATURES # defined in config

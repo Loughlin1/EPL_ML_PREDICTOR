@@ -30,6 +30,23 @@ def predict_matches(request: MatchInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/predict/base-model")
+def predict_matches(request: MatchInput):
+    try:
+        # Convert JSON list to DataFrame
+        df_input = pd.DataFrame(request.data)
+
+        # Run the model
+        result_df = predictor.get_predictions(df_input, logger)
+
+        # Return selected columns
+        return result_df.to_dict(orient="records")
+
+    except Exception as e:
+        logger.error(f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/teams")
 def get_teams():
     try:

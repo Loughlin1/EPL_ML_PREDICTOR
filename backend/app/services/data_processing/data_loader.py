@@ -27,8 +27,3 @@ def clean_data(df):
     df["Wk"] = df["Wk"].astype(int)
     return df
 
-
-def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
-    # Preprocesses raw data for model input
-    # ...existing code...
-    ...
