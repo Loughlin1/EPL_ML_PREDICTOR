@@ -11,3 +11,4 @@ export const postPoints = (data) => API.post('/superbru/points', { data });
 export const getTopPoints = () => API.get('/superbru/points/top/global');
 export const postEvaluation = (data) => API.post('/evaluate', {data});
 export const getModelEvaluation = () => API.get('/evaluate/validation');
+export const getModelExplanation = () => API.get('/content/model_explanation');

@@ -27,12 +27,6 @@ def evaluate_matches(request: MatchInput):
         y_true = df_input[["FTHG", "FTAG"]]
         y_pred = df_input[["PredFTHG", "PredFTAG"]].rename(columns={"PredFTHG": "FTHG", "PredFTAG": "FTAG"})
         return evaluate_model_performance(y_true, y_pred)
-        # score_perc = calc_correct_score_percentage(df_input)
-        # result_perc = calc_correct_result_percentage(df_input)
-        # return {
-        #     "CorrectScores": np.round(score_perc,2),
-        #     "CorrectResults": np.round(result_perc,2),
-        # }
 
     except Exception as e:
         logger.error(f"Evaluation failed: {str(e)}")

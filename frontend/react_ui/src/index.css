@@ -70,3 +70,9 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.collapsibleHeader {
+    cursor: pointer;
+    user-select: none;
+    margin: 5px;
+}

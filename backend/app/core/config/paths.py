@@ -26,3 +26,6 @@ FIXTURES_TEST_DATA_FILEPATH = data_dir / "fixtures_test_data" / "2024-25.csv"
 
 # CACHE
 SUPERBRU_LEADERBOARD_CACHE = data_dir / "cache" / "leaderboard.json"
+
+# CONTENT
+CONTENT_DIR = backend_dir / "app" / "content"

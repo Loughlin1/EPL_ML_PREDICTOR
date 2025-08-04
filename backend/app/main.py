@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru
+from app.api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru, content
 
 app = FastAPI(
     title="EPL Predictor API",
@@ -24,6 +24,7 @@ app.include_router(evaluate.router, prefix="/api")
 app.include_router(fixtures.router, prefix="/api")
 app.include_router(matchweek.router, prefix="/api")
 app.include_router(superbru.router, prefix="/api")
+app.include_router(content.router, prefix="/api")
 
 
 @app.get("/api/status")

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation, getModelEvaluation } from './api';
+import Header from './components/header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
 import MatchTable from './components/MatchTable';
 import ModelPerformanceStats from './components/ModelPerformanceStats';
-
+import SuperbruPoints from './components/SuperbruPoints';
+import ModelExplanation from './components/ModelExplanation';
+import CollapsibleHeader from './components/CollapsibleHeader';
+import Footer from './components/Footer';
 
 function App() {
   const [matchweek, setMatchweek] = useState(1);
@@ -84,49 +88,36 @@ function App() {
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto w-full">
+      <Header></Header>
       <h1 className="text-3xl font-bold mb-2">⚽️ EPL Match Result Predictor</h1>
-
       <p className="mb-6 text-gray-600">
         Visualize match predictions and Superbru scoring
       </p>
-      <div className="mb-4 w-full flex items-center flex-wrap gap-10">
-        <div>
-          <h3><strong>Model Performance (Validation)</strong></h3>
-          <ModelPerformanceStats data={modelValidationPerf} />
+      <CollapsibleHeader default_state={true} title={"Performance Stats"} content={
+        <div className="mb-4 w-full flex items-center flex-wrap gap-10">
+          <div>
+            <h3><strong>Model Performance (Validation)</strong></h3>
+            <ModelPerformanceStats data={modelValidationPerf} />
+          </div>
+          <div>
+            <h3><strong>This Week's Performance</strong></h3>
+            <ModelPerformanceStats data={thisWeekPredictonsEvaluation} />
+          </div>
+          <div>
+            <h3><strong>This Season's Performance</strong></h3>
+            <ModelPerformanceStats data={totalPredictonsEvaluation} />
+          </div>
         </div>
-        <div>
-          <h3><strong>This Week's Performance</strong></h3>
-          <ModelPerformanceStats data={thisWeekPredictonsEvaluation} />
-        </div>
-        <div>
-          <h3><strong>This Season's Performance</strong></h3>
-          <ModelPerformanceStats data={totalPredictonsEvaluation} />
-        </div>
-      </div>
-      <div className="mb-4 w-full flex items-center flex-wrap gap-10">
-        <div>
-          <h3><strong>SuperBru This Week</strong></h3>
-          <p>
-            Points from predictions: <strong>{pointsThisWeek}</strong>
-          </p>
-        </div>
-        <div>
-          <h3><strong>SuperBru This Season</strong></h3>
-          <p>
-            Points from predictions: <strong>{totalPoints}</strong>
-          </p>
-          <p>
-            Global Top points: <strong>{globalTopPoints}</strong>
-          </p>
-          <p>
-            Global Top 250 points: <strong>{globalTop250Points}</strong>
-          </p>
-        </div>
-      </div>
-          <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext}/>
-      <div className="overflow-auto">
+      } />
+      <SuperbruPoints pointsThisWeek={pointsThisWeek} totalPoints={totalPoints} globalTopPoints={globalTopPoints} globalTop250Points={globalTop250Points}/>
+      <div id="predictions" className="overflow-auto">
+        <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext}/>
         <MatchTable data={filtered} />
       </div>
+      <div id="model">
+        <ModelExplanation />
+      </div>
+      <Footer />
     </div>
   );
 }
