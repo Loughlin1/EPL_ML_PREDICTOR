@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from app.services.utils.fixtures import get_fixtures_data
-from app.services.web_scraping.fixtures_scraper import scrape_fixtures
+from app.services.web_scraping.fixtures.fixtures_scraper import scrape_fixtures
 
 router = APIRouter()
 

@@ -24,6 +24,8 @@ SHOOTING_TEST_DATA_DIR = data_dir / "shooting_data_2024"
 FIXTURES_TRAINING_DATA_DIR = data_dir / "fixtures_training_data"
 FIXTURES_TEST_DATA_FILEPATH = data_dir / "fixtures_test_data" / "2024-25.csv"
 
+PLAYER_RATINGS_DATA_DIR = data_dir / "player_ratings"
+
 # CACHE
 SUPERBRU_LEADERBOARD_CACHE = data_dir / "cache" / "leaderboard.json"
 
