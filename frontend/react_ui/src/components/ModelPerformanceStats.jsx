@@ -4,7 +4,7 @@ function replaceUnderscores(str) {
 
 const ModelPerformanceStats = ({ data }) => {
     return (
-        <div>
+        <div className="text-xs sm:text-sm md:text-base lg:text-lg">
             <ul>
                 {Object.keys(data).map((key) => (
                 <li key={key}>{replaceUnderscores(key)}: {data[key]}</li>

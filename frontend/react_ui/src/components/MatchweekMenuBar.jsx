@@ -5,7 +5,7 @@ const MatchweekMenuBar = ({matchweek, handlePrev, handleNext}) => {
       <h2 className="text-xl font-semibold whitespace-nowrap">
         Matchweek {matchweek} Results
       </h2>
-      <div className="flex gap-2">
+      <div className="flex gap-2 text-sm md:text-base lg:text-lg">
         <button
           onClick={() => handlePrev(matchweek)}
           disabled={matchweek === 1}

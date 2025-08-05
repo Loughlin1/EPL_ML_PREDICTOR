@@ -28,7 +28,7 @@ const teamLogos = {
 const renderTeamCell = (teamName) => {
   const logo = '/assets/logos/' + teamLogos[teamName];
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 pr-5">
       {logo && (
         <img src={logo} alt={teamName} className="w-5 h-5 object-contain" />
       )}
@@ -39,8 +39,8 @@ const renderTeamCell = (teamName) => {
 
 const MatchTable = ({ data }) => {
   const columns = [
-    'Day', 'Date', 'Time', 'HomeTeam', 'Score', 'Result',
-    'PredScore', 'PredResult', 'AwayTeam', 'Venue',
+    'Day', 'Date', 'Time', 'HomeTeam', 'AwayTeam', 'Score', 'Result',
+    'PredScore', 'PredResult', 'Venue',
   ];
 
   const getRowClass = (row) => {
@@ -51,7 +51,7 @@ const MatchTable = ({ data }) => {
 
   return (
     <div className="w-full max-w-6xl overflow-x-auto bg-white shadow rounded-xl">
-      <table className="min-w-full border-collapse text-sm">
+      <table className="min-w-full border-collapse text-xs md:text-sm">
         <thead className="bg-gray-100 text-left">
           <tr>
             {columns.map((col) => (

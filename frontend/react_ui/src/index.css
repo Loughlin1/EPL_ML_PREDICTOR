@@ -28,10 +28,11 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
+  /* display: flex; */
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* overflow-x: hidden; */
 }
 
 h1 {
@@ -75,4 +76,38 @@ button:focus-visible {
     cursor: pointer;
     user-select: none;
     margin: 5px;
+}
+
+
+.dvs-header a {
+  display: block;
+  padding: 8px;
+}
+
+.dvs-header__trigger {
+  display: none;
+}
+
+.dvs-header__menuItems li {
+  display: flex;
+}
+
+@media (max-width: 640px) {
+  .dvs-header__menuItems {
+    display: none;
+  }
+  .dvs-header__trigger {
+    display: block;
+  }
+  .dvs-header__menuItems.is-open {
+    display: block;
+  }
+  .dvs-header__menuItems li {
+    display: block;
+  }
+
+  .dvs-header a {
+    display: block;
+    width: 100%;
+  }
 }

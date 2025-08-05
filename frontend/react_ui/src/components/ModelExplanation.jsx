@@ -20,10 +20,10 @@ function ModelExplanation() {
   }, []);
 
   return (
-    <div>
+    <div className='max-w-3xl'>
       {explanation && (
         <div>
-          <h2 className="text-xl font-semibold whitespace-nowrap pt-5">
+          <h2 className="text-base md:text-xl font-semibold whitespace-nowrap pt-5">
             {explanation.title}
           </h2>
           <p className='pt-3 pb-3'>{explanation.description}</p>
@@ -31,8 +31,8 @@ function ModelExplanation() {
             {explanation.points.map((point, index) => (
               <li key={index}>
                 <div>
-                  <p><strong>{point.title}</strong></p>
-                  <ul className='list-disc pl-5'>
+                  <p className="text-sm md:text-l"><strong>{point.title}</strong></p>
+                  <ul className='list-disc pl-5 text-sm'>
                     {(point.subpoints).map(subpoint => (
                       <li key={subpoint}>{subpoint}</li>
                     ))}
@@ -45,14 +45,14 @@ function ModelExplanation() {
       )}
       {workflow && (
         <div>
-          <h2 className="text-xl font-semibold whitespace-nowrap pt-5">{workflow.title}</h2>
+          <h2 className="text-base md:text-xl font-semibold whitespace-nowrap pt-5">{workflow.title}</h2>
           <p className='pt-3 pb-3'>{workflow.description}</p>
           <ol className="list-decimal pl-5"> 
             {workflow.steps.map((step, index) => (
               <li key={index}>
                 <div>
-                  <p><strong>{step.title}</strong></p>
-                  <ul className='list-disc pl-5'>
+                  <p className="text-sm md:text-l"><strong>{step.title}</strong></p>
+                  <ul className='list-disc pl-5 text-sm'>
                     {(step.substeps).map(substep => (
                       <li key={substep}>{substep}</li>
                     ))}

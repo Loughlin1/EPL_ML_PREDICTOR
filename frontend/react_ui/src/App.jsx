@@ -87,7 +87,7 @@ function App() {
   };
 
   return (
-    <div className="p-6 max-w-screen-xl mx-auto w-full">
+    <div className="p-6 grid max-w-screen-xl mx-auto w-full">
       <Header></Header>
       <h1 className="text-3xl font-bold mb-2">⚽️ EPL Match Result Predictor</h1>
       <p className="mb-6 text-gray-600">
