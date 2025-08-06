@@ -111,5 +111,5 @@ def parse_fifa_ratings_csv(filepath: str):
 
 
 if __name__ == "__main__":
-    scrape_all_fifa_ratings(21,22)
+    scrape_all_fifa_ratings(22,26)
     # parse_fifa_ratings_csv(f"{PLAYER_RATINGS_DATA_DIR}/epl_players_fifa17.csv")

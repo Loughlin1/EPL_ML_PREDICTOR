@@ -20,8 +20,8 @@ from ....core.config.paths import (
 load_dotenv()
 
 # GLOBAL VARIABLES
-FOOTBALL_DATA_URL = os.environ["FOOTBALL_DATA_URL"]
-FOOTBALL_SHOOTING_DATA_BASE_URL = os.environ["FOOTBALL_SHOOTING_DATA_BASE_URL"]
+FOOTBALL_FIXTURES_DATA_URL = os.environ["FOOTBALL_DATA_URL"]
+FOOTBALL_DATA_BASE_URL = os.environ["FOOTBALL_SHOOTING_DATA_BASE_URL"]
 
 
 def scrape_season_stats(url):
@@ -35,7 +35,7 @@ def scrape_season_stats(url):
 
 def scrape_teams_stats(seasons, squad_id, team_name):
     urls = [
-        f"{FOOTBALL_SHOOTING_DATA_BASE_URL}/{squad_id}/{season}/matchlogs/c9/shooting/{team_name}-Match-Logs-Premier-League"
+        f"{FOOTBALL_DATA_BASE_URL}/en/squads/{squad_id}/{season}/matchlogs/c9/shooting/{team_name}-Match-Logs-Premier-League"
         for season in seasons
     ]
 
@@ -66,7 +66,7 @@ def scrape_all_teams_stats(seasons, team_ids):
 
 def scrape_fixtures() -> None:
     """Function to scrape the fixtures data from the web and save it to a CSV file."""
-    df = pd.read_html(FOOTBALL_DATA_URL, attrs={"id": "sched_2024-2025_9_1"})[0]
+    df = pd.read_html(FOOTBALL_FIXTURES_DATA_URL, attrs={"id": "sched_2024-2025_9_1"})[0]
     df.to_csv(FIXTURES_TEST_DATA_FILEPATH)
     print("Data fetched and processed")
 
