@@ -5,7 +5,7 @@ prematch_lineups_scraper.py
     when announced before the game.
 """
 
-import re
+import random
 import time
 import traceback
 from datetime import datetime
@@ -13,18 +13,20 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+from helper import match_on_name
 
 base_url = f"https://www.bbc.com/sport/football/premier-league/scores-fixtures"
+
+
+def print_element(element):
+    print(f"Tag: {element.tag_name}, Class: {element.get_attribute('class')}, Text: {element.get_attribute('textContent')}")
 
 
 def find_match_link(driver: webdriver.Chrome, home_team: str, away_team: str):
     try:
         element = driver.find_element(By.XPATH, f"//*[contains(text(),'{home_team}') and contains(text(), '{away_team}')]")
-        # print(f"Element with partial text found: {element.text}, {element.tag_name}")
         parent_element = element.find_element(By.XPATH, "..")
-        # print(f"parent element: {parent_element}, {parent_element.tag_name}")
         link_element = parent_element.find_element(By.XPATH, "..")
-        # print(f"link element: {link_element}, {link_element.tag_name}")
         link = link_element.get_attribute("href")
         print(f"link found: {link}")
         return f"{link}#Line-ups"
@@ -37,17 +39,17 @@ def find_formations(driver: webdriver.Chrome) -> tuple[str, str]:
     try:
         elements = driver.find_elements(By.XPATH, "//*[contains(text(),'Formation:')]")
         home_formation_element = elements[0]
-        home_formation_element = home_formation_element.find_element(By.XPATH, "following-sibling::span[1]")
-        home_formation = home_formation_element.text
-        home_formation = home_formation.replace(" ", "") if home_formation else None
-        print(f"Home Formation found: {home_formation}")
+        home_formation_value_element = home_formation_element.find_element(By.XPATH, "following-sibling::span[1]")
+        home_formation_value = home_formation_value_element.text
+        home_formation = home_formation_value.replace(" ", "") if home_formation_value else None
+        # print(f"Home Formation found: {home_formation}")
 
         away_formation_element = elements[1]
-        away_formation_element = away_formation_element.find_element(By.XPATH, "following-sibling::span[1]")
-        away_formation = away_formation_element.text
-        away_formation = away_formation.replace(" ", "") if away_formation else None
-        print(f"Away Formation found: {away_formation}")
-        return home_formation, away_formation_element
+        away_formation_value_element = away_formation_element.find_element(By.XPATH, "following-sibling::span[1]")
+        away_formation_value = away_formation_value_element.text
+        away_formation = away_formation_value.replace(" ", "") if away_formation_value else None
+        # print(f"Away Formation found: {away_formation}")
+        return home_formation, away_formation
     except:
         error = traceback.format_exc()
         print(f"Error: {error}")
@@ -55,22 +57,42 @@ def find_formations(driver: webdriver.Chrome) -> tuple[str, str]:
         return None, None
 
 
-def find_lineups(driver: webdriver.Chrome):
+def find_lineups(driver: webdriver.Chrome, team: str):
+    def get_player_names_from_list(player_items: list):
+        names = []
+        for player in player_items:
+            player_wrapper = player.find_element(By.XPATH, ".//div[contains(@class, 'PlayerWrapper')]")
+            player_name_wrapper = player_wrapper.find_element(By.XPATH, ".//span[contains(@class, 'PlayerNameWrapper')]")
+            name = player_name_wrapper.find_element(By.XPATH, ".//span[contains(@class, 'PlayerName')]")
+            player_name = name.get_attribute("textContent")
+            names.append(player_name)
+        return names
+
     try:
-        elements = driver.find_elements(By.CSS_SELECTOR, "[class*='PlayerList']")
-        print(f"Found {len(elements)} elements")
-        for element in elements:
-            text = element.text
-            regex_name = re.compile(r'^([A-Z]\.)([a-z]+)*( [a-z]+)*$', re.IGNORECASE)
-            print(text)
-            match = re.search('\b\w\.\s*(\1)\b', text, re.IGNORECASE)
-            if match:
-                print(f"Match found: {match.group(1)}")
+        # elements = driver.find_elements(By.CSS_SELECTOR, "[class*='PlayerList']")
+        team = team.replace(" ", "")
+        team_sections = driver.find_elements(By.ID, team)
+        section = team_sections[1]
+        first_child_div = section.find_element(By.CSS_SELECTOR, "div:first-child")
+        starting_div = first_child_div.find_element(By.XPATH, ".//div[contains(@class, 'TeamPlayers')]")
+        subs_section = first_child_div.find_element(By.XPATH, ".//section[contains(@class, 'Substitutes')]")
+
+        # Team Lineup  
+        player_list = starting_div.find_element(By.XPATH, ".//ul[contains(@class, 'PlayerList')]")
+        player_items = player_list.find_elements(By.TAG_NAME, "li")
+        team_lineup = get_player_names_from_list(player_items)
+        
+        # Substitutes
+        subs_list_div = subs_section.find_element(By.XPATH, ".//div[contains(@class, 'TeamPlayers')]")
+        subs_list = subs_list_div.find_element(By.XPATH, ".//ul[contains(@class, 'PlayerList')]")
+        subs_items = subs_list.find_elements(By.TAG_NAME, "li")
+        team_subs = get_player_names_from_list(subs_items)
+        return team_lineup, team_subs
     except:
         error = traceback.format_exc()
         print(f"Error: {error}")
         print("Lineups elements not found on the page.")
-
+        return [], []
 
 
 def get_match_report(home_team: str, away_team: str) -> dict:
@@ -89,8 +111,16 @@ def get_match_report(home_team: str, away_team: str) -> dict:
     driver.get(link)
     time.sleep(1)
     home_formation, away_formation = find_formations(driver)
-    find_lineups(driver)
-    # time.sleep(10)
+    home_starting_lineup, home_subs_list = find_lineups(driver, home_team)
+    away_starting_lineup, away_subs_list = find_lineups(driver, away_team)
     driver.quit()
+    return {
+        "home_formation": home_formation,
+        "away_formation": away_formation,
+        "home_starting_lineup": home_starting_lineup,
+        "home_subs_list": home_subs_list,
+        "away_starting_lineup": away_starting_lineup,
+        "away_subs_list": away_subs_list,
+    }
 
-# get_match_report("Ipswich Town", "West Ham United")
+print(get_match_report("Ipswich Town", "West Ham United"))

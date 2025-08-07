@@ -4,8 +4,8 @@ fixtures/helper.py
     Functions for scraping fixtures data.
 """
 
-import re
-import pytest
+import regex
+
 
 def generate_seasons(start_year: int, end_year: int):
     """
@@ -23,11 +23,3 @@ def generate_seasons(start_year: int, end_year: int):
         season = f"{season_start}-{season_end}"
         seasons.append(season)
     return seasons
-
-
-def match_on_name(text: str):
-    regex_name = re.compile(r'^([A-Z]\.|[A-Z]+)([a-z]+)*( [a-z]+)*$', re.IGNORECASE)
-    match = regex_name.search(text)
-    result = match.group(0) if match else None
-    print(result)
-    return result
