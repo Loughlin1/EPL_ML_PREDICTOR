@@ -123,4 +123,4 @@ def get_match_report(home_team: str, away_team: str) -> dict:
         "away_subs_list": away_subs_list,
     }
 
-print(get_match_report("Ipswich Town", "West Ham United"))
+# print(get_match_report("Ipswich Town", "West Ham United"))

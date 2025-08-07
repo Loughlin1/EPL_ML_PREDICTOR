@@ -15,6 +15,7 @@ from ....core.config.paths import (
     FIXTURES_TEST_DATA_FILEPATH,
     SHOOTING_TEST_DATA_DIR,
     TEAMS_IDS_2024_FILEPATH,
+    TEAMS_IDS_TRAINING_FILEPATH
 )
 
 load_dotenv()
@@ -22,6 +23,7 @@ load_dotenv()
 # GLOBAL VARIABLES
 FOOTBALL_FIXTURES_DATA_URL = os.environ["FOOTBALL_DATA_URL"]
 FOOTBALL_DATA_BASE_URL = os.environ["FOOTBALL_DATA_BASE_URL"]
+CURRENT_SEASON = "2024-2025"
 
 
 def scrape_season_stats(url):
@@ -55,7 +57,7 @@ def scrape_teams_stats(seasons, squad_id, team_name):
         print(f"No valid data for team {team_name} in seasons {seasons}")
 
 
-def scrape_all_teams_stats(seasons, team_ids):
+def scrape_all_teams_stats(seasons: list[str], team_ids):
     counter = 0
     for team, id in team_ids.items():
         scrape_teams_stats(seasons, id, team)
@@ -64,13 +66,19 @@ def scrape_all_teams_stats(seasons, team_ids):
         counter += 1
 
 
-def scrape_fixtures() -> None:
+def scrape_fixtures(season: str = "2024-2025", teams: dict = None) -> None:
     """Function to scrape the fixtures data from the web and save it to a CSV file."""
-    df = pd.read_html(FOOTBALL_FIXTURES_DATA_URL, attrs={"id": "sched_2024-2025_9_1"})[0]
-    df.to_csv(FIXTURES_TEST_DATA_FILEPATH)
-    print("Data fetched and processed")
+    if season == CURRENT_SEASON:
+        url = FOOTBALL_FIXTURES_DATA_URL
+    else:
+        url = f"{FOOTBALL_DATA_BASE_URL}/en/comps/9/{season}/schedule/{season}-Premier-League-Scores-and-Fixtures"
 
+    if not teams:
+        teams = json.load(open(TEAMS_IDS_TRAINING_FILEPATH))
+
+    df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"})[0]
+    filepath = FIXTURES_TEST_DATA_FILEPATH
+    df.to_csv(filepath)
+    print(f"Fixtures data fetched and saved to {filepath}")
     # fetch shooting stats for each team
-    teams_2024 = json.load(open(TEAMS_IDS_2024_FILEPATH))
-    scrape_all_teams_stats(["2024-2025"], teams_2024)
-    time.sleep(10)
+    scrape_all_teams_stats([season], teams)

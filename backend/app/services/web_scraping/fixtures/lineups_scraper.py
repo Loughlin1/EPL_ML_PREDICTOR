@@ -62,38 +62,37 @@ def scrape_match_report(url: str):
     return data
 
 
-def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
-    os.makedirs(data_dir, exist_ok=True)
-    for season in seasons:
-        df = retrieve_fixtures_table(season)
-        print(df)
-        home_formations = []
-        away_formations = []
-        home_starting_lineup = []
-        away_starting_lineup = []
-        home_bench = []
-        away_bench = []
+def scrape_lineups(df: pd.DataFrame) -> pd.DataFrame:
+    """"
+    Fetches the lineups from the given DataFrame and returns a DataFrame with the lineups.
+    """
+    home_formations = []
+    away_formations = []
+    home_starting_lineup = []
+    away_starting_lineup = []
+    home_bench = []
+    away_bench = []
 
-        for index, row in df.iterrows():
-            try:
-                data = scrape_match_report(row["Match Report"])
-            except:
-                exception = traceback.format_exc()
-                print(f"Error scraping match report for row {index}: {row['Match Report']}")
-                print(f"\nException: {exception}\n")
-                sys.exit(1)
+    for index, row in df.iterrows():
+        try:
+            data = scrape_match_report(row["Match Report"])
+        except:
+            exception = traceback.format_exc()
+            print(f"Error scraping match report for row {index}: {row['Match Report']}")
+            print(f"\nException: {exception}\n")
+            sys.exit(1)
 
-            home_formations.append(data["home"]["formation"])
-            away_formations.append(data["away"]["formation"])
-            home_starting_lineup.append(data["home"]["starting_lineup"])
-            away_starting_lineup.append(data["away"]["starting_lineup"])
-            home_bench.append(data["home"]["bench"])
-            away_bench.append(data["away"]["bench"])
-            time.sleep(random.randint(3, 5))
-            # time
-            if index and index % 10 == 0:
-                print(f"{index+1} matches scraped so far")
-                time.sleep(10)
+        home_formations.append(data["home"]["formation"])
+        away_formations.append(data["away"]["formation"])
+        home_starting_lineup.append(data["home"]["starting_lineup"])
+        away_starting_lineup.append(data["away"]["starting_lineup"])
+        home_bench.append(data["home"]["bench"])
+        away_bench.append(data["away"]["bench"])
+        time.sleep(random.randint(3, 5))
+        # time
+        if index and index % 10 == 0:
+            print(f"{index+1} matches scraped so far")
+            time.sleep(10)
 
         df["home_formation"] = pd.Series(home_formations)
         df["away_formation"] = pd.Series(away_formations)
@@ -101,7 +100,15 @@ def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
         df["away_starting_lineup"] = pd.Series(away_starting_lineup)
         df["home_bench"] = pd.Series(home_bench)
         df["away_bench"] = pd.Series(away_bench)
-        
+
+    return df
+
+
+def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
+    os.makedirs(data_dir, exist_ok=True)
+    for season in seasons:
+        df = retrieve_fixtures_table(season)
+        df = scrape_lineups(df)        
         print(df.head())
         filepath = f"{data_dir}/{season[:4]}-{season[7:9]}.csv"
         df.to_csv(filepath)
