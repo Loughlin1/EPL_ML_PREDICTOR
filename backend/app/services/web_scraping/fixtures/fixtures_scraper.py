@@ -21,7 +21,7 @@ load_dotenv()
 
 # GLOBAL VARIABLES
 FOOTBALL_FIXTURES_DATA_URL = os.environ["FOOTBALL_DATA_URL"]
-FOOTBALL_DATA_BASE_URL = os.environ["FOOTBALL_SHOOTING_DATA_BASE_URL"]
+FOOTBALL_DATA_BASE_URL = os.environ["FOOTBALL_DATA_BASE_URL"]
 
 
 def scrape_season_stats(url):

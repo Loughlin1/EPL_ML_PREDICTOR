@@ -3,8 +3,6 @@
 # Exit on first error
 set -e
 
-cd backend
-
 echo "📦 Installing test dependencies (if needed)..."
 pip install -r requirements.txt > /dev/null 2>&1 || true
 

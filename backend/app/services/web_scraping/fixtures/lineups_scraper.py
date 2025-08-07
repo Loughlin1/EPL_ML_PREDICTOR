@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+import random
 import time
 import pandas as pd
 import numpy as np
@@ -27,7 +28,7 @@ def retrieve_fixtures_table(season: str) -> list[str]:
     df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"}, extract_links="body")[0]
     match_report_column = "Match Report"
     for col in df.columns.difference([match_report_column]):
-            df[col] = df[col].apply(lambda x: x[0])
+        df[col] = df[col].apply(lambda x: x[0])
     df[match_report_column] = df[match_report_column].apply(lambda x: x[1])
     df.replace('', np.nan, inplace=True)
     df.dropna(thresh=5, inplace=True)
@@ -62,6 +63,7 @@ def scrape_match_report(url: str):
 
 
 def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
+    os.makedirs(data_dir, exist_ok=True)
     for season in seasons:
         df = retrieve_fixtures_table(season)
         print(df)
@@ -87,8 +89,9 @@ def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
             away_starting_lineup.append(data["away"]["starting_lineup"])
             home_bench.append(data["home"]["bench"])
             away_bench.append(data["away"]["bench"])
-            time.sleep(10)
-            if index % 10 == 0:
+            time.sleep(random.randint(3, 5))
+            # time
+            if index and index % 10 == 0:
                 print(f"{index+1} matches scraped so far")
                 time.sleep(10)
 
