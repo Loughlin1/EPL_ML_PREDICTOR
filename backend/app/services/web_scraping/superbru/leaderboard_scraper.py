@@ -19,9 +19,9 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-target_url = os.environ["TARGET_URL"]
-username = os.environ["USERNAME"]
-password = os.environ["PASSWORD"]
+target_url = os.environ["SUPERBRU_TARGET_URL"]
+username = os.environ["SUPERBRU_USERNAME"]
+password = os.environ["SUPERBRU_PASSWORD"]
 
 
 def get_top_points() -> tuple[int, int]:

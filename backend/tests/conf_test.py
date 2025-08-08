@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 import os
-os.environ["TARGET_URL"] = ""
+os.environ["SUPERBRU_TARGET_URL"] = ""
 os.environ["USERNAME"] = ""
 os.environ["PASSWORD"] = ""
 os.environ["FOOTBALL_DATA_BASE_URL"] = ""
