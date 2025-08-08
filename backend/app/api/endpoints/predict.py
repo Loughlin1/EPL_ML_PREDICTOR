@@ -6,10 +6,11 @@ import json
 import logging
 
 from app.services.models import predict as predictor
-from app.core.config.paths import TEAMS_2024_FILEPATH
 from app.schemas import MatchInput
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Model"],
+)
 logger = logging.getLogger(__name__)
 
 
@@ -45,13 +46,3 @@ def predict_matches(request: MatchInput):
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/teams")
-def get_teams():
-    try:
-        with open(TEAMS_2024_FILEPATH, "r") as f:
-            teams = json.load(f)
-        return {"teams": teams}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load teams: {str(e)}")

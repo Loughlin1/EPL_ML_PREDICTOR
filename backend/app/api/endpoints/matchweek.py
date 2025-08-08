@@ -4,7 +4,7 @@ from app.services.utils.matchweek import get_current_matchweek
 
 router = APIRouter()
 
-@router.get("/matchweek")
+@router.get("/matchweek", tags=["Fixtures"])
 def get_matchweek():
     """
     Get current/most recent EPL matchweek.

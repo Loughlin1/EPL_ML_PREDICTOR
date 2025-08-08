@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from app.services.models.train import train_model
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Model"],
+)
 
 @router.post("/train")
 def run_training():

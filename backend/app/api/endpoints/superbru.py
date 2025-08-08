@@ -12,7 +12,7 @@ from app.core.config.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 
 router = APIRouter(
     prefix="/superbru",
-    tags=["SuperBru"],
+    tags=["Superbru"],
 )
 logger = logging.getLogger(__name__)
 

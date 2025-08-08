@@ -17,13 +17,12 @@ from app.services.models.evaluation import (
 )
 
 router = APIRouter(
-    prefix="/evaluate",
-    tags=["Evaluate"],
+    tags=["Model"],
 )
 logger = logging.getLogger(__name__)
 
 
-@router.post("/")
+@router.post("/evaluate")
 def evaluate_matches(request: MatchInput):
     try:
         df_input = pd.DataFrame(request.data)
@@ -36,7 +35,7 @@ def evaluate_matches(request: MatchInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/validation")
+@router.get("/evaluate/validation")
 def evaluate_model_validation():
     try:
         results = evaluate_model()
