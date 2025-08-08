@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation, getModelEvaluation } from './api';
-import Header from './components/header';
+import Header from './components/Header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
 import MatchTable from './components/MatchTable';
 import ModelPerformanceStats from './components/ModelPerformanceStats';

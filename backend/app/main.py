@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru, content
+from app.api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru, content
 
 from app.core.config.setting import settings
 
@@ -10,7 +10,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
 )
-
+print(settings)
 # CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
