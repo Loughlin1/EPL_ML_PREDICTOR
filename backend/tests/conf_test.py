@@ -8,7 +8,6 @@ import os
 os.environ["TARGET_URL"] = ""
 os.environ["USERNAME"] = ""
 os.environ["PASSWORD"] = ""
-os.environ["FOOTBALL_DATA_URL"] = ""
 os.environ["FOOTBALL_DATA_BASE_URL"] = ""
 
 @pytest.fixture(scope="module")

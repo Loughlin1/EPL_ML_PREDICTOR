@@ -21,7 +21,6 @@ from ....core.config.paths import (
 load_dotenv()
 
 # GLOBAL VARIABLES
-FOOTBALL_FIXTURES_DATA_URL = os.environ["FOOTBALL_DATA_URL"]
 FOOTBALL_DATA_BASE_URL = os.environ["FOOTBALL_DATA_BASE_URL"]
 CURRENT_SEASON = "2024-2025"
 
@@ -69,7 +68,7 @@ def scrape_all_teams_stats(seasons: list[str], team_ids):
 def scrape_fixtures(season: str = "2024-2025", teams: dict = None) -> None:
     """Function to scrape the fixtures data from the web and save it to a CSV file."""
     if season == CURRENT_SEASON:
-        url = FOOTBALL_FIXTURES_DATA_URL
+        url = f"{FOOTBALL_DATA_BASE_URL}/en/comps/9/schedule/Premier-League-Scores-and-Fixtures"
     else:
         url = f"{FOOTBALL_DATA_BASE_URL}/en/comps/9/{season}/schedule/{season}-Premier-League-Scores-and-Fixtures"
 
