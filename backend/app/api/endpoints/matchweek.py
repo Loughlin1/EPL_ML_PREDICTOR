@@ -2,9 +2,12 @@ from fastapi import APIRouter
 from app.services.utils.fixtures import get_fixtures_data
 from app.services.utils.matchweek import get_current_matchweek
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/matchweek",
+    tags=["Matchweek"],
+)
 
-@router.get("/matchweek")
+@router.get("/")
 def get_matchweek():
     """
     Get current/most recent EPL matchweek.

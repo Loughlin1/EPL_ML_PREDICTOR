@@ -10,12 +10,15 @@ from app.services.web_scraping.superbru.leaderboard_scraper import get_top_point
 
 from app.core.config.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/superbru",
+    tags=["SuperBru"],
+)
 logger = logging.getLogger(__name__)
 
 CACHE_TTL = timedelta(days=90) #timedelta(hours=1)
 
-@router.post("/superbru/points")
+@router.post("/points")
 def calculate_superbru_points(request: MatchInput):
     """
     Calculate the number of SuperBru points for predictions
@@ -29,7 +32,7 @@ def calculate_superbru_points(request: MatchInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/superbru/points/top/global")
+@router.get("/points/top/global")
 def get_leaderboard_points():
     """
     Get the top global points on SuperBru leaderboard.

@@ -7,7 +7,11 @@ import traceback
 
 from app.core.config.paths import CONTENT_DIR
 
-router = APIRouter(prefix="/content")
+
+router = APIRouter(
+    prefix="/content",
+    tags=["Content"],
+)
 logger = logging.getLogger(__name__)
 
 

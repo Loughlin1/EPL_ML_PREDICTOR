@@ -5,9 +5,12 @@ from app.core.config.paths import TEAMS_IDS_2024_FILEPATH
 
 import json
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/fixtures",
+    tags=["Fixtures"],
+)
 
-@router.get("/fixtures")
+@router.get("/")
 def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     """
     Get EPL fixtures, optionally by matchweek, and optionally force refresh.
@@ -16,8 +19,6 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
         teams_2024 = json.load(open(TEAMS_IDS_2024_FILEPATH))
         scrape_fixtures(season="2024-2025", teams=teams_2024)
     fixtures = get_this_seasons_fixtures_data()
-
-
 
     if matchweek is not None:
         fixtures = fixtures[fixtures["Matchweek"] == matchweek]
