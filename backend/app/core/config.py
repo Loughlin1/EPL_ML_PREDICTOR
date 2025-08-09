@@ -9,6 +9,12 @@ class Settings(BaseSettings):
 
     ALLOWED_ORIGINS: str = ""
 
+    # App specific variables
+    FOOTBALL_DATA_BASE_URL: str
+    SUPERBRU_TARGET_URL: str
+    SUPERBRU_USERNAME: str
+    SUPERBRU_PASSWORD: str
+
     @field_validator("ALLOWED_ORIGINS")
     def validate_allowed_origins(cls, v: str) -> list[str]:
         return [origin.strip() for origin in v.split(",")] if v else []

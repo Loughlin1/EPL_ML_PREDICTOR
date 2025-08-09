@@ -9,4 +9,4 @@ export PYTHONPATH=$(pwd)
 # Activate your virtual environment if needed
 source backend/.venv/bin/activate
 
-python backend/models/train.py
+python -m backend.models.train

@@ -11,4 +11,4 @@ export PYTHONPATH=$(pwd)
 # Activate your virtual environment if needed
 source .venv/bin/activate
 
-python app/services/web_scraping/players/fifa_ratings.py
+python -m app.services.web_scraping.players.fifa_ratings

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru, content
 
-from app.core.config.setting import settings
+from backend.app.core.config.config import settings
 
 app = FastAPI(
     title="EPL Predictor API",

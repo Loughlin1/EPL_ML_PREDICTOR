@@ -7,7 +7,7 @@ import logging
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from ...core.config.paths import (
+from ...core.paths import (
     SHOOTING_TEST_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_2024_FILEPATH,

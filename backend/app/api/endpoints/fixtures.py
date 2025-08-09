@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from app.services.data_processing.data_loader import get_this_seasons_fixtures_data
 from app.services.web_scraping.fixtures.fixtures_scraper import scrape_fixtures
-from app.core.config.paths import TEAMS_IDS_2024_FILEPATH, TEAMS_2024_FILEPATH
+from backend.app.core.paths import TEAMS_IDS_2024_FILEPATH, TEAMS_2024_FILEPATH
 
 import json
 

@@ -2,7 +2,9 @@ import pytest
 import json
 from fastapi.testclient import TestClient
 from app.main import app
-from app.core.config.paths import backend_dir
+from ..app.core.paths import backend_dir
+
+
 client = TestClient(app)
 
 def test_calculate_superbru_points():

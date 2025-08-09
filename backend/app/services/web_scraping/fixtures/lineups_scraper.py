@@ -12,8 +12,8 @@ import traceback
 load_dotenv()
 BASE_URL = os.environ["FOOTBALL_DATA_BASE_URL"]
 
-from app.services.web_scraping.fixtures.helper import generate_seasons
-from app.core.config.paths import LINEUPS_TRAINING_DATA_DIR, LINEUPS_TEST_DATA_DIR
+from ...data_processing.data_loader import generate_seasons
+from ....core.paths import LINEUPS_TRAINING_DATA_DIR, LINEUPS_TEST_DATA_DIR
 
 
 def retrieve_fixtures_table(season: str) -> list[str]:

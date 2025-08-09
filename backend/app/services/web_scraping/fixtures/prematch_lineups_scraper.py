@@ -13,7 +13,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-from helper import match_on_name
 
 base_url = f"https://www.bbc.com/sport/football/premier-league/scores-fixtures"
 

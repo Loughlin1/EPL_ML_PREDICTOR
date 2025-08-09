@@ -15,7 +15,7 @@ import random
 import os
 import io
 
-from app.core.config.paths import PLAYER_RATINGS_DATA_DIR
+from ....core.paths import PLAYER_RATINGS_DATA_DIR
 
 
 def scrape_all_fifa_ratings(start_season: int, end_season: int):

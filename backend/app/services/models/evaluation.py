@@ -6,7 +6,7 @@ from sklearn.metrics import (
     root_mean_squared_error,
 )
 from sklearn.model_selection import train_test_split
-from ...core.config.paths import SAVED_MODELS_DIRECTORY, FIXTURES_TRAINING_DATA_DIR
+from ...core.paths import SAVED_MODELS_DIRECTORY, FIXTURES_TRAINING_DATA_DIR
 from ..data_processing.data_loader import load_training_data, clean_data
 from ..models.save_load import load_model
 from ..models.train import preprocess_data

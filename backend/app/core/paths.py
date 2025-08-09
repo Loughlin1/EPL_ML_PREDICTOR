@@ -1,6 +1,6 @@
 from pathlib import Path
 
-backend_dir = Path(__file__).resolve().parents[3]  # backend
+backend_dir = Path(__file__).resolve().parents[2]  # backend
 project_root = backend_dir.parent  # EPL_ML_PREDICTOR
 data_dir = project_root / "data"
 artifacts_dir = backend_dir / "app" / "services" / "artifacts"

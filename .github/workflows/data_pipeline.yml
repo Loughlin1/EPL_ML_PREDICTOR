@@ -25,4 +25,11 @@
 #         # env:
 #             # PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 #         run: python backend/app/data_pipeline.py
+#       - name: Commit and push changes
+#         run: |
+#           git config --global user.name "GitHub Action"
+#           git config --global user.email "action@github.com"
+#           git add premier_league.db
+#           git commit -m "Update match data" || echo "No changes to commit"
+#           git push
       

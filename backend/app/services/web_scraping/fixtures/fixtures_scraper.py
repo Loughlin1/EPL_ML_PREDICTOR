@@ -11,7 +11,7 @@ import time
 import pandas as pd
 from dotenv import load_dotenv
 
-from ....core.config.paths import (
+from ....core.paths import (
     FIXTURES_TEST_DATA_FILEPATH,
     SHOOTING_TEST_DATA_DIR,
     TEAMS_IDS_2024_FILEPATH,

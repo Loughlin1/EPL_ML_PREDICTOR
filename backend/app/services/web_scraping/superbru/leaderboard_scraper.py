@@ -15,13 +15,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+from ....core.config import Settings
 
-target_url = os.environ["SUPERBRU_TARGET_URL"]
-username = os.environ["SUPERBRU_USERNAME"]
-password = os.environ["SUPERBRU_PASSWORD"]
+target_url = Settings.SUPERBRU_TARGET_URL
+username = Settings.SUPERBRU_USERNAME
+password = Settings.SUPERBRU_PASSWORD
 
 
 def get_top_points() -> tuple[int, int]:

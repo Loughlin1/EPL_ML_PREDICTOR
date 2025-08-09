@@ -25,7 +25,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from ...core.config.paths import (
+from ...core.paths import (
     SHOOTING_TRAINING_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
     TEAMS_TRAINING_FILEPATH,
