@@ -44,7 +44,7 @@ def get_players_ratings(season: str) -> pd.DataFrame:
         pd.DataFrame: Player ratings data with rating_id, player_id, season, and rat.
     """
     query = """
-    SELECT rating_id, player_id, season, rat
+    SELECT *
     FROM player_ratings
     WHERE season = :season
     """
@@ -106,3 +106,4 @@ def get_team_details(team_identifier: str, by: str = "name") -> dict:
     """.format(by)
     df = pd.read_sql(query, engine, params={"identifier": team_identifier})
     return df.to_dict(orient="records")[0] if not df.empty else {}
+

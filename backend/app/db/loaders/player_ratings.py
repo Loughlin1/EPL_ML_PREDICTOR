@@ -41,6 +41,33 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
         season: Season string (e.g., "2014-2015").
         player_map: Dict mapping player names to player_id.
     """
+    # Define column mapping
+    column_mapping = {
+        "Name": "Name",
+        "RATOrder By Rating": "RAT",
+        "POS Order By Position": "POS",
+        "PriceOrder By Price": "VER",
+        "PriceOrder By Price.1": "PS",
+        "FOOTOrder By FOOT": None,
+        "WFOrder By Weak Foot": "WF",
+        "SMOrder By Skills": "SKI",
+        "WRAttack / Defense": "WR",
+        "PACOrder By Pace": "PAC",
+        "SHOOrder By Shooting": "SHO",
+        "PASOrder By Passing": "PAS",
+        "DRIOrder By Dribbling": "DRI",
+        "DEFOrder By Defending": "DEF",
+        "PHYOrder By Physical": "PHY",
+        "POPOrder By Popularity": "Unnamed: 14",
+        "BodyOrder By Height": "Unnamed: 15",
+        "IGSOrder By IGS": "IGS",
+        "Unnamed: 18": "Unnamed: 18",
+    }
+
+    # Rename columns
+    df = df.rename(columns={k: v for k, v in column_mapping.items() if v is not None})
+    df.dropna(thresh=6, inplace=True) # Remove empty rows
+
     expected_columns = [
         "Name", "RAT", "POS", "VER", "PS", "SKI", "WF", "WR", "PAC",
         "SHO", "PAS", "DRI", "DEF", "PHY", "BS", "IGS"
@@ -68,21 +95,21 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
                 rating = PlayerRating(
                     player_id=player_id,
                     season=season,
-                    rat=row.get("RAT"),
-                    pos=row.get("POS"),
-                    ver=row.get("VER"),
-                    ps=row.get("PS"),
-                    ski=row.get("SKI"),
-                    wf=row.get("WF"),
-                    wr=row.get("WR"),
-                    pac=row.get("PAC"),
-                    sho=row.get("SHO"),
-                    pas=row.get("PAS"),
-                    dri=row.get("DRI"),
-                    def_=row.get("DEF"),
-                    phy=row.get("PHY"),
-                    bs=row.get("BS"),
-                    igs=row.get("IGS")
+                    rating=row.get("RAT"),
+                    position=row.get("POS"),
+                    version=row.get("VER"),
+                    psprice=row.get("PS"),
+                    skill=row.get("SKI"),
+                    weakfoot=row.get("WF"),
+                    workrate=row.get("WR"),
+                    pace=row.get("PAC"),
+                    shooting=row.get("SHO"),
+                    passing=row.get("PAS"),
+                    dribbling=row.get("DRI"),
+                    defense=row.get("DEF"),
+                    physical=row.get("PHY"),
+                    basestats=row.get("BS"),
+                    ingamestats=row.get("IGS")
                 )
                 session.add(rating)
             except Exception as e:
