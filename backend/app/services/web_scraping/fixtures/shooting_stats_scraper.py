@@ -10,8 +10,8 @@ import pandas as pd
 
 from ....core.config import settings
 from ....core.paths import data_dir
-from ....db.loaders.add_shooting_stats import add_shooting_stats
-from ....db.queries import get_team_details
+from ....db.loaders.shooting_stats import add_shooting_stats
+from ....db.queries import get_team_details, get_teams
 from ...data_processing.data_loader import generate_seasons
 
 
@@ -68,22 +68,21 @@ def scrape_teams_stats(seasons, squad_id, team_name) -> pd.DataFrame:
         print(f"No valid data for team {team_name} in seasons {seasons}")
 
 
-def scrape_all_teams_stats(seasons: list[str], team_ids):
+def scrape_shooting_stats(seasons: list[str]) -> None:
+    """
+    Scrapes shooting stats from the web and saves it to database
+    """
     counter = 0
-    for team, id in team_ids.items():
-        df = scrape_teams_stats(seasons, id, team)
-        if df:
-            save_to_csv(df, team)
-            add_shooting_stats(df, team, seasons)
-            
+    for team in get_teams():
+        df = scrape_teams_stats(seasons, team["fbref_team_id"], team["fullname"])
+        add_shooting_stats(df, team["name"], seasons)
+
         if counter == 3:
             time.sleep(10)
         counter += 1
 
 
 if __name__ == "__main__":
-    seasons = generate_seasons(2014, 2014)
-    team = get_team_details("QPR", by="name")
-    df = scrape_teams_stats(seasons, team["fbref_team_id"], team["fullname"])
-    for season in seasons:
-        add_shooting_stats(df, team["name"], season)
+    seasons = generate_seasons(2024, 2024)
+    scrape_shooting_stats(seasons)
+    print(f"Shooting stats scraped for seasons: {seasons.join(", ")}")

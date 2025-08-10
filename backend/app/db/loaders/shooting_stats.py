@@ -14,6 +14,10 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
         team_name: Name of the team (e.g., "Arsenal").
         seasons: List of seasons (e.g., ["2013-2014", "2014-2015"]).
     """
+    if not isinstance(df, pd.DataFrame):
+        print("Argument `df` is not a pandas DataFrame")
+        return
+
     expected_columns = [
         "Date", "Round", "Day", "Venue", "Result", "GF", "GA", "Opponent",
         "Sh", "SoT", "SoT%", "G/Sh", "G/SoT", "Dist", "PK", "PKatt", "FK",

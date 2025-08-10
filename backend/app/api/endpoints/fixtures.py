@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException
 from app.services.data_processing.data_loader import get_this_seasons_fixtures_data
 from app.services.web_scraping.fixtures.fixtures_scraper import scrape_fixtures
-from backend.app.core.paths import TEAMS_IDS_2024_FILEPATH, TEAMS_2024_FILEPATH
+from ...services.web_scraping.fixtures.shooting_stats_scraper import scrape_shooting_stats
+from app.core.paths import TEAMS_IDS_2024_FILEPATH
+from ...db.queries import get_teams
 
 import json
 
@@ -15,8 +17,8 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     Get EPL fixtures, optionally by matchweek, and optionally force refresh.
     """
     if refresh:
-        teams_2024 = json.load(open(TEAMS_IDS_2024_FILEPATH))
-        scrape_fixtures(season="2024-2025", teams=teams_2024)
+        scrape_fixtures(season="2024-2025")
+        scrape_shooting_stats(season="2024-2025")
     fixtures = get_this_seasons_fixtures_data()
 
     if matchweek is not None:
@@ -31,8 +33,9 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
 @router.get("/teams")
 def get_teams():
     try:
-        with open(TEAMS_2024_FILEPATH, "r") as f:
-            teams = json.load(f)
+        # with open(TEAMS_2024_FILEPATH, "r") as f:
+        #     teams = json.load(f)
+        teams = get_teams()
         return {"teams": teams}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load teams: {str(e)}")

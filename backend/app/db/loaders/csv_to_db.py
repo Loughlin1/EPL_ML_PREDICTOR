@@ -4,12 +4,12 @@ from datetime import datetime
 from ..database import get_session, create_tables
 from ..models import Team, Match, MatchShootingStat, Player, PlayerRating
 from ...services.data_processing.data_loader import generate_seasons, load_json_file
-from ...core.paths import data_dir, FIXTURES_TRAINING_DATA_DIR, SHOOTING_TEST_DATA_DIR
+from ...core.paths import backend_dir, data_dir, FIXTURES_TRAINING_DATA_DIR, SHOOTING_TEST_DATA_DIR
 from ..queries import get_teams, get_shooting_stats, get_team_details
 from .shooting_stats import add_shooting_stats
 from .player_ratings import add_players, add_ratings
 from .fixtures import add_teams, add_matches
-
+from ..mappings.load_mappings import load_team_ids_mapping, load_team_name_mapping
 
 def parse_score(score):
     """Parse score (e.g., '2–1') into home_goals, away_goals, result."""
@@ -33,8 +33,8 @@ def import_historical_fixtures(start_year: int = 2014, end_year: int = 2024) -> 
     """
     create_tables()
     seasons = generate_seasons(start_year, end_year)
-    team_full_name_mapping = load_json_file(f"{data_dir}/team_names_mapping.json")
-    team_ids_mapping = load_json_file(f"{data_dir}/team_ids_mapping.json")
+    team_full_name_mapping = load_team_name_mapping()
+    team_ids_mapping = load_team_ids_mapping()
 
     # Load all fixtures to collect teams
     all_dfs = []
@@ -102,7 +102,7 @@ def import_fifa_ratings(start_year: int = 2014, end_year: int = 2021) -> None:
 def import_shooting_stats(start_year: int = 2014, end_year: int = 2024) -> None:
     create_tables()
     seasons = generate_seasons(start_year, end_year)
-    teams = get_teams().to_dict(orient="records")
+    teams = get_teams()
     for team in teams:
         name = team["name"]
         df = pd.read_csv(f"{data_dir}/shooting_stats/{name.replace(' ', '-')}.csv")

@@ -69,21 +69,22 @@ def get_shooting_stats(team_id: str = None) -> pd.DataFrame:
     return pd.read_sql(query, engine, params={"team_id": team_id} if team_id else {})
 
 
-def get_teams() -> pd.DataFrame:
+def get_teams() -> list[dict]:
     """
     Retrieve all teams as a DataFrame.
 
     Returns:
-        pd.DataFrame: Team data with team_id, name, fullname, and fbref_team_id.
+        list[dict]: Team data with team_id, name, fullname, and fbref_team_id.
     """
     query = """
     SELECT team_id, name, fullname, fbref_team_id
     FROM teams
     """
-    return pd.read_sql(query, engine)
+    df = pd.read_sql(query, engine)
+    return df.to_dict(orient="records") if not df.empty else []
 
 
-def get_team_details(team_identifier: str, by: str = "name") -> pd.DataFrame:
+def get_team_details(team_identifier: str, by: str = "name") -> dict:
     """
     Retrieve details for a specific team as a DataFrame.
 
