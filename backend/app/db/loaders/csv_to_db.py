@@ -5,7 +5,7 @@ from ..database import get_session, create_tables
 from ..models import Team, Match, MatchShootingStat, Player, PlayerRating
 from ...services.data_processing.data_loader import generate_seasons, load_json_file
 from ...core.paths import data_dir, FIXTURES_TRAINING_DATA_DIR, SHOOTING_TEST_DATA_DIR
-from ..queries import get_teams
+from ..queries import get_teams, get_shooting_stats, get_team_details
 from .shooting_stats import add_shooting_stats
 from .player_ratings import add_players, add_ratings
 from .fixtures import add_teams, add_matches
@@ -23,7 +23,7 @@ def parse_score(score):
         return None, None, None
 
 
-def import_historical_fixtures(start_year: int = 2014, end_year: int = 2023) -> None:
+def import_historical_fixtures(start_year: int = 2014, end_year: int = 2024) -> None:
     """
     Load historical fixtures data from CSVs and JSON mappings into teams and matches tables.
 
@@ -99,16 +99,14 @@ def import_fifa_ratings(start_year: int = 2014, end_year: int = 2021) -> None:
             continue
 
 
-def import_shooting_stats(start_year: int = 2014, end_year: int = 2021) -> None:
+def import_shooting_stats(start_year: int = 2014, end_year: int = 2024) -> None:
     create_tables()
     seasons = generate_seasons(start_year, end_year)
     teams = get_teams().to_dict(orient="records")
-    print(teams)
     for team in teams:
         name = team["name"]
         df = pd.read_csv(f"{data_dir}/shooting_stats/{name.replace(' ', '-')}.csv")
-        for season in seasons:
-            add_shooting_stats(df, name, season)
+        add_shooting_stats(df, name, seasons)
 
 
 if __name__ == "__main__":

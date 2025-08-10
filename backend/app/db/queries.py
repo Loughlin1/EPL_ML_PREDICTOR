@@ -50,7 +50,7 @@ def get_players_ratings(season: str) -> pd.DataFrame:
     """
     return pd.read_sql(query, engine, params={"season": season})
 
-def get_shooting_stats(season: str = None) -> pd.DataFrame:
+def get_shooting_stats(team_id: str = None) -> pd.DataFrame:
     """
     Retrieve shooting stats for all matches or a specific season as a DataFrame.
 
@@ -64,9 +64,9 @@ def get_shooting_stats(season: str = None) -> pd.DataFrame:
     SELECT match_id, team_id
     FROM match_shooting_stats
     """
-    if season:
-        query += " WHERE season = :season"
-    return pd.read_sql(query, engine, params={"season": season} if season else {})
+    if team_id:
+        query += " WHERE team_id = :team_id"
+    return pd.read_sql(query, engine, params={"team_id": team_id} if team_id else {})
 
 
 def get_teams() -> pd.DataFrame:

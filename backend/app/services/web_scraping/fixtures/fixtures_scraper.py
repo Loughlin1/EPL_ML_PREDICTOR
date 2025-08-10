@@ -37,4 +37,3 @@ def scrape_fixtures(season: str = "2024-2025", teams: dict = None) -> None:
     filepath = FIXTURES_TEST_DATA_FILEPATH
     df.to_csv(filepath)
     print(f"Fixtures data fetched and saved to {filepath}")
-    # fetch shooting stats for each team

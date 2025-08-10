@@ -5,14 +5,14 @@ from datetime import datetime
 import pandas as pd
 
 
-def add_shooting_stats(df: pd.DataFrame, team_name: str, season: str) -> None:
+def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> None:
     """
     Add shooting stats from a DataFrame to the match_shooting_stats table.
 
     Args:
         df: DataFrame with shooting stats (columns: Date, Venue, Opponent, etc.).
         team_name: Name of the team (e.g., "Arsenal").
-        season: Season string (e.g., "2013-2014").
+        seasons: List of seasons (e.g., ["2013-2014", "2014-2015"]).
     """
     expected_columns = [
         "Date", "Round", "Day", "Venue", "Result", "GF", "GA", "Opponent",
@@ -20,7 +20,7 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, season: str) -> None:
     ]
     missing_columns = [col for col in expected_columns if col not in df.columns]
     if missing_columns:
-        print(f"Warning: Missing columns in DataFrame for {team_name} in {season}: {missing_columns}")
+        print(f"Warning: Missing columns in DataFrame for {team_name} in {seasons}: {missing_columns}")
     
     df = df.dropna(subset=["Date"]) # Filter out rows with missing values
 
@@ -36,12 +36,11 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, season: str) -> None:
         # Create a map of matches for lookup
         matches = session.execute(
             select(Match.match_id, Match.date, Match.home_team_id, Match.away_team_id)
-            .filter_by(season=season)
+            .filter(Match.season.in_(seasons))
         ).all()
         match_map = {
-            (match.date, match.home_team_id if is_home else match.away_team_id): match.match_id
+            (match.date, match.home_team_id): match.match_id
             for match in matches
-            for is_home in [True, False]
         }
 
         # Get opponent team IDs
@@ -60,11 +59,11 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, season: str) -> None:
                     continue
 
                 # Determine match_id
-                match_key = (date, team_id if is_home else opponent_team_id)
+                match_key = (date, (team_id if is_home else opponent_team_id))
                 match_id = match_map.get(match_key)
 
-                if not match_id:
-                    print(f"No match found for {team_name} vs {opponent_name} on {date}.")
+                if match_id is None:
+                    print(f"No match found for ({'Home' if is_home else 'Away'}) {team_name} vs {opponent_name} on {date}.")
                     continue
 
                 # Check for existing record
@@ -74,7 +73,7 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, season: str) -> None:
                 ).scalar_one_or_none()
 
                 if existing_stat:
-                    print(f"Shooting stat already exists for match_id={match_id}, team={team_name}.")
+                    # print(f"Shooting stat already exists for match_id={match_id}, team={team_name}.")
                     continue
 
                 # Create new shooting stat record

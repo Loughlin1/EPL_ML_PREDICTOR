@@ -62,7 +62,7 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
                 player_id=player_id, season=season
             ).first()
             if existing_rating:
-                print(f"Rating exists for {row.get('Name')} in {season}.")
+                # print(f"Rating exists for {row.get('Name')} in {season}.")
                 continue
             try:
                 rating = PlayerRating(
