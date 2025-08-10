@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     SUPERBRU_USERNAME: str
     SUPERBRU_PASSWORD: str
 
+    CURRENT_SEASON: str = "2024-2025"
+
     @field_validator("ALLOWED_ORIGINS")
     def validate_allowed_origins(cls, v: str) -> list[str]:
         return [origin.strip() for origin in v.split(",")] if v else []

@@ -1,9 +1,22 @@
 import os
 import pandas as pd
+import json
 
 from ...core.paths import FIXTURES_TEST_DATA_FILEPATH
 from ...db.database import get_session
-from ...db.models import Match
+from ...db.models import Match, MatchShootingStat, Team, Player, PlayerRating
+
+
+def load_json_file(filepath):
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    return data
+
+
+def save_json_file(data, filepath):
+    with open(filepath, "w") as f:
+        json.dump(data, f, indent=4)
+
 
 def load_training_data(training_data_dir: str):
     if not os.path.exists(training_data_dir):
@@ -41,33 +54,6 @@ def get_this_seasons_fixtures_data() -> pd.DataFrame:
     """
     df = pd.read_csv(FIXTURES_TEST_DATA_FILEPATH, index_col=0)
     df.dropna(thresh=7, inplace=True)  # Dropping any NaN rows in the data
-    return df    
-
-
-def get_seasons_fixtures(season: str) -> pd.DataFrame:
-    """
-    Args:
-        season: str season to get fixtures for e.g. "2014-2015"
-    Returns:
-       pd.DataFrame: DataFrame containing the fixtures data for the given season.
-    """
-    with get_session() as session:
-        matches = session.query(Match).filter(Match.season == season).all()
-        df = pd.DataFrame([{
-            "season": m.season,
-            "week": m.week,
-            "day": m.day,
-            "date": m.date,
-            "time": m.time,
-            "home_team_id": m.home_team_id,
-            "away_team_id": m.away_team_id,
-            "home_goals": m.home_goals,
-            "away_goals": m.away_goals,
-            "result": m.result,
-            "attendance": m.attendance,
-            "venue": m.venue,
-            "referee": m.referee
-        } for m in matches])
     return df
 
 
@@ -88,6 +74,3 @@ def generate_seasons(start_year: int, end_year: int):
         seasons.append(season)
     return seasons
 
-
-if __name__ == "__main__":
-    print(get_seasons_fixtures("2014-2015"))
