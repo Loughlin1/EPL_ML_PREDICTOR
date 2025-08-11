@@ -89,6 +89,7 @@ def scrape_lineups(df: pd.DataFrame) -> pd.DataFrame:
         home_bench.append(data["home"]["bench"])
         away_bench.append(data["away"]["bench"])
         time.sleep(random.randint(3, 5))
+        print(data)
         # time
         if index and index % 10 == 0:
             print(f"{index+1} matches scraped so far")
