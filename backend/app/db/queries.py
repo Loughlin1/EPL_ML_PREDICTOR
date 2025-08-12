@@ -1,109 +1,73 @@
 import pandas as pd
-from .database import engine, get_session
+from .database import engine
 
-
-def get_seasons_fixtures(season: str) -> pd.DataFrame:
+def flexible_query(table: str, filters: dict = None, columns: list = None) -> pd.DataFrame:
     """
-    Retrieve fixtures for a given season as a DataFrame.
-
-    Args:
-        season: Season string (e.g., "2014-2015").
-
-    Returns:
-        pd.DataFrame: Fixtures data for the specified season.
-    """
-    query = """
-    SELECT season, week, day, date, time, home_team_id, away_team_id, 
-           home_goals, away_goals, result, attendance, venue, referee
-    FROM matches
-    WHERE season = :season
-    """
-    return pd.read_sql(query, engine, params={"season": season})
-
-def get_players() -> pd.DataFrame:
-    """
-    Retrieve all players as a DataFrame.
-
-    Returns:
-        pd.DataFrame: Player data with player_id and name.
-    """
-    query = """
-    SELECT *
-    FROM players
-    """
-    return pd.read_sql(query, engine)
-
-def get_players_ratings(season: str) -> pd.DataFrame:
-    """
-    Retrieve player ratings for a given season as a DataFrame.
+    General-purpose query builder for filtering any table.
 
     Args:
-        season: Season string (e.g., "2014-2015").
+        table: Table name.
+        filters: Dict of column-value pairs to filter by.
+        columns: List of columns to select (default: all).
 
     Returns:
-        pd.DataFrame: Player ratings data with rating_id, player_id, season, and rat.
+        pd.DataFrame: Query results.
     """
-    query = """
-    SELECT *
-    FROM player_ratings
-    WHERE season = :season
-    """
-    return pd.read_sql(query, engine, params={"season": season})
+    select_cols = ", ".join(columns) if columns else "*"
+    query = f"SELECT {select_cols} FROM {table}"
+    params = {}
+    if filters:
+        where_clauses = []
+        for col, val in filters.items():
+            where_clauses.append(f"{col} = :{col}")
+            params[col] = val
+        query += " WHERE " + " AND ".join(where_clauses)
+    return pd.read_sql(query, engine, params=params)
 
-def get_shooting_stats(team_id: str = None) -> pd.DataFrame:
-    """
-    Retrieve shooting stats for all matches or a specific season as a DataFrame.
+def get_seasons_fixtures(season: str = None, week: int = None, home_team_id: int = None, away_team_id: int = None) -> pd.DataFrame:
+    filters = {}
+    if season: filters["season"] = season
+    if week: filters["week"] = week
+    if home_team_id: filters["home_team_id"] = home_team_id
+    if away_team_id: filters["away_team_id"] = away_team_id
+    columns = ["season", "week", "day", "date", "time", "home_team_id", "away_team_id", "home_goals", "away_goals", "result", "attendance", "venue", "referee"]
+    return flexible_query("matches", filters, columns)
 
-    Args:
-        season: Optional season string (e.g., "2014-2015"). If None, returns all seasons.
+def get_players(name: str = None) -> pd.DataFrame:
+    filters = {}
+    if name: filters["name"] = name
+    return flexible_query("players", filters)
 
-    Returns:
-        pd.DataFrame: Shooting stats data with match_id and team_id.
-    """
-    query = """
-    SELECT match_id, team_id
-    FROM match_shooting_stats
-    """
-    if team_id:
-        query += " WHERE team_id = :team_id"
-    return pd.read_sql(query, engine, params={"team_id": team_id} if team_id else {})
+def get_players_ratings(season: str = None, player_id: int = None) -> pd.DataFrame:
+    filters = {}
+    if season: filters["season"] = season
+    if player_id: filters["player_id"] = player_id
+    return flexible_query("player_ratings", filters)
 
+def get_shooting_stats(team_id: str = None, match_id: int = None) -> pd.DataFrame:
+    filters = {}
+    if team_id: filters["team_id"] = team_id
+    if match_id: filters["match_id"] = match_id
+    columns = ["match_id", "team_id"]
+    return flexible_query("match_shooting_stats", filters, columns)
 
-def get_teams() -> list[dict]:
-    """
-    Retrieve all teams as a DataFrame.
-
-    Returns:
-        list[dict]: Team data with team_id, name, fullname, and fbref_team_id.
-    """
-    query = """
-    SELECT team_id, name, fullname, fbref_team_id
-    FROM teams
-    """
-    df = pd.read_sql(query, engine)
+def get_teams(name: str = None, team_id: int = None, fbref_team_id: str = None) -> list[dict]:
+    filters = {}
+    if name: filters["name"] = name
+    if team_id: filters["team_id"] = team_id
+    if fbref_team_id: filters["fbref_team_id"] = fbref_team_id
+    columns = ["team_id", "name", "fullname", "fbref_team_id"]
+    df = flexible_query("teams", filters, columns)
     return df.to_dict(orient="records") if not df.empty else []
 
-
-def get_team_details(team_identifier: str, by: str = "name") -> dict:
-    """
-    Retrieve details for a specific team as a DataFrame.
-
-    Args:
-        team_identifier: Identifier for the team (e.g., name, team_id, or fbref_team_id).
-        by: Column to query by ("name", "team_id", or "fbref_team_id"). Defaults to "name".
-
-    Returns:
-        pd.DataFrame: Team details (team_id, name, fullname, fbref_team_id).
-    """
-    valid_columns = ["name", "team_id", "fbref_team_id"]
-    if by not in valid_columns:
-        raise ValueError(f"Invalid 'by' parameter. Must be one of {valid_columns}")
-
-    query = """
-    SELECT team_id, name, fullname, fbref_team_id
-    FROM teams
-    WHERE {} = :identifier
-    """.format(by)
-    df = pd.read_sql(query, engine, params={"identifier": team_identifier})
+def get_team_details(team_identifier: str = None, by: str = "name") -> dict:
+    if not team_identifier:
+        return {}
+    filters = {by: team_identifier}
+    columns = ["team_id", "name", "fullname", "fbref_team_id"]
+    df = flexible_query("teams", filters, columns)
     return df.to_dict(orient="records")[0] if not df.empty else {}
 
+
+if __name__ == "__main__":
+    print(get_players(name="Nani"))
