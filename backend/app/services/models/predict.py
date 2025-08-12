@@ -49,9 +49,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     ###### Encoding ####################
     # Encode categorical features
     ## Encoding team name
-    df = encode_team_name_features(
-        df, encoder=load_encoder_file(TEAM_ENCODER_FILEPATH)
-    )
+    df = encode_team_name_features(df, encoder=load_encoder_file(TEAM_ENCODER_FILEPATH))
     df = encode_venue_name_feature(
         df, encoder=load_encoder_file(VENUE_ENCODER_FILEPATH)
     )
@@ -99,9 +97,7 @@ def add_predictions_to_input_data(input_data: pd.DataFrame, predictions):
     return input_data
 
 
-def get_predictions(
-    input_data: pd.DataFrame, logger: logging.Logger
-) -> pd.DataFrame:
+def get_predictions(input_data: pd.DataFrame, logger: logging.Logger) -> pd.DataFrame:
     """Returns the input DataFrame with the predictions in the columns."""
     logger.debug("Model Input:")
     logger.debug(input_data.head())

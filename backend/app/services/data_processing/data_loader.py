@@ -39,7 +39,9 @@ def generate_seasons(start_year: int, end_year: int) -> list[str]:
 def load_training_data() -> pd.DataFrame:
     """Load training fixtures data from database"""
     dfs = []
-    for season in generate_seasons(start_year=TRAINING_DATA_START_SEASON, end_year=TRAINING_DATA_END_SEASON):
+    for season in generate_seasons(
+        start_year=TRAINING_DATA_START_SEASON, end_year=TRAINING_DATA_END_SEASON
+    ):
         df = pd.DataFrame(get_seasons_fixtures(season=season))
         if not df.empty:
             dfs.append(df)
@@ -58,7 +60,11 @@ def load_shooting_data(team: str) -> pd.DataFrame:
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # ...existing code for cleaning...
-    df.drop(columns=["Notes", "Match Report", "xG", "xG.1", "Attendance"], inplace=True, errors="ignore")
+    df.drop(
+        columns=["Notes", "Match Report", "xG", "xG.1", "Attendance"],
+        inplace=True,
+        errors="ignore",
+    )
     df.dropna(subset=["date"], inplace=True)
     df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
     df["week"] = df["week"].astype(int)

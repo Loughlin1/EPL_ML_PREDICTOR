@@ -15,22 +15,23 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 COLUMN_MAPPING = {
-    'day': 'Day',
-    'date': 'Date',
-    'time': 'Time',
-    'home_team': 'Home',
-    'away_team': 'Away',
-    'Score': 'Score',
-    'Result': 'Result',
-    'PredScore': 'PredScore',
-    'PredResult': 'PredResult',
-    'venue': 'Venue',
-    'week': 'week',
-    'FTHG': 'FTHG',
-    'FTAG': 'FTAG',
-    'PredFTHG': 'PredFTHG',
-    'PredFTAG': 'PredFTAG',
+    "day": "Day",
+    "date": "Date",
+    "time": "Time",
+    "home_team": "Home",
+    "away_team": "Away",
+    "Score": "Score",
+    "Result": "Result",
+    "PredScore": "PredScore",
+    "PredResult": "PredResult",
+    "venue": "Venue",
+    "week": "week",
+    "FTHG": "FTHG",
+    "FTAG": "FTAG",
+    "PredFTHG": "PredFTHG",
+    "PredFTAG": "PredFTAG",
 }
+
 
 @router.post("/predict")
 def predict_matches(request: MatchInput):

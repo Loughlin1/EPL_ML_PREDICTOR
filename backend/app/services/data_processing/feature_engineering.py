@@ -6,9 +6,9 @@ from .data_loader import load_shooting_data
 
 def calculate_match_points(df: pd.DataFrame) -> pd.DataFrame:
     """Function to calculate points for each team in each game"""
-    df.loc[pd.isna(df["FTHG"]) | pd.isna(df["FTAG"]), ["home_points", "away_points"]] = (
-        None
-    )
+    df.loc[
+        pd.isna(df["FTHG"]) | pd.isna(df["FTAG"]), ["home_points", "away_points"]
+    ] = None
     df.loc[df["FTHG"] > df["FTAG"], ["home_points", "away_points"]] = [
         3,
         0,
@@ -112,7 +112,9 @@ def create_team_rolling_shooting_stats(
         # Extract the numeric part from 'Round' and convert it to an integer
         df["week"] = df["round"].str.extract(r"(\d+)").astype(int)
     else:
-        raise Exception("Error: 'round' column is missing or not in the expected format.")
+        raise Exception(
+            "Error: 'round' column is missing or not in the expected format."
+        )
 
     # Week 1
     df.loc[(df["week"] == 1) & (df["venue"] == "Home"), rolling_home_cols] = 0
@@ -134,7 +136,7 @@ def create_rolling_shooting_stats(teams: list[str]) -> pd.DataFrame:
     rolling_dfs = []
     for team in teams:
         df = load_shooting_data(team)
-        if df.empty: # Skip teams with no previous seasons in premier league
+        if df.empty:  # Skip teams with no previous seasons in premier league
             continue
         rolling_df = create_team_rolling_shooting_stats(df, team)
         rolling_dfs.append(rolling_df)
@@ -146,9 +148,7 @@ def create_rolling_shooting_stats(teams: list[str]) -> pd.DataFrame:
     return merged_df
 
 
-def add_rolling_shooting_stats(
-    df: pd.DataFrame, teams: list[str]
-) -> pd.DataFrame:
+def add_rolling_shooting_stats(df: pd.DataFrame, teams: list[str]) -> pd.DataFrame:
     rolling_df = create_rolling_shooting_stats(teams)
     return pd.merge(
         df,

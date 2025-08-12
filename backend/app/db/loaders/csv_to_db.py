@@ -4,12 +4,18 @@ from datetime import datetime
 from ..database import get_session, create_tables
 from ..models import Team, Match, MatchShootingStat, Player, PlayerRating
 from ...services.data_processing.data_loader import generate_seasons, load_json_file
-from ...core.paths import backend_dir, data_dir, FIXTURES_TRAINING_DATA_DIR, SHOOTING_TEST_DATA_DIR
+from ...core.paths import (
+    backend_dir,
+    data_dir,
+    FIXTURES_TRAINING_DATA_DIR,
+    SHOOTING_TEST_DATA_DIR,
+)
 from ..queries import get_teams, get_shooting_stats, get_team_details
 from .shooting_stats import add_shooting_stats
 from .player_ratings import add_players, add_ratings
 from .fixtures import add_teams, add_matches
 from ..mappings.load_mappings import load_team_ids_mapping, load_team_name_mapping
+
 
 def parse_score(score):
     """Parse score (e.g., '2–1') into home_goals, away_goals, result."""
@@ -75,7 +81,9 @@ def import_fifa_ratings(start_year: int = 2014, end_year: int = 2021) -> None:
     all_dfs = []
     for year in range(start_year + 1, end_year + 2):
         try:
-            df = pd.read_csv(f"{data_dir}/player_ratings/epl_players_fifa{year%100:02d}.csv")
+            df = pd.read_csv(
+                f"{data_dir}/player_ratings/epl_players_fifa{year%100:02d}.csv"
+            )
             all_dfs.append(df)
         except FileNotFoundError:
             print(f"No player ratings for FIFA{year%100:02d}")
@@ -92,7 +100,9 @@ def import_fifa_ratings(start_year: int = 2014, end_year: int = 2021) -> None:
     # Add ratings
     for season, year in zip(seasons, range(start_year + 1, end_year + 2)):
         try:
-            df = pd.read_csv(f"{data_dir}/player_ratings/epl_players_fifa{year%100:02d}.csv")
+            df = pd.read_csv(
+                f"{data_dir}/player_ratings/epl_players_fifa{year%100:02d}.csv"
+            )
             add_ratings(df, season, player_map)
         except FileNotFoundError:
             print(f"No player ratings for FIFA{year%100:02d}")

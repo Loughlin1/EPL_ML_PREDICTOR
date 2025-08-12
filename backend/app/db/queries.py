@@ -2,11 +2,12 @@ from .models import Player, Team, PlayerRating, Match, MatchShootingStat
 from .database import get_session
 from typing import List, Dict, Any, Optional
 
+
 def get_seasons_fixtures(
     season: str = None,
     week: int = None,
     home_team_id: int = None,
-    away_team_id: int = None
+    away_team_id: int = None,
 ) -> List[Dict[str, Any]]:
     """
     Retrieve fixtures for a given season, week, home team, and/or away team.
@@ -52,6 +53,7 @@ def get_seasons_fixtures(
             for m in results
         ]
 
+
 def get_players(name: str = None) -> List[Dict[str, Any]]:
     """
     Retrieve players, optionally filtered by name.
@@ -66,12 +68,15 @@ def get_players(name: str = None) -> List[Dict[str, Any]]:
         query = session.query(Player)
         if name:
             query = query.filter(Player.name == name)
-        return [ 
+        return [
             {"player_id": p.player_id, "name": p.name, "initials": p.initials}
             for p in query.all()
         ]
 
-def get_players_ratings(season: str = None, player_id: int = None) -> List[Dict[str, Any]]:
+
+def get_players_ratings(
+    season: str = None, player_id: int = None
+) -> List[Dict[str, Any]]:
     """
     Retrieve player ratings, optionally filtered by season and/or player ID.
 
@@ -101,7 +106,10 @@ def get_players_ratings(season: str = None, player_id: int = None) -> List[Dict[
             for r in query.all()
         ]
 
-def get_shooting_stats(team_id: int = None, match_id: int = None) -> List[Dict[str, Any]]:
+
+def get_shooting_stats(
+    team_id: int = None, match_id: int = None
+) -> List[Dict[str, Any]]:
     """
     Retrieve shooting stats, optionally filtered by team ID and/or match ID.
 
@@ -147,10 +155,9 @@ def get_shooting_stats(team_id: int = None, match_id: int = None) -> List[Dict[s
             for s in query.all()
         ]
 
+
 def get_teams(
-    name: str = None,
-    team_id: int = None,
-    fbref_team_id: str = None
+    name: str = None, team_id: int = None, fbref_team_id: str = None
 ) -> List[Dict[str, Any]]:
     """
     Retrieve teams, optionally filtered by name, team ID, or fbref team ID.
@@ -181,6 +188,7 @@ def get_teams(
             for t in query.all()
         ]
 
+
 def get_teams_names() -> List[str]:
     """
     Retrieve a list of all team names.
@@ -189,6 +197,7 @@ def get_teams_names() -> List[str]:
         List[str]: List of team names.
     """
     return [team["name"] for team in get_teams()]
+
 
 def get_team_details(team_identifier: str = None, by: str = "name") -> Dict[str, Any]:
     """

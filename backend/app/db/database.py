@@ -8,7 +8,9 @@ from ..core.config import settings
 try:
     engine = create_engine(
         settings.DATABASE_URL,
-        connect_args={"check_same_thread": False}  # SQLite-specific: allows multi-threaded access
+        connect_args={
+            "check_same_thread": False
+        },  # SQLite-specific: allows multi-threaded access
     )
 except Exception as e:
     raise Exception(f"Failed to create database engine: {e}")
@@ -16,6 +18,7 @@ except Exception as e:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
 
 # Dependency for FastAPI or similar frameworks
 def get_db():
@@ -28,6 +31,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # Context manager for standalone scripts (e.g., scraping, ML)
 @contextmanager
@@ -45,6 +49,7 @@ def get_session():
         raise
     finally:
         session.close()
+
 
 def create_tables():
     """

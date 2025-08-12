@@ -19,18 +19,37 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
         return
 
     expected_columns = [
-        "Date", "Round", "Day", "Venue", "Result", "GF", "GA", "Opponent",
-        "Sh", "SoT", "SoT%", "G/Sh", "G/SoT", "Dist", "PK", "PKatt", "FK",
+        "Date",
+        "Round",
+        "Day",
+        "Venue",
+        "Result",
+        "GF",
+        "GA",
+        "Opponent",
+        "Sh",
+        "SoT",
+        "SoT%",
+        "G/Sh",
+        "G/SoT",
+        "Dist",
+        "PK",
+        "PKatt",
+        "FK",
     ]
     missing_columns = [col for col in expected_columns if col not in df.columns]
     if missing_columns:
-        print(f"Warning: Missing columns in DataFrame for {team_name} in {seasons}: {missing_columns}")
-    
-    df = df.dropna(subset=["Date"]) # Filter out rows with missing values
+        print(
+            f"Warning: Missing columns in DataFrame for {team_name} in {seasons}: {missing_columns}"
+        )
+
+    df = df.dropna(subset=["Date"])  # Filter out rows with missing values
 
     with get_session() as session:
         # Get team_id
-        team = session.execute(select(Team).filter_by(name=team_name)).scalar_one_or_none()
+        team = session.execute(
+            select(Team).filter_by(name=team_name)
+        ).scalar_one_or_none()
         if not team:
             print(f"Team {team_name} not found.")
             return
@@ -39,16 +58,18 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
 
         # Create a map of matches for lookup
         matches = session.execute(
-            select(Match.match_id, Match.date, Match.home_team_id, Match.away_team_id)
-            .filter(Match.season.in_(seasons))
+            select(
+                Match.match_id, Match.date, Match.home_team_id, Match.away_team_id
+            ).filter(Match.season.in_(seasons))
         ).all()
         match_map = {
-            (match.date, match.home_team_id): match.match_id
-            for match in matches
+            (match.date, match.home_team_id): match.match_id for match in matches
         }
 
         # Get opponent team IDs
-        opponent_map = {t.name: t.team_id for t in session.execute(select(Team)).scalars()}
+        opponent_map = {
+            t.name: t.team_id for t in session.execute(select(Team)).scalars()
+        }
 
         # Insert shooting stats
         for _, row in df.iterrows():
@@ -59,7 +80,9 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
                 opponent_team_id = opponent_map.get(opponent_name)
 
                 if not opponent_team_id:
-                    print(f"Opponent {opponent_name} not found for {team_name} on {date}.")
+                    print(
+                        f"Opponent {opponent_name} not found for {team_name} on {date}."
+                    )
                     continue
 
                 # Determine match_id
@@ -67,13 +90,16 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
                 match_id = match_map.get(match_key)
 
                 if match_id is None:
-                    print(f"No match found for ({'Home' if is_home else 'Away'}) {team_name} vs {opponent_name} on {date}.")
+                    print(
+                        f"No match found for ({'Home' if is_home else 'Away'}) {team_name} vs {opponent_name} on {date}."
+                    )
                     continue
 
                 # Check for existing record
                 existing_stat = session.execute(
-                    select(MatchShootingStat)
-                    .filter_by(match_id=match_id, team_id=team_id)
+                    select(MatchShootingStat).filter_by(
+                        match_id=match_id, team_id=team_id
+                    )
                 ).scalar_one_or_none()
 
                 if existing_stat:
@@ -108,6 +134,7 @@ def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> 
                 continue
 
         session.commit()
+
 
 if __name__ == "__main__":
     # Example usage

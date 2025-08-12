@@ -1,4 +1,3 @@
-
 import os
 import sys
 import re
@@ -19,24 +18,24 @@ from ....core.paths import LINEUPS_TRAINING_DATA_DIR, LINEUPS_TEST_DATA_DIR
 def retrieve_fixtures_table(season: str) -> list[str]:
     """
     Retrieve the URLs of match reports for a season
-    
+
     Args:
         season: str (e.g. "2024-2025")
     """
     url = f"{BASE_URL}/en/comps/9/{season}/schedule/{season}-Premier-League-Scores-and-Fixtures"
-    
+
     df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"}, extract_links="body")[0]
     match_report_column = "Match Report"
     for col in df.columns.difference([match_report_column]):
         df[col] = df[col].apply(lambda x: x[0])
     df[match_report_column] = df[match_report_column].apply(lambda x: x[1])
-    df.replace('', np.nan, inplace=True)
+    df.replace("", np.nan, inplace=True)
     df.dropna(thresh=5, inplace=True)
     return df
 
 
 def find_formation(text: str) -> str:
-    match = re.search(r'\((\d(?:-\d){2,4})\)', text)
+    match = re.search(r"\((\d(?:-\d){2,4})\)", text)
     return match.group(1) if match else None
 
 
@@ -63,7 +62,7 @@ def scrape_match_report(url: str):
 
 
 def scrape_lineups(df: pd.DataFrame) -> pd.DataFrame:
-    """"
+    """ "
     Fetches the lineups from the given DataFrame and returns a DataFrame with the lineups.
     """
     home_formations = []
@@ -109,7 +108,7 @@ def scrape_fixtures_and_lineups(seasons: list[str], data_dir: str):
     os.makedirs(data_dir, exist_ok=True)
     for season in seasons:
         df = retrieve_fixtures_table(season)
-        df = scrape_lineups(df)        
+        df = scrape_lineups(df)
         print(df.head())
         filepath = f"{data_dir}/{season[:4]}-{season[7:9]}.csv"
         df.to_csv(filepath)

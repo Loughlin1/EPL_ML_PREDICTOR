@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException
 from app.services.data_processing.data_loader import get_this_seasons_fixtures_data
 from app.services.web_scraping.fixtures.fixtures_scraper import scrape_fixtures
-from ...services.web_scraping.fixtures.shooting_stats_scraper import scrape_shooting_stats
+from ...services.web_scraping.fixtures.shooting_stats_scraper import (
+    scrape_shooting_stats,
+)
 from app.core.paths import TEAMS_IDS_2024_FILEPATH
 from ...db.queries import get_teams
 
@@ -10,6 +12,7 @@ import json
 router = APIRouter(
     tags=["Fixtures"],
 )
+
 
 @router.get("/fixtures")
 def get_fixtures(matchweek: int = Query(None), refresh: bool = False):

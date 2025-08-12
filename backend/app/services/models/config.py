@@ -1,4 +1,3 @@
-
 TRAINING_DATA_START_SEASON = 2014
 TRAINING_DATA_END_SEASON = 2023
 SHOOTING_STATS_COLS = ["gf", "ga", "sh", "sot", "pk", "pkatt"]
@@ -19,4 +18,4 @@ FEATURES = [
 ]
 FEATURES.extend(rolling_home_cols)
 FEATURES.extend(rolling_away_cols)
-LABELS =  ["FTHG", "FTAG"]
+LABELS = ["FTHG", "FTAG"]

@@ -27,7 +27,7 @@ def scrape_fixtures(season: str = None) -> None:
     """
     Function to scrape the fixtures data from the web and save it to a CSV file.
     Args:
-        season (str): The season for which fixtures are being scraped. 
+        season (str): The season for which fixtures are being scraped.
                       E.g. ("2024-2025") (defaults to current season)
     """
     if season is None:

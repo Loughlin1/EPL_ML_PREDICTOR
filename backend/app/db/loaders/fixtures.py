@@ -16,7 +16,9 @@ def parse_score(score):
         return None, None, None
 
 
-def add_teams(df: pd.DataFrame, team_full_name_mapping: dict, team_ids_mapping: dict) -> dict:
+def add_teams(
+    df: pd.DataFrame, team_full_name_mapping: dict, team_ids_mapping: dict
+) -> dict:
     """Add teams from DataFrame and JSON mappings to the teams table.
 
     Args:
@@ -66,10 +68,25 @@ def add_matches(df: pd.DataFrame, season: str, team_map: dict) -> dict:
     Returns:
         dict: Mapping of (date, home_team_id) to match_id.
     """
-    expected_columns = ["Date", "Wk", "Day", "Time", "Home", "Away", "Score", "Attendance", "Venue", "Referee", "Match Report", "Notes"]
+    expected_columns = [
+        "Date",
+        "Wk",
+        "Day",
+        "Time",
+        "Home",
+        "Away",
+        "Score",
+        "Attendance",
+        "Venue",
+        "Referee",
+        "Match Report",
+        "Notes",
+    ]
     missing_columns = [col for col in expected_columns if col not in df.columns]
     if missing_columns:
-        print(f"Warning: Missing columns in DataFrame for season {season}: {missing_columns}")
+        print(
+            f"Warning: Missing columns in DataFrame for season {season}: {missing_columns}"
+        )
 
     match_map = {}
     with get_session() as session:
@@ -82,13 +99,22 @@ def add_matches(df: pd.DataFrame, season: str, team_map: dict) -> dict:
                 home_team_id = team_map.get(row.get("Home"))
                 away_team_id = team_map.get(row.get("Away"))
                 if not (home_team_id and away_team_id):
-                    print(f"Skipping row for {row.get('Home', 'unknown')} vs {row.get('Away', 'unknown')} on {date}: Team not found.")
+                    print(
+                        f"Skipping row for {row.get('Home', 'unknown')} vs {row.get('Away', 'unknown')} on {date}: Team not found."
+                    )
                     continue
 
                 # Check for existing match
-                existing_match = session.query(Match).filter_by(
-                    season=season, date=date, home_team_id=home_team_id, away_team_id=away_team_id
-                ).first()
+                existing_match = (
+                    session.query(Match)
+                    .filter_by(
+                        season=season,
+                        date=date,
+                        home_team_id=home_team_id,
+                        away_team_id=away_team_id,
+                    )
+                    .first()
+                )
                 if existing_match:
                     match_map[(date, home_team_id)] = existing_match.match_id
                     continue
@@ -99,24 +125,29 @@ def add_matches(df: pd.DataFrame, season: str, team_map: dict) -> dict:
                     week=row.get("Wk"),
                     day=row.get("Day"),
                     date=date,
-                    time=datetime.strptime(row["Time"], "%H:%M").time() if pd.notna(row.get("Time")) else None,
+                    time=datetime.strptime(row["Time"], "%H:%M").time()
+                    if pd.notna(row.get("Time"))
+                    else None,
                     home_team_id=home_team_id,
                     away_team_id=away_team_id,
                     home_goals=home_goals,
                     away_goals=away_goals,
                     result=result,
-                    attendance=int(row.get("Attendance")) if pd.notna(row.get("Attendance")) else None,
+                    attendance=int(row.get("Attendance"))
+                    if pd.notna(row.get("Attendance"))
+                    else None,
                     venue=row.get("Venue"),
                     referee=row.get("Referee"),
                     match_report=row.get("Match Report"),
-                    notes=row.get("Notes")
+                    notes=row.get("Notes"),
                 )
                 session.add(match)
                 session.flush()
                 match_map[(date, home_team_id)] = match.match_id
             except Exception as e:
-                print(f"Error processing row for {season} on {row.get('Date', 'unknown')}: {e}")
+                print(
+                    f"Error processing row for {season} on {row.get('Date', 'unknown')}: {e}"
+                )
                 continue
         session.commit()
     return match_map
-

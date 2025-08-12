@@ -7,13 +7,10 @@ client = TestClient(app)
 
 
 def test_calculate_superbru_points():
-    
     fixtures = client.get("/api/fixtures").json()
-    data = client.post("/api/predict", json= {"data": fixtures}).json()
+    data = client.post("/api/predict", json={"data": fixtures}).json()
 
-    payload = {
-        "data": data
-    }
+    payload = {"data": data}
     response = client.post("/api/superbru/points", json=payload)
     assert response.status_code == 200
     resj = response.json()
@@ -28,6 +25,6 @@ def test_retrieve_superbru_leaderboard_points():
     resj = response.json()
     assert isinstance(resj, dict)
     assert "global_top" in resj
-    assert isinstance(resj["global_top"], Union[int,float])
+    assert isinstance(resj["global_top"], Union[int, float])
     assert "global_top_250" in resj
     assert isinstance(resj["global_top_250"], Union[int, float])

@@ -1,9 +1,11 @@
 from typing import List, Dict, Any
 from pydantic import BaseModel
 
+
 class PredictRequest(BaseModel):
     home_team: str
     away_team: str
+
 
 class PredictResponse(BaseModel):
     home_win: float

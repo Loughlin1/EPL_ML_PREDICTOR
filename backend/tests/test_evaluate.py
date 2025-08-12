@@ -7,9 +7,7 @@ client = TestClient(app)
 
 def test_post_evaluate_matches():
     fixtures = client.get("/api/fixtures").json()
-    predictions = client.post(
-        "/api/predict", json={"data": fixtures}
-    ).json()
+    predictions = client.post("/api/predict", json={"data": fixtures}).json()
     response = client.post("/api/evaluate", json={"data": predictions})
     assert response.status_code == 200
     evaluation = response.json()

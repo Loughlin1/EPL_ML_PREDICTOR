@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import predict, train, evaluate, fixtures, matchweek, superbru, content
+from app.api.endpoints import (
+    predict,
+    train,
+    evaluate,
+    fixtures,
+    matchweek,
+    superbru,
+    content,
+)
 
 from .core.config import settings
 
@@ -20,9 +28,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/api/status")
 def healthcheck():
     return {"status": "ok"}
+
 
 # Routers
 ## Model
@@ -39,4 +49,3 @@ app.include_router(superbru.router, prefix=settings.API_PREFIX)
 
 # Content
 app.include_router(content.router, prefix=settings.API_PREFIX)
-

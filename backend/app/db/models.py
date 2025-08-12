@@ -9,6 +9,7 @@ class Player(Base):
     """
     Represents a unique football player.
     """
+
     __tablename__ = "players"
     player_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
@@ -24,6 +25,7 @@ class Team(Base):
     """
     Represents a Premier League team.
     """
+
     __tablename__ = "teams"
     team_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
@@ -31,8 +33,12 @@ class Team(Base):
     fbref_team_id = Column(String, unique=True, nullable=False)
 
     # Relationships for easy access to matches
-    home_matches = relationship("Match", back_populates="home_team", foreign_keys="Match.home_team_id")
-    away_matches = relationship("Match", back_populates="away_team", foreign_keys="Match.away_team_id")
+    home_matches = relationship(
+        "Match", back_populates="home_team", foreign_keys="Match.home_team_id"
+    )
+    away_matches = relationship(
+        "Match", back_populates="away_team", foreign_keys="Match.away_team_id"
+    )
     lineups = relationship("Lineup", back_populates="team")
     shooting_stats = relationship("MatchShootingStat", back_populates="team")
 
@@ -44,6 +50,7 @@ class PlayerRating(Base):
     """
     Represents FIFA ratings for a player in a specific season.
     """
+
     __tablename__ = "player_ratings"
     rating_id = Column(Integer, primary_key=True)
     player_id = Column(Integer, ForeignKey("players.player_id"), nullable=False)
@@ -74,6 +81,7 @@ class Match(Base):
     """
     Represents a Premier League match.
     """
+
     __tablename__ = "matches"
     match_id = Column(Integer, primary_key=True)
     season = Column(String, nullable=False)  # e.g., "2024-2025"
@@ -92,8 +100,12 @@ class Match(Base):
     match_report = Column(String, nullable=True)  # URL or identifier
     notes = Column(String, nullable=True)  # e.g., postponed matches
 
-    home_team = relationship("Team", back_populates="home_matches", foreign_keys=[home_team_id])
-    away_team = relationship("Team", back_populates="away_matches", foreign_keys=[away_team_id])
+    home_team = relationship(
+        "Team", back_populates="home_matches", foreign_keys=[home_team_id]
+    )
+    away_team = relationship(
+        "Team", back_populates="away_matches", foreign_keys=[away_team_id]
+    )
     lineups = relationship("Lineup", back_populates="match")
     shooting_stats = relationship("MatchShootingStat", back_populates="match")
 
@@ -105,6 +117,7 @@ class MatchShootingStat(Base):
     """
     Represents shooting statistics for a team in a specific match.
     """
+
     __tablename__ = "match_shooting_stats"
     stat_id = Column(Integer, primary_key=True)
     match_id = Column(Integer, ForeignKey("matches.match_id"), nullable=False)
@@ -134,6 +147,7 @@ class Lineup(Base):
     """
     Represents a player's participation in a match lineup.
     """
+
     __tablename__ = "lineups"
     lineup_id = Column(Integer, primary_key=True)
     match_id = Column(Integer, ForeignKey("matches.match_id"), nullable=False)
@@ -146,4 +160,3 @@ class Lineup(Base):
 
     def __repr__(self):
         return f"<Lineup(match_id='{self.match_id}', player='{self.player.name}', team='{self.team.name}')>"
-

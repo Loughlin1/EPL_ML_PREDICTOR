@@ -63,7 +63,7 @@ def add_players(df: pd.DataFrame) -> dict:
             if existing_player:
                 player_map[player_name] = existing_player.player_id
                 continue
-            player = Player(name=player_name,initials=generate_initials(player_name))
+            player = Player(name=player_name, initials=generate_initials(player_name))
             session.add(player)
             session.flush()
             player_map[player_name] = player.player_id
@@ -104,15 +104,31 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
 
     # Rename columns
     df = df.rename(columns={k: v for k, v in column_mapping.items() if v is not None})
-    df.dropna(thresh=6, inplace=True) # Remove empty rows
+    df.dropna(thresh=6, inplace=True)  # Remove empty rows
 
     expected_columns = [
-        "Name", "RAT", "POS", "VER", "PS", "SKI", "WF", "WR", "PAC",
-        "SHO", "PAS", "DRI", "DEF", "PHY", "BS", "IGS"
+        "Name",
+        "RAT",
+        "POS",
+        "VER",
+        "PS",
+        "SKI",
+        "WF",
+        "WR",
+        "PAC",
+        "SHO",
+        "PAS",
+        "DRI",
+        "DEF",
+        "PHY",
+        "BS",
+        "IGS",
     ]
     missing_columns = [col for col in expected_columns if col not in df.columns]
     if missing_columns:
-        print(f"Warning: Missing columns in DataFrame for season {season}: {missing_columns}")
+        print(
+            f"Warning: Missing columns in DataFrame for season {season}: {missing_columns}"
+        )
 
     with get_session() as session:
         for _, row in df.iterrows():
@@ -123,9 +139,11 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
             if not player_id:
                 print(f"Player {row.get('Name')} not found.")
                 continue
-            existing_rating = session.query(PlayerRating).filter_by(
-                player_id=player_id, season=season
-            ).first()
+            existing_rating = (
+                session.query(PlayerRating)
+                .filter_by(player_id=player_id, season=season)
+                .first()
+            )
             if existing_rating:
                 # print(f"Rating exists for {row.get('Name')} in {season}.")
                 continue
@@ -147,7 +165,7 @@ def add_ratings(df: pd.DataFrame, season: str, player_map: dict) -> None:
                     defense=row.get("DEF"),
                     physical=row.get("PHY"),
                     basestats=row.get("BS"),
-                    ingamestats=row.get("IGS")
+                    ingamestats=row.get("IGS"),
                 )
                 session.add(rating)
             except Exception as e:

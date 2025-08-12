@@ -8,11 +8,9 @@ import logging
 import traceback
 
 from app.schemas import MatchInput
-from app.services.models.evaluation import (
-    evaluate_model,
-    evaluate_model_performance
-)
+from app.services.models.evaluation import evaluate_model, evaluate_model_performance
 from app.services.models.config import LABELS
+
 router = APIRouter(
     tags=["Model"],
 )
@@ -24,7 +22,9 @@ def evaluate_matches(request: MatchInput):
     try:
         df_input = pd.DataFrame(request.data)
         y_true = df_input[LABELS]
-        y_pred = df_input[["PredFTHG", "PredFTAG"]].rename(columns={"PredFTHG": "FTHG", "PredFTAG": "FTAG"})
+        y_pred = df_input[["PredFTHG", "PredFTAG"]].rename(
+            columns={"PredFTHG": "FTHG", "PredFTAG": "FTAG"}
+        )
         return evaluate_model_performance(y_true, y_pred)
 
     except Exception as e:
@@ -42,4 +42,3 @@ def evaluate_model_validation():
         error = traceback.format_exc()
         logger.error(f"Evaluation failed: {str(error)}")
         raise HTTPException(status_code=500, detail=str(e))
-    

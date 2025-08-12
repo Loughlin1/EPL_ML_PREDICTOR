@@ -5,7 +5,13 @@ from ..models import Team
 from ..mappings.load_mappings import load_team_name_mapping, load_team_ids_mapping
 from ...core.paths import data_dir
 
-def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = None, df: pd.DataFrame = None) -> None:
+
+def upsert_team(
+    name: str = None,
+    fullname: str = None,
+    fbref_team_id: str = None,
+    df: pd.DataFrame = None,
+) -> None:
     """
     Upsert a team or teams into the teams table. Creates new teams if they don't exist,
     updates existing teams with new fullname or fbref_team_id if provided.
@@ -42,7 +48,10 @@ def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = Non
                     # Normalize team name
                     team_name = team_name_mapping.get(team_name, team_name)
                     row_fullname = row.get("Fullname", team_name)
-                    row_fbref_id = row.get("FBrefTeamID", team_ids_mapping.get(row_fullname.replace(" ", "-")))
+                    row_fbref_id = row.get(
+                        "FBrefTeamID",
+                        team_ids_mapping.get(row_fullname.replace(" ", "-")),
+                    )
 
                     # Upsert team
                     team = session.execute(
@@ -51,15 +60,25 @@ def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = Non
 
                     if team:
                         # Update existing team
-                        team.fullname = row_fullname if pd.notna(row_fullname) else team.fullname
-                        team.fbref_team_id = row_fbref_id if pd.notna(row_fbref_id) else team.fbref_team_id
+                        team.fullname = (
+                            row_fullname if pd.notna(row_fullname) else team.fullname
+                        )
+                        team.fbref_team_id = (
+                            row_fbref_id
+                            if pd.notna(row_fbref_id)
+                            else team.fbref_team_id
+                        )
                         print(f"Updated team '{team_name}' (team_id={team.team_id}).")
                     else:
                         # Create new team
                         team = Team(
                             name=team_name,
-                            fullname=row_fullname if pd.notna(row_fullname) else team_name,
-                            fbref_team_id=row_fbref_id if pd.notna(row_fbref_id) else None
+                            fullname=row_fullname
+                            if pd.notna(row_fullname)
+                            else team_name,
+                            fbref_team_id=row_fbref_id
+                            if pd.notna(row_fbref_id)
+                            else None,
                         )
                         session.add(team)
                         print(f"Created new team '{team_name}'.")
@@ -72,7 +91,9 @@ def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = Non
             # Single team mode
             team_name = team_name_mapping.get(name, name)
             default_fullname = fullname or team_name
-            default_fbref_id = fbref_team_id or team_ids_mapping.get(default_fullname.replace(" ", "-"))
+            default_fbref_id = fbref_team_id or team_ids_mapping.get(
+                default_fullname.replace(" ", "-")
+            )
 
             team = session.execute(
                 select(Team).filter_by(name=team_name)
@@ -81,14 +102,16 @@ def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = Non
             if team:
                 # Update existing team
                 team.fullname = fullname if fullname else team.fullname
-                team.fbref_team_id = fbref_team_id if fbref_team_id else team.fbref_team_id
+                team.fbref_team_id = (
+                    fbref_team_id if fbref_team_id else team.fbref_team_id
+                )
                 print(f"Updated team '{team_name}' (team_id={team.team_id}).")
             else:
                 # Create new team
                 team = Team(
                     name=team_name,
                     fullname=fullname if fullname else team_name,
-                    fbref_team_id=fbref_team_id if fbref_team_id else default_fbref_id
+                    fbref_team_id=fbref_team_id if fbref_team_id else default_fbref_id,
                 )
                 session.add(team)
                 print(f"Created new team '{team_name}'.")
@@ -98,6 +121,7 @@ def upsert_team(name: str = None, fullname: str = None, fbref_team_id: str = Non
             return
 
         session.commit()
+
 
 if __name__ == "__main__":
     # Example usage: Single team

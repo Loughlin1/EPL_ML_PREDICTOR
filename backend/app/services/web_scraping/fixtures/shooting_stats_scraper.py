@@ -82,6 +82,7 @@ def scrape_shooting_stats(seasons: list[str]) -> None:
         counter += 1
     print("Scraping completed")
 
+
 if __name__ == "__main__":
     seasons = generate_seasons(2024, 2024)
     print(seasons)

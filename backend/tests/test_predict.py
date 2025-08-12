@@ -8,9 +8,7 @@ client = TestClient(app)
 
 def test_predict_endpoint():
     data = client.get("/api/fixtures").json()
-    payload = {
-        "data": data
-    }
+    payload = {"data": data}
     response = client.post("/api/predict", json=payload)
     assert response.status_code == 200
     result = response.json()

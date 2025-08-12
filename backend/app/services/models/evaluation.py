@@ -36,15 +36,17 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
     rmse_total = (rmse_home + rmse_away) / 2
 
     # Exact Match Ratio (how often both FTHG and FTAG are predicted exactly)
-    exact_matches = int(np.sum(
-        (y_true["FTHG"] == y_pred["FTHG"]) & (y_true["FTAG"] == y_pred["FTAG"])
-    ))
+    exact_matches = int(
+        np.sum((y_true["FTHG"] == y_pred["FTHG"]) & (y_true["FTAG"] == y_pred["FTAG"]))
+    )
     exact_match_percentage = 100 * exact_matches / len(y_true)
 
     # Goal Difference Prediction Accuracy
     goal_diff_true = y_true["FTHG"] - y_true["FTAG"]
     goal_diff_pred = y_pred["FTHG"] - y_pred["FTAG"]
-    goal_diff_accuracy = float(np.mean(np.sign(goal_diff_true) == np.sign(goal_diff_pred)))
+    goal_diff_accuracy = float(
+        np.mean(np.sign(goal_diff_true) == np.sign(goal_diff_pred))
+    )
 
     true_result = np.select(
         [y_true["FTHG"] > y_true["FTAG"], y_true["FTHG"] < y_true["FTAG"]],
@@ -59,19 +61,19 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
     correct_results = int(np.sum(pred_result == true_result))
     correct_results_percentage = 100 * correct_results / pred_result.shape[0]
     return {
-        "MAE_Home": np.round(mae_home,3),
-        "MAE_Away": np.round(mae_away,3),
-        "MAE_Total": np.round(mae_total,3),
-        "RMSE_Home": np.round(rmse_home,3),
-        "RMSE_Away": np.round(rmse_away,3),
-        "RMSE_Total": np.round(rmse_total,3),
-        "R2_Home": np.round(r2_home,3),
-        "R2_Away": np.round(r2_away,3),
+        "MAE_Home": np.round(mae_home, 3),
+        "MAE_Away": np.round(mae_away, 3),
+        "MAE_Total": np.round(mae_total, 3),
+        "RMSE_Home": np.round(rmse_home, 3),
+        "RMSE_Away": np.round(rmse_away, 3),
+        "RMSE_Total": np.round(rmse_total, 3),
+        "R2_Home": np.round(r2_home, 3),
+        "R2_Away": np.round(r2_away, 3),
         "Correct_Results": correct_results,
-        "Correct_Result_%": np.round(correct_results_percentage,3),
+        "Correct_Result_%": np.round(correct_results_percentage, 3),
         "Correct_Scores": exact_matches,
-        "Correct_Scores_%": np.round(exact_match_percentage,3),
-        "Goal_Difference_Accuracy": np.round(goal_diff_accuracy,3),
+        "Correct_Scores_%": np.round(exact_match_percentage, 3),
+        "Goal_Difference_Accuracy": np.round(goal_diff_accuracy, 3),
     }
 
 
@@ -80,7 +82,9 @@ def evaluate_model():
     df = load_training_data()
     df = clean_data(df)
     X, y = preprocess_data(df)
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     y_pred = model.predict(X_val)
     y_pred = pd.DataFrame(y_pred, columns=LABELS)

@@ -50,6 +50,7 @@ from ..models.save_load import save_model
 from ..models.config import FEATURES, LABELS, rolling_home_cols
 
 from ...db.queries import get_teams_names
+
 # with open(TEAMS_TRAINING_FILEPATH, "r") as f:
 #     teams = json.load(f) # Doesn't contain Ipswich Town
 
@@ -79,11 +80,11 @@ def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = add_ppg_features(df, teams)
 
     # Cleaning up Rolling Home Columns
-    df.loc[df.isna().any(axis=1), rolling_home_cols] = (
-        0  # Luton Town had their third game in Week 4 of 2023-24 season
-    )
+    df.loc[
+        df.isna().any(axis=1), rolling_home_cols
+    ] = 0  # Luton Town had their third game in Week 4 of 2023-24 season
 
-    # Define features and labels    
+    # Define features and labels
     features = FEATURES
     labels = LABELS
 
@@ -104,7 +105,9 @@ def train_pipeline():
     df = load_training_data()
     df = clean_data(df)
     X, y = preprocess_data(df)
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     # Train model
     model = RandomForestRegressor(n_estimators=100, random_state=42)

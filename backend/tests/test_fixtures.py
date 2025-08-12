@@ -4,6 +4,7 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def test_get_fixtures():
     response = client.get("/api/fixtures")
     assert response.status_code == 200

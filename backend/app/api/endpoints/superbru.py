@@ -17,7 +17,8 @@ router = APIRouter(
 )
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = timedelta(days=90) #timedelta(hours=1)
+CACHE_TTL = timedelta(days=90)  # timedelta(hours=1)
+
 
 @router.post("/points")
 def calculate_superbru_points(request: MatchInput):
@@ -46,7 +47,7 @@ def get_leaderboard_points():
             if datetime.now() - ts < CACHE_TTL:
                 return {
                     "global_top": cache["global_top"],
-                    "global_top_250": cache["global_top_250"]
+                    "global_top_250": cache["global_top_250"],
                 }
     # Run scraper if cache is missing/expired
     global_top, global_top_250 = get_top_points()
@@ -54,12 +55,12 @@ def get_leaderboard_points():
     os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
 
     with open(CACHE_PATH, "w") as f:
-        json.dump({
-            "timestamp": datetime.now().isoformat(),
-            "global_top": global_top,
-            "global_top_250": global_top_250
-        }, f)
-    return {
-        "global_top": global_top,
-        "global_top_250": global_top_250
-    }
+        json.dump(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "global_top": global_top,
+                "global_top_250": global_top_250,
+            },
+            f,
+        )
+    return {"global_top": global_top, "global_top_250": global_top_250}
