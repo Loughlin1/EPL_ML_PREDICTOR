@@ -12,6 +12,7 @@ class Player(Base):
     __tablename__ = "players"
     player_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
+    initials = Column(String, unique=True, nullable=False)
 
     ratings = relationship("PlayerRating", back_populates="player")
 

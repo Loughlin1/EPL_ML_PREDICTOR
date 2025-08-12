@@ -28,7 +28,7 @@ def get_players() -> pd.DataFrame:
         pd.DataFrame: Player data with player_id and name.
     """
     query = """
-    SELECT player_id, name
+    SELECT *
     FROM players
     """
     return pd.read_sql(query, engine)

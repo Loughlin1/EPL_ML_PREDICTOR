@@ -10,10 +10,9 @@ import time
 import random
 import os
 import io
-import re
 
 from ....core.paths import PLAYER_RATINGS_DATA_DIR
-from ....db.loaders.player_ratings import add_players, add_ratings
+from ....db.loaders.player_ratings import clean_player_name, add_players, add_ratings
 
 
 def fifa_version_to_season(version: int) -> str:
@@ -24,41 +23,6 @@ def fifa_version_to_season(version: int) -> str:
        str: The corresponding season. E.g. ("2023-2024")
     """
     return f"20{version-1}-20{version}"
-
-
-def clean_player_name(name: str) -> str:
-    """
-    Clean player name by removing numeric prefix and optional suffix.
-
-    Args:
-        name: Raw player name (e.g., "56 Leon Chiwome Normal").
-
-    Returns:
-        Cleaned name (e.g., "Leon Chiwome") or original if no match.
-    """
-    # Match: number, space, name, optional (space, word)
-    match = re.match(r"^\d+\s+(.+?)(?:\s+\w+)?$", name)
-    return match.group(1).strip() if match else name.strip()
-
-
-def generate_initials(name: str) -> str:
-    """
-    Generate initials from a player name.
-
-    Args:
-        name: Player name (e.g., "Harry Kane", "Leon Chiwome").
-
-    Returns:
-        Initials (e.g., "H. Kane", "L. Chiwome").
-    """
-    if not name or not isinstance(name, str):
-        return None
-    parts = name.strip().split()
-    if not parts:
-        return None
-    if len(parts) == 1:
-        return parts[0]
-    return f"{parts[0][0]}. {parts[-1]}"
 
 
 def locate_correct_table(tables: list[pd.DataFrame]) -> pd.DataFrame:

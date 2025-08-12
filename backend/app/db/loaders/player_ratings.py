@@ -1,6 +1,44 @@
 import pandas as pd
-from ..database import get_session
+import re
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from ..database import get_session, SessionLocal
 from ..models import Player, PlayerRating
+
+
+def clean_player_name(name: str) -> str:
+    """
+    Clean player name by removing numeric prefix and optional suffix.
+
+    Args:
+        name: Raw player name (e.g., "56 Leon Chiwome Normal").
+
+    Returns:
+        Cleaned name (e.g., "Leon Chiwome") or original if no match.
+    """
+    # Match: number, space, name, optional (space, word)
+    match = re.match(r"^\d+\s+(.+?)(?:\s+\w+)?$", name)
+    return match.group(1).strip() if match else name.strip()
+
+
+def generate_initials(name: str) -> str:
+    """
+    Generate initials from a player name.
+
+    Args:
+        name: Player name (e.g., "Harry Kane", "Leon Chiwome").
+
+    Returns:
+        Initials (e.g., "H. Kane", "L. Chiwome").
+    """
+    if not name or not isinstance(name, str):
+        return None
+    parts = name.strip().split()
+    if not parts:
+        return None
+    if len(parts) == 1:
+        return parts[0]
+    return f"{parts[0][0]}. {parts[-1]}"
 
 
 def add_players(df: pd.DataFrame) -> dict:
@@ -25,7 +63,7 @@ def add_players(df: pd.DataFrame) -> dict:
             if existing_player:
                 player_map[player_name] = existing_player.player_id
                 continue
-            player = Player(name=player_name)
+            player = Player(name=player_name,initials=generate_initials(player_name))
             session.add(player)
             session.flush()
             player_map[player_name] = player.player_id
