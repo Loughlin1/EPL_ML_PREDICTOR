@@ -77,7 +77,7 @@ class Match(Base):
     __tablename__ = "matches"
     match_id = Column(Integer, primary_key=True)
     season = Column(String, nullable=False)  # e.g., "2024-2025"
-    week = Column(Integer, nullable=True)  # Wk (match week)
+    week = Column(Integer, nullable=True)  # week (match week)
     day = Column(String, nullable=True)  # e.g., "Sat"
     date = Column(Date, nullable=False)  # Match date
     time = Column(Time, nullable=True)  # e.g., "15:00"

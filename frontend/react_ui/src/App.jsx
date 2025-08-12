@@ -58,7 +58,7 @@ function App() {
     fetchData();
   }, []);
 
-  const filtered = predictions.filter((p) => p.Wk === matchweek);
+  const filtered = predictions.filter((p) => p.week === matchweek);
 
   const updateWeekPoints = async (weekData) => {
     try {
@@ -73,7 +73,7 @@ function App() {
 
   useEffect(() => {
     if (predictions.length > 0) {
-      const weekData = predictions.filter((p) => p.Wk === matchweek);
+      const weekData = predictions.filter((p) => p.week === matchweek);
       updateWeekPoints(weekData);
     }
   }, [matchweek, predictions]);

@@ -22,7 +22,7 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     fixtures = get_this_seasons_fixtures_data()
 
     if matchweek is not None:
-        fixtures = fixtures[fixtures["Matchweek"] == matchweek]
+        fixtures = fixtures[fixtures["week"] == matchweek]
 
     # Handle NaN, inf, -inf for JSON serialization
     fixtures = fixtures.replace([float("inf"), float("-inf")], None)

@@ -1,73 +1,266 @@
-import pandas as pd
-from .database import engine
+from .models import Player, Team, PlayerRating, Match, MatchShootingStat
+from .database import get_session
+from typing import List, Dict, Any, Optional
 
-def flexible_query(table: str, filters: dict = None, columns: list = None) -> pd.DataFrame:
+def get_seasons_fixtures(
+    season: str = None,
+    week: int = None,
+    home_team_id: int = None,
+    away_team_id: int = None
+) -> List[Dict[str, Any]]:
     """
-    General-purpose query builder for filtering any table.
+    Retrieve fixtures for a given season, week, home team, and/or away team.
 
     Args:
-        table: Table name.
-        filters: Dict of column-value pairs to filter by.
-        columns: List of columns to select (default: all).
+        season (str, optional): The season to filter by.
+        week (int, optional): The week to filter by.
+        home_team_id (int, optional): The home team ID to filter by.
+        away_team_id (int, optional): The away team ID to filter by.
 
     Returns:
-        pd.DataFrame: Query results.
+        List[Dict[str, Any]]: List of fixture dictionaries with team names.
     """
-    select_cols = ", ".join(columns) if columns else "*"
-    query = f"SELECT {select_cols} FROM {table}"
-    params = {}
-    if filters:
-        where_clauses = []
-        for col, val in filters.items():
-            where_clauses.append(f"{col} = :{col}")
-            params[col] = val
-        query += " WHERE " + " AND ".join(where_clauses)
-    return pd.read_sql(query, engine, params=params)
+    with get_session() as session:
+        query = session.query(Match)
+        if season:
+            query = query.filter(Match.season == season)
+        if week:
+            query = query.filter(Match.week == week)
+        if home_team_id:
+            query = query.filter(Match.home_team_id == home_team_id)
+        if away_team_id:
+            query = query.filter(Match.away_team_id == away_team_id)
+        results = query.all()
+        # Return as list of dicts with team names
+        return [
+            {
+                "season": m.season,
+                "week": m.week,
+                "day": m.day,
+                "date": m.date,
+                "time": m.time,
+                "home_team": m.home_team.name if m.home_team else None,
+                "away_team": m.away_team.name if m.away_team else None,
+                "FTHG": m.home_goals,
+                "FTAG": m.away_goals,
+                "Score": f"{m.home_goals}-{m.away_goals}",
+                "Result": m.result,
+                "attendance": m.attendance,
+                "venue": m.venue,
+                "referee": m.referee,
+            }
+            for m in results
+        ]
 
-def get_seasons_fixtures(season: str = None, week: int = None, home_team_id: int = None, away_team_id: int = None) -> pd.DataFrame:
-    filters = {}
-    if season: filters["season"] = season
-    if week: filters["week"] = week
-    if home_team_id: filters["home_team_id"] = home_team_id
-    if away_team_id: filters["away_team_id"] = away_team_id
-    columns = ["season", "week", "day", "date", "time", "home_team_id", "away_team_id", "home_goals", "away_goals", "result", "attendance", "venue", "referee"]
-    return flexible_query("matches", filters, columns)
+def get_players(name: str = None) -> List[Dict[str, Any]]:
+    """
+    Retrieve players, optionally filtered by name.
 
-def get_players(name: str = None) -> pd.DataFrame:
-    filters = {}
-    if name: filters["name"] = name
-    return flexible_query("players", filters)
+    Args:
+        name (str, optional): The name of the player to filter by.
 
-def get_players_ratings(season: str = None, player_id: int = None) -> pd.DataFrame:
-    filters = {}
-    if season: filters["season"] = season
-    if player_id: filters["player_id"] = player_id
-    return flexible_query("player_ratings", filters)
+    Returns:
+        List[Dict[str, Any]]: List of player dictionaries.
+    """
+    with get_session() as session:
+        query = session.query(Player)
+        if name:
+            query = query.filter(Player.name == name)
+        return [ 
+            {"player_id": p.player_id, "name": p.name, "initials": p.initials}
+            for p in query.all()
+        ]
 
-def get_shooting_stats(team_id: str = None, match_id: int = None) -> pd.DataFrame:
-    filters = {}
-    if team_id: filters["team_id"] = team_id
-    if match_id: filters["match_id"] = match_id
-    columns = ["match_id", "team_id"]
-    return flexible_query("match_shooting_stats", filters, columns)
+def get_players_ratings(season: str = None, player_id: int = None) -> List[Dict[str, Any]]:
+    """
+    Retrieve player ratings, optionally filtered by season and/or player ID.
 
-def get_teams(name: str = None, team_id: int = None, fbref_team_id: str = None) -> list[dict]:
-    filters = {}
-    if name: filters["name"] = name
-    if team_id: filters["team_id"] = team_id
-    if fbref_team_id: filters["fbref_team_id"] = fbref_team_id
-    columns = ["team_id", "name", "fullname", "fbref_team_id"]
-    df = flexible_query("teams", filters, columns)
-    return df.to_dict(orient="records") if not df.empty else []
+    Args:
+        season (str, optional): The season to filter by.
+        player_id (int, optional): The player ID to filter by.
 
-def get_team_details(team_identifier: str = None, by: str = "name") -> dict:
+    Returns:
+        List[Dict[str, Any]]: List of player rating dictionaries.
+    """
+    with get_session() as session:
+        query = session.query(PlayerRating)
+        if season:
+            query = query.filter(PlayerRating.season == season)
+        if player_id:
+            query = query.filter(PlayerRating.player_id == player_id)
+        return [
+            {
+                "rating_id": r.rating_id,
+                "player_id": r.player_id,
+                "player_name": r.player.name if r.player else None,
+                "season": r.season,
+                "rating": r.rating,
+                "position": r.position,
+                # Add other fields as needed
+            }
+            for r in query.all()
+        ]
+
+def get_shooting_stats(team_id: int = None, match_id: int = None) -> List[Dict[str, Any]]:
+    """
+    Retrieve shooting stats, optionally filtered by team ID and/or match ID.
+
+    Args:
+        team_id (int, optional): The team ID to filter by.
+        match_id (int, optional): The match ID to filter by.
+
+    Returns:
+        List[Dict[str, Any]]: List of shooting stat dictionaries.
+    """
+    with get_session() as session:
+        query = session.query(MatchShootingStat)
+        if team_id:
+            query = query.filter(MatchShootingStat.team_id == team_id)
+        if match_id:
+            query = query.filter(MatchShootingStat.match_id == match_id)
+        return [
+            {
+                "stat_id": s.stat_id,
+                "match_id": s.match_id,
+                "team_id": s.team_id,
+                "team_name": s.team.name if s.team else None,
+                "round": s.round,
+                "day": s.day,
+                "date": s.match.date,
+                "week": s.match.week,
+                "time": s.match.time if s.match else None,
+                "venue": s.venue,
+                "result": s.result,
+                "gf": s.gf,
+                "ga": s.ga,
+                "opponent": s.opponent,
+                "sh": s.sh,
+                "sot": s.sot,
+                "sot_percent": s.sot_percent,
+                "g_per_sh": s.g_per_sh,
+                "g_per_sot": s.g_per_sot,
+                "dist": s.dist,
+                "pk": s.pk,
+                "pkatt": s.pkatt,
+                "fk": s.fk,
+            }
+            for s in query.all()
+        ]
+
+def get_teams(
+    name: str = None,
+    team_id: int = None,
+    fbref_team_id: str = None
+) -> List[Dict[str, Any]]:
+    """
+    Retrieve teams, optionally filtered by name, team ID, or fbref team ID.
+
+    Args:
+        name (str, optional): The name of the team to filter by.
+        team_id (int, optional): The team ID to filter by.
+        fbref_team_id (str, optional): The fbref team ID to filter by.
+
+    Returns:
+        List[Dict[str, Any]]: List of team dictionaries.
+    """
+    with get_session() as session:
+        query = session.query(Team)
+        if name:
+            query = query.filter(Team.name == name)
+        if team_id:
+            query = query.filter(Team.team_id == team_id)
+        if fbref_team_id:
+            query = query.filter(Team.fbref_team_id == fbref_team_id)
+        return [
+            {
+                "team_id": t.team_id,
+                "name": t.name,
+                "fullname": t.fullname,
+                "fbref_team_id": t.fbref_team_id,
+            }
+            for t in query.all()
+        ]
+
+def get_teams_names() -> List[str]:
+    """
+    Retrieve a list of all team names.
+
+    Returns:
+        List[str]: List of team names.
+    """
+    return [team["name"] for team in get_teams()]
+
+def get_team_details(team_identifier: str = None, by: str = "name") -> Dict[str, Any]:
+    """
+    Retrieve details for a specific team by name, team ID, or fbref team ID.
+
+    Args:
+        team_identifier (str, optional): The identifier value for the team.
+        by (str, optional): The field to filter by ("name", "team_id", "fbref_team_id").
+
+    Returns:
+        Dict[str, Any]: Dictionary of team details, or empty dict if not found.
+    """
     if not team_identifier:
         return {}
-    filters = {by: team_identifier}
-    columns = ["team_id", "name", "fullname", "fbref_team_id"]
-    df = flexible_query("teams", filters, columns)
-    return df.to_dict(orient="records")[0] if not df.empty else {}
+    with get_session() as session:
+        query = session.query(Team)
+        if by == "name":
+            query = query.filter(Team.name == team_identifier)
+        elif by == "team_id":
+            query = query.filter(Team.team_id == team_identifier)
+        elif by == "fbref_team_id":
+            query = query.filter(Team.fbref_team_id == team_identifier)
+        team = query.first()
+        if team:
+            return {
+                "team_id": team.team_id,
+                "name": team.name,
+                "fullname": team.fullname,
+                "fbref_team_id": team.fbref_team_id,
+            }
+        return {}
+
+
+def get_teams_by_season(seasons: list[str]) -> List[Dict[str, Any]]:
+    """
+    Retrieve a list of teams that played in a specific season.
+
+    Args:
+        seasons (list[str]): The seasons to filter by (e.g., "2024-2025").
+
+    Returns:
+        List[Dict[str, Any]]: List of team dictionaries for the given season.
+    """
+    with get_session() as session:
+        # Query distinct home and away teams from matches in the given season
+        home_teams = (
+            session.query(Team)
+            .join(Match, Team.team_id == Match.home_team_id)
+            .filter(Match.season.in_(seasons))
+            .distinct()
+            .all()
+        )
+        away_teams = (
+            session.query(Team)
+            .join(Match, Team.team_id == Match.away_team_id)
+            .filter(Match.season.in_(seasons))
+            .distinct()
+            .all()
+        )
+        # Combine and deduplicate teams
+        teams = {t.team_id: t for t in home_teams + away_teams}
+        return [
+            {
+                "team_id": t.team_id,
+                "name": t.name,
+                "fullname": t.fullname,
+                "fbref_team_id": t.fbref_team_id,
+            }
+            for t in teams.values()
+        ]
 
 
 if __name__ == "__main__":
     print(get_players(name="Nani"))
+    print(get_teams_names())

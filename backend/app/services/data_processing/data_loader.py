@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import json
 
-from ...core.paths import FIXTURES_TEST_DATA_FILEPATH
-from ...db.database import get_session
-from ...db.models import Match, MatchShootingStat, Team, Player, PlayerRating
+from ..models.config import TRAINING_DATA_START_SEASON, TRAINING_DATA_END_SEASON
+from ...core.config import settings
+from ...db.queries import get_seasons_fixtures, get_team_details, get_shooting_stats
 
 
 def load_json_file(filepath):
@@ -18,46 +18,7 @@ def save_json_file(data, filepath):
         json.dump(data, f, indent=4)
 
 
-def load_training_data(training_data_dir: str):
-    if not os.path.exists(training_data_dir):
-        raise FileExistsError(f"The path {training_data_dir} does NOT exist.")
-
-    file_paths = [
-        os.path.join(training_data_dir, f)
-        for f in os.listdir(training_data_dir)
-        if f.endswith(".csv") and os.path.isfile(os.path.join(training_data_dir, f))
-    ]
-    dfs = [
-        pd.read_csv(file, index_col=0)
-        for file in file_paths
-    ]
-    return pd.concat(dfs, ignore_index=False)
-
-
-def clean_data(df):
-    # ...existing code for cleaning...
-    df.drop(columns=["Notes", "Match Report", "xG", "xG.1", "Attendance"], inplace=True)
-    df.rename(columns={"Home": "HomeTeam", "Away": "AwayTeam"}, inplace=True)
-    df.dropna(subset=["Day"], inplace=True)
-    df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d")
-    df["Wk"] = df["Wk"].astype(int)
-    return df
-
-
-def get_this_seasons_fixtures_data() -> pd.DataFrame:
-    """
-    Reads the fixtures data from a CSV file,
-    drops rows with NaN values, and returns the DataFrame.
-
-    Returns:
-        pd.DataFrame: DataFrame containing the fixtures data.
-    """
-    df = pd.read_csv(FIXTURES_TEST_DATA_FILEPATH, index_col=0)
-    df.dropna(thresh=7, inplace=True)  # Dropping any NaN rows in the data
-    return df
-
-
-def generate_seasons(start_year: int, end_year: int):
+def generate_seasons(start_year: int, end_year: int) -> list[str]:
     """
     Generate a list of seasons from start_year to end_year.
     Args:
@@ -74,3 +35,44 @@ def generate_seasons(start_year: int, end_year: int):
         seasons.append(season)
     return seasons
 
+
+def load_training_data() -> pd.DataFrame:
+    """Load training fixtures data from database"""
+    dfs = []
+    for season in generate_seasons(start_year=TRAINING_DATA_START_SEASON, end_year=TRAINING_DATA_END_SEASON):
+        df = pd.DataFrame(get_seasons_fixtures(season=season))
+        if not df.empty:
+            dfs.append(df)
+    if dfs:
+        return pd.concat(dfs, ignore_index=True)
+    else:
+        return pd.DataFrame()  # Return empty DataFrame if no data
+
+
+def load_shooting_data(team: str) -> pd.DataFrame:
+    """Load training shooting data for a team from database"""
+    ...
+    team_id = get_team_details(team)["team_id"]
+    return pd.DataFrame(get_shooting_stats(team_id=team_id))
+
+
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
+    # ...existing code for cleaning...
+    df.drop(columns=["Notes", "Match Report", "xG", "xG.1", "Attendance"], inplace=True, errors="ignore")
+    df.dropna(subset=["date"], inplace=True)
+    df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
+    df["week"] = df["week"].astype(int)
+    return df
+
+
+def get_this_seasons_fixtures_data() -> pd.DataFrame:
+    """
+    Reads this seasons fixtures data from database,
+    drops rows with NaN values, and returns the DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the fixtures data.
+    """
+    df = pd.DataFrame(get_seasons_fixtures(season=settings.CURRENT_SEASON))
+    df.dropna(thresh=7, inplace=True)  # Dropping any NaN rows in the data
+    return df

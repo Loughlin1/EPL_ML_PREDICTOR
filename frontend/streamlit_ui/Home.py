@@ -51,7 +51,7 @@ def initialize_session_state():
 def update_fixtures_and_points():
     mw = st.session_state.matchweek_no
     df = st.session_state.all_predictions
-    df = df[df["Wk"] == mw]
+    df = df[df["week"] == mw]
 
     # Call Superbru scoring API
     points_res = requests.post(f"{API_BASE_URL}/superbru/points", json={"data": df.to_dict(orient="records")})
@@ -104,12 +104,12 @@ columns = [
     "Day",
     "Date",
     "Time",
-    "HomeTeam",
+    "home_team",
     "Score",
     "Result",
     "PredScore",
     "PredResult",
-    "AwayTeam",
+    "away_team",
     "Venue",
 ]
 st.write(f"Superbru points this week: {st.session_state.points}")

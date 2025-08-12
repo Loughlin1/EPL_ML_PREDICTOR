@@ -28,7 +28,7 @@ const teamLogos = {
 const renderTeamCell = (teamName) => {
   const logo = '/assets/logos/' + teamLogos[teamName];
   return (
-    <div className="flex items-center space-x-2 pr-5">
+    <div className="flex items-center space-x-2 pr-5 sm:pr-3">
       {logo && (
         <img src={logo} alt={teamName} className="w-5 h-5 object-contain" />
       )}
@@ -39,7 +39,7 @@ const renderTeamCell = (teamName) => {
 
 const MatchTable = ({ data }) => {
   const columns = [
-    'Day', 'Date', 'Time', 'HomeTeam', 'AwayTeam', 'Score', 'Result',
+    'Day', 'Date', 'Time', 'Home', 'Away', 'Score', 'Result',
     'PredScore', 'PredResult', 'Venue',
   ];
 
@@ -55,7 +55,7 @@ const MatchTable = ({ data }) => {
         <thead className="bg-gray-100 text-left">
           <tr>
             {columns.map((col) => (
-              <th key={col} className="p-2 border">{col}</th>
+              <th key={col} className="p-1 border text-center">{col}</th>
             ))}
           </tr>
         </thead>
@@ -63,10 +63,17 @@ const MatchTable = ({ data }) => {
           {data.map((row, idx) => (
             <tr key={idx} className={clsx(getRowClass(row))}>
               {columns.map((col) => (
-                <td key={col} className="p-2 border">
+               <td
+                  key={col}
+                  className={clsx(
+                    "p-1 border text-center",
+                    col === "Venue" && "whitespace-normal break-words text-xs md:text-sm"
+                  )}
+                  style={col === "Venue" ? { maxWidth: 120 } : {}}
+                >
                   {col === 'Date'
                     ? new Date(row[col]).toLocaleDateString()
-                    : col === 'HomeTeam' || col === 'AwayTeam'
+                    : col === 'Home' || col === 'Away'
                       ? renderTeamCell(row[col])
                       : row[col]}
                 </td>

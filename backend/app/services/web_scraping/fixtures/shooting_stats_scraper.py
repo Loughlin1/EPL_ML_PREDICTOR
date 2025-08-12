@@ -11,7 +11,7 @@ import pandas as pd
 from ....core.config import settings
 from ....core.paths import data_dir
 from ....db.loaders.shooting_stats import add_shooting_stats
-from ....db.queries import get_team_details, get_teams
+from ....db.queries import get_team_details, get_teams_by_season
 from ...data_processing.data_loader import generate_seasons
 
 
@@ -73,16 +73,17 @@ def scrape_shooting_stats(seasons: list[str]) -> None:
     Scrapes shooting stats from the web and saves it to database
     """
     counter = 0
-    for team in get_teams():
+    for team in get_teams_by_season(seasons):
         df = scrape_teams_stats(seasons, team["fbref_team_id"], team["fullname"])
         add_shooting_stats(df, team["name"], seasons)
 
         if counter == 3:
             time.sleep(10)
         counter += 1
-
+    print("Scraping completed")
 
 if __name__ == "__main__":
     seasons = generate_seasons(2024, 2024)
+    print(seasons)
     scrape_shooting_stats(seasons)
-    print(f"Shooting stats scraped for seasons: {seasons.join(", ")}")
+    print(f"Shooting stats scraped for seasons: {seasons}")

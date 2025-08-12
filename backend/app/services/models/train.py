@@ -26,11 +26,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from ...core.paths import (
-    SHOOTING_TRAINING_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
-    TEAMS_TRAINING_FILEPATH,
     VENUE_ENCODER_FILEPATH,
-    FIXTURES_TRAINING_DATA_DIR,
     SAVED_MODELS_DIRECTORY,
 )
 from ..data_processing.data_loader import clean_data, load_training_data
@@ -47,39 +44,37 @@ from ..data_processing.feature_engineering import (
     add_hour_feature,
     add_ppg_features,
     add_rolling_shooting_stats,
-    add_season_column,
     calculate_match_points,
-    calculate_result,
-    split_score_column,
 )
 from ..models.save_load import save_model
-from ..models.config import FEATURES, rolling_home_cols
+from ..models.config import FEATURES, LABELS, rolling_home_cols
 
-with open(TEAMS_TRAINING_FILEPATH, "r") as f:
-    teams = json.load(f) # Doesn't contain Ipswich Town
+from ...db.queries import get_teams_names
+# with open(TEAMS_TRAINING_FILEPATH, "r") as f:
+#     teams = json.load(f) # Doesn't contain Ipswich Town
 
 
 def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Preprocesses raw data for model input"""
+    teams = get_teams_names()
+
     ###### Encoding ####################
     # Encode categorical features
+    ## Encoding team name
     team_encoder = fit_team_name_encoder(df)
     save_encoder_to_file(team_encoder, filepath=TEAM_ENCODER_FILEPATH)
     df = encode_team_name_features(df, encoder=team_encoder)
 
-    # Encoding Venue
+    ## Encoding venue
     venue_encoder = fit_venue_encoder(df)
     save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
     df = encode_venue_name_feature(df, encoder=venue_encoder)
 
     # Feature engineering
     df = encode_day_of_week(df)
-    df = split_score_column(df)
-    df = calculate_result(df)
-    df = add_season_column(df)
     df = encode_season_column(df)
     df = add_hour_feature(df)
-    df = add_rolling_shooting_stats(df, SHOOTING_TRAINING_DATA_DIR, teams)
+    df = add_rolling_shooting_stats(df, teams)
     df = calculate_match_points(df)
     df = add_ppg_features(df, teams)
 
@@ -90,10 +85,13 @@ def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     # Define features and labels    
     features = FEATURES
-    labels = ["FTHG", "FTAG"]
+    labels = LABELS
 
     X = df[features]
-    y = df[labels]  # Predicting home and away goals
+    y = df[labels]
+
+    assert not X.isnull().any().any(), "Data contains NaNs"
+    assert len(X) > 0, "DataFrame is empty"
 
     # Scaling features
     scaler = StandardScaler()
@@ -103,7 +101,7 @@ def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def train_pipeline():
     # Load data
-    df = load_training_data(FIXTURES_TRAINING_DATA_DIR)
+    df = load_training_data()
     df = clean_data(df)
     X, y = preprocess_data(df)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)

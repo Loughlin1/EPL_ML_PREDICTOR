@@ -7,15 +7,12 @@ import json
 import logging
 import traceback
 
-from app.services.models import predict as predictor
 from app.schemas import MatchInput
 from app.services.models.evaluation import (
-    calc_correct_result_percentage,
-    calc_correct_score_percentage,
     evaluate_model,
     evaluate_model_performance
 )
-
+from app.services.models.config import LABELS
 router = APIRouter(
     tags=["Model"],
 )
@@ -26,7 +23,7 @@ logger = logging.getLogger(__name__)
 def evaluate_matches(request: MatchInput):
     try:
         df_input = pd.DataFrame(request.data)
-        y_true = df_input[["FTHG", "FTAG"]]
+        y_true = df_input[LABELS]
         y_pred = df_input[["PredFTHG", "PredFTAG"]].rename(columns={"PredFTHG": "FTHG", "PredFTAG": "FTAG"})
         return evaluate_model_performance(y_true, y_pred)
 

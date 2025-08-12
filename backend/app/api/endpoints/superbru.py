@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 import logging
+import traceback
 import json
 import os
 from datetime import datetime, timedelta
@@ -8,7 +9,7 @@ from app.schemas import MatchInput
 from app.services.utils.superbru_points_calculator import get_superbru_points
 from app.services.web_scraping.superbru.leaderboard_scraper import get_top_points
 
-from backend.app.core.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
+from app.core.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 
 router = APIRouter(
     prefix="/superbru",
@@ -28,7 +29,8 @@ def calculate_superbru_points(request: MatchInput):
         points = get_superbru_points(df_input)
         return {"points": points}
     except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
+        error = traceback.format_exc()
+        logger.error(f"Points calculation failed: {str(error)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

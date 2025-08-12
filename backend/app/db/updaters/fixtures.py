@@ -23,7 +23,7 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
     updates existing matches with new results.
 
     Args:
-        df: DataFrame with match data (expected columns: Date, Home, Away, Score, Wk, Day, Time, etc.).
+        df: DataFrame with match data (expected columns: Date, Home, Away, Score, week, Day, Time, etc.).
         season: Season string (e.g., "2023-2024").
     """
     # Define expected columns
@@ -92,7 +92,7 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
                         match.away_goals = away_goals
                         match.result = result
                     # Update other fields if provided
-                    match.week = row.get("Wk", match.week)
+                    match.week = row.get("week", match.week)
                     match.day = row.get("Day", match.day)
                     match.time = datetime.strptime(row["Time"], "%H:%M").time() if pd.notna(row.get("Time")) else match.time
                     match.attendance = int(row.get("Attendance")) if pd.notna(row.get("Attendance")) else match.attendance
@@ -105,7 +105,7 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
                     # Create new match
                     match = Match(
                         season=season,
-                        week=row.get("Wk"),
+                        week=row.get("week"),
                         day=row.get("Day"),
                         date=date,
                         time=datetime.strptime(row["Time"], "%H:%M").time() if pd.notna(row.get("Time")) else None,

@@ -5,8 +5,7 @@ import json
 import logging
 import traceback
 
-from backend.app.core.paths import CONTENT_DIR
-
+from ...core.paths import CONTENT_DIR
 
 router = APIRouter(
     prefix="/content",

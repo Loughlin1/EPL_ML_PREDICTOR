@@ -1,28 +1,33 @@
 import pytest
-import json
+from typing import Union
 from fastapi.testclient import TestClient
 from app.main import app
-from ..app.core.paths import backend_dir
-
 
 client = TestClient(app)
 
+
 def test_calculate_superbru_points():
-    with open(f"{backend_dir}/tests/example_predictions_data.json", "r") as f:
-        data = json.load(f)
+    
+    fixtures = client.get("/api/fixtures").json()
+    data = client.post("/api/predict", json= {"data": fixtures}).json()
+
     payload = {
         "data": data
     }
     response = client.post("/api/superbru/points", json=payload)
     assert response.status_code == 200
-    assert isinstance(response.json(), dict)
-    assert "points" in response.json()
+    resj = response.json()
+    assert isinstance(resj, dict)
+    assert "points" in resj
+    assert isinstance(resj["points"], float)
 
 
-def test_calculate_superbru_points():
+def test_retrieve_superbru_leaderboard_points():
     response = client.get("/api/superbru/points/top/global")
     assert response.status_code == 200
     resj = response.json()
     assert isinstance(resj, dict)
     assert "global_top" in resj
+    assert isinstance(resj["global_top"], Union[int,float])
     assert "global_top_250" in resj
+    assert isinstance(resj["global_top_250"], Union[int, float])

@@ -10,25 +10,7 @@ from ...core.paths import SAVED_MODELS_DIRECTORY, FIXTURES_TRAINING_DATA_DIR
 from ..data_processing.data_loader import load_training_data, clean_data
 from ..models.save_load import load_model
 from ..models.train import preprocess_data
-
-def calc_correct_result_percentage(df_input: pd.DataFrame):
-    total_predictions = df_input['Result'].count()
-    if total_predictions == 0:
-        return 0
-    num_correct_results = len(
-         df_input.loc[df_input["Result"] == df_input["PredResult"], :]
-    )
-    return 100 * (num_correct_results) / total_predictions
-
-
-def calc_correct_score_percentage(df_input: pd.DataFrame):
-    total_predictions = df_input['Score'].count()
-    if total_predictions == 0:
-        return 0
-    num_correct_results = len(
-         df_input.loc[df_input["Score"] == df_input["PredScore"], :]
-    )
-    return 100 * (num_correct_results) / total_predictions
+from ..models.config import LABELS
 
 
 def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
@@ -95,13 +77,13 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
 
 def evaluate_model():
     model = load_model("random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
-    df = load_training_data(FIXTURES_TRAINING_DATA_DIR)
+    df = load_training_data()
     df = clean_data(df)
     X, y = preprocess_data(df)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
     y_pred = model.predict(X_val)
-    y_pred = pd.DataFrame(y_pred, columns=["FTHG", "FTAG"])
+    y_pred = pd.DataFrame(y_pred, columns=LABELS)
     results = evaluate_model_performance(y_val, y_pred)
     return results
 
