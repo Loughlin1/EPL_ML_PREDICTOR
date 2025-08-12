@@ -4,17 +4,9 @@ fixtures_scraper.py
     Module to scrape fixtures data from the web and return it in a structured format.
 """
 
-import json
-import os
 import time
 import pandas as pd
 
-# from ....core.paths import (
-#     FIXTURES_TEST_DATA_FILEPATH,
-#     SHOOTING_TEST_DATA_DIR,
-#     TEAMS_IDS_2024_FILEPATH,
-#     TEAMS_IDS_TRAINING_FILEPATH
-# )
 from ....db.updaters.fixtures import upsert_fixtures
 from ....core.config import settings
 

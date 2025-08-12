@@ -1,13 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any
 import pandas as pd
-import json
 import logging
 import traceback
 
-from app.services.models import predict as predictor
-from app.schemas import MatchInput
+from ...services.models import predict as predictor
+from ...schemas import MatchInput
 
 router = APIRouter(
     tags=["Model"],

@@ -8,9 +8,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from ...core.paths import (
-    SHOOTING_TEST_DATA_DIR,
     TEAM_ENCODER_FILEPATH,
-    TEAMS_2024_FILEPATH,
     VENUE_ENCODER_FILEPATH,
     SAVED_MODELS_DIRECTORY,
 )
@@ -30,9 +28,6 @@ from ..data_processing.feature_engineering import (
 )
 from .config import FEATURES, LABELS
 from .save_load import load_model
-
-# with open(TEAMS_2024_FILEPATH, "r") as f:
-#     teams_2024 = json.load(f)
 from ...db.queries import get_teams_names
 
 

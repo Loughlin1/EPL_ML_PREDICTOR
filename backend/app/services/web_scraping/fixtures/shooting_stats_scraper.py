@@ -4,14 +4,13 @@ shooting_stats_scraper.py
     Module to scrape shooting stats data from the web
 """
 
-import json
 import time
 import pandas as pd
 
 from ....core.config import settings
 from ....core.paths import data_dir
 from ....db.loaders.shooting_stats import add_shooting_stats
-from ....db.queries import get_team_details, get_teams_by_season
+from ....db.queries import get_teams_by_season
 from ...data_processing.data_loader import generate_seasons
 
 

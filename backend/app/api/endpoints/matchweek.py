@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from app.services.data_processing.data_loader import get_this_seasons_fixtures_data
-from app.services.utils.matchweek import get_current_matchweek
+
+from ...services.data_processing.data_loader import get_this_seasons_fixtures_data
+from ...services.utils.matchweek import get_current_matchweek
 
 router = APIRouter()
 

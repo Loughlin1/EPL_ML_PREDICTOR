@@ -18,7 +18,6 @@ Workflow:
     8. Train a RandomForestRegressor model and make predictions on the test set.
 """
 
-import json
 import logging
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -48,11 +47,7 @@ from ..data_processing.feature_engineering import (
 )
 from ..models.save_load import save_model
 from ..models.config import FEATURES, LABELS, rolling_home_cols
-
 from ...db.queries import get_teams_names
-
-# with open(TEAMS_TRAINING_FILEPATH, "r") as f:
-#     teams = json.load(f) # Doesn't contain Ipswich Town
 
 
 def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
