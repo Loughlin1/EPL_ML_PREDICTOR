@@ -5,14 +5,13 @@ import random
 import time
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
 import traceback
 
-load_dotenv()
-BASE_URL = os.environ["FOOTBALL_DATA_BASE_URL"]
-
 from ...data_processing.data_loader import generate_seasons
-from ....core.paths import LINEUPS_TRAINING_DATA_DIR, LINEUPS_TEST_DATA_DIR
+from ....core.paths import LINEUPS_TRAINING_DATA_DIR
+from ....core.config import settings
+
+BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 
 
 def retrieve_fixtures_table(season: str) -> list[str]:
