@@ -173,6 +173,7 @@ class MatchShootingStat(Base):
         data["date"] = self.match.date if self.match else None
         return data
 
+
 class Lineup(Base):
     """
     Represents a player's participation in a match lineup.

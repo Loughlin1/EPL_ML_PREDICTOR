@@ -132,8 +132,8 @@ def scrape_lineups_for_match(home_team: str, away_team: str, month: str) -> dict
         month (str): The month for which the match report is to be retrieved.
     Returns:
         dict: A dictionary containing the match report for the given month and team.
-        
-        The keys are **'home_formation', 'away_formation', 'home_starting_lineup', 
+
+        The keys are **'home_formation', 'away_formation', 'home_starting_lineup',
         'home_subs_list', 'away_starting_lineup', 'away_subs_list'**.
 
     """
@@ -162,7 +162,6 @@ def scrape_lineups_for_match(home_team: str, away_team: str, month: str) -> dict
         "away_starting_lineup": away_starting_lineup,
         "away_subs_list": away_subs_list,
     }
-
 
 
 # print(get_match_report("Ipswich Town", "West Ham United"))

@@ -41,4 +41,3 @@ def login_to_superbru(driver: WebDriver, username: str, password: str):
 
     # Wait for login to complete (adjust as needed)
     time.sleep(2)
-

@@ -21,13 +21,15 @@ def scrape_lineups(season: str, week: int = None):
     if season == settings.CURRENT_SEASON:
         # Scrape from BBC
         for match in matches:
-            if match['date'] < datetime(2021, 1, 1).date():
-                raise Exception("Data doesn't go back that far for BBC cannot scrape this match")
+            if match["date"] < datetime(2021, 1, 1).date():
+                raise Exception(
+                    "Data doesn't go back that far for BBC cannot scrape this match"
+                )
 
             data = scrape_lineups_for_match(
                 match["home_team_fullname"],
                 match["away_team_fullname"],
-                month=match['date'].strftime('%Y-%m'),
+                month=match["date"].strftime("%Y-%m"),
             )
             print(data)
     else:
@@ -35,7 +37,7 @@ def scrape_lineups(season: str, week: int = None):
 
         fixtures_df = retrieve_fixtures_table(season)
         for index, row in fixtures_df.iterrows():
-            match_id = get_match_id(row["Home Team"], row["Away Team"])        
+            match_id = get_match_id(row["Home Team"], row["Away Team"])
             if not match_id:
                 raise Exception(f"Could not find match ID for row {index}")
 
@@ -51,10 +53,11 @@ def scrape_lineups(season: str, week: int = None):
                     time.sleep(random.randint(3, 6))
                 except:
                     exception = traceback.format_exc()
-                    print(f"Error scraping match report for row {index}: {row['Match Report']}")
+                    print(
+                        f"Error scraping match report for row {index}: {row['Match Report']}"
+                    )
                     print(f"\nException: {exception}\n")
                     sys.exit(1)
-
 
 
 if __name__ == "__main__":

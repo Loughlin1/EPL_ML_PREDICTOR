@@ -12,6 +12,7 @@ from ....core.paths import LINEUPS_TRAINING_DATA_DIR
 from ....core.config import settings
 from ...data_processing.data_loader import generate_seasons
 from ....db.updaters.lineups import upsert_lineups
+
 # from ....db.queries import get_match_id, get_team_details
 
 BASE_URL = settings.FOOTBALL_DATA_BASE_URL
@@ -27,11 +28,7 @@ def retrieve_fixtures_table(season: str) -> list[str]:
     url = f"{BASE_URL}/en/comps/9/{season}/schedule/{season}-Premier-League-Scores-and-Fixtures"
     match_report_column = "Match Report"
 
-    df = pd.read_html(
-        url,
-        attrs={"id": f"sched_{season}_9_1"},
-        extract_links="body"
-    )[0]
+    df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"}, extract_links="body")[0]
     for col in df.columns.difference([match_report_column]):
         df[col] = df[col].apply(lambda x: x[0])
     df[match_report_column] = df[match_report_column].apply(lambda x: x[1])
@@ -96,8 +93,6 @@ def scrape_lineups(df: pd.DataFrame, season: str) -> pd.DataFrame:
             away_team=row["Away"],
         )
         sys.exit(0)
-
-
 
         # home_formations.append(data["home"]["formation"])
         # away_formations.append(data["away"]["formation"])

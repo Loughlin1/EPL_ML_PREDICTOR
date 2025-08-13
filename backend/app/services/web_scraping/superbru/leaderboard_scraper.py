@@ -21,7 +21,7 @@ def get_top_points() -> tuple[int, int]:
     """Function to scrape the top points from the Superbru website."""
     # Step 1: Set up WebDriver
     options = Options()
-    options.headless = False #True
+    options.headless = False  # True
     driver = webdriver.Chrome(options=options)
     # Step 2: Log in
     login_to_superbru(driver, settings.SUPERBRU_USERNAME, settings.SUPERBRU_PASSWORD)

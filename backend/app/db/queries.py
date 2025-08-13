@@ -50,7 +50,7 @@ def get_players(name: str = None) -> List[Dict[str, Any]]:
         query = session.query(Player)
         if name:
             query = query.filter(Player.name == name)
-        return [ p.to_dict() for p in query.all()]
+        return [p.to_dict() for p in query.all()]
 
 
 def get_players_ratings(
@@ -199,16 +199,22 @@ def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -
         int: The match ID for the given season and team IDs.
     """
     with get_session() as session:
-        matches = session.query(Match).filter(
-            Match.season == season,
-            Match.week == week,
-            Match.home_team_id == home_team_id,
-            Match.away_team_id == away_team_id,
-        ).first()
+        matches = (
+            session.query(Match)
+            .filter(
+                Match.season == season,
+                Match.week == week,
+                Match.home_team_id == home_team_id,
+                Match.away_team_id == away_team_id,
+            )
+            .first()
+        )
         return matches.match_id if matches else None
 
 
-def get_lineups(season: str = None, week: int = None, match_id: int = None) -> list[dict]:
+def get_lineups(
+    season: str = None, week: int = None, match_id: int = None
+) -> list[dict]:
     """
     Get the lineups for a given season and week.
     Args:
@@ -236,7 +242,7 @@ def get_lineups(season: str = None, week: int = None, match_id: int = None) -> l
         elif week is not None:
             query = query.filter(Lineup.week == week)
 
-        lineups = query.all()       
+        lineups = query.all()
         return [lineup.to_dict() for lineup in lineups]
 
 

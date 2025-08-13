@@ -5,13 +5,16 @@ from sqlalchemy.orm import Session
 from app.db.database import get_session
 from app.db.models import Match
 from app.services.models import predict as predictor
-from app.services.web_scraping.lineups.prematch_lineups_scraper import scrape_lineups_for_match
+from app.services.web_scraping.lineups.prematch_lineups_scraper import (
+    scrape_lineups_for_match,
+)
 from app.services.web_scraping.superbru.submit_predictions import submit_to_superbru
 
 from app.db.updaters.lineups import upsert_lineups
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 # 1. Query matches starting in the next hour
 def get_upcoming_matches(session: Session) -> list[dict]:
@@ -25,13 +28,14 @@ def get_upcoming_matches(session: Session) -> list[dict]:
     )
     return [match.to_dict() for match in matches]
 
+
 # 2. Scrape lineups for each match
 def get_and_save_lineups_for_matches(matches: list[dict]) -> None:
     for match in matches:
         data = scrape_lineups_for_match(
             match["home_team_fullname"],
             match["away_team_fullname"],
-            month=match['date'].strftime('%Y-%m'),
+            month=match["date"].strftime("%Y-%m"),
         )
         upsert_lineups(
             season=settings.CURRENT_SEASON,
@@ -42,6 +46,7 @@ def get_and_save_lineups_for_matches(matches: list[dict]) -> None:
         )
 
     print("Lineups saved successfully.")
+
 
 # 3. Predict results using your model
 def predict_results(matches: list, logger):
