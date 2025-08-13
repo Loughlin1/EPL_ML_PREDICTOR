@@ -123,7 +123,7 @@ def find_lineups(driver: webdriver.Chrome, team: str):
         return [], []
 
 
-def get_match_report(home_team: str, away_team: str, month: str) -> dict:
+def scrape_lineups_for_match(home_team: str, away_team: str, month: str) -> dict:
     """
     Retrieves the match report for a given month and team.
     Args:

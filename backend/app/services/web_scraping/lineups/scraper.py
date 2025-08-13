@@ -1,6 +1,6 @@
 from ....db.updaters.lineups import upsert_lineups
 from ....db.queries import get_seasons_fixtures, get_lineups, get_match_id
-from .prematch_lineups_scraper import get_match_report
+from .prematch_lineups_scraper import scrape_lineups_for_match
 from .historical_lineups_scraper import scrape_match_report, retrieve_fixtures_table
 from datetime import datetime
 from ....core.config import settings
@@ -24,7 +24,7 @@ def scrape_lineups(season: str, week: int = None):
             if match['date'] < datetime(2021, 1, 1).date():
                 raise Exception("Data doesn't go back that far for BBC cannot scrape this match")
 
-            data = get_match_report(
+            data = scrape_lineups_for_match(
                 match["home_team_fullname"],
                 match["away_team_fullname"],
                 month=match['date'].strftime('%Y-%m'),

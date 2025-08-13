@@ -3,7 +3,6 @@ backend/app/services/models/predict.py
 """
 import json
 import logging
-
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -58,7 +57,15 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
     X = df[FEATURES]
 
-    assert not X.isnull().any().any(), "Data contains NaNs"
+    # Checking for NaNs
+    if X.isnull().any().any():
+        nan_cols = X.columns[X.isnull().any()]
+        nan_rows = X.loc[:, nan_cols][X[nan_cols].isnull().any(axis=1)]
+        raise AssertionError(
+            f"Data contains NaNs in columns: {list(nan_cols)}\n"
+            f"Rows with NaNs:\n{nan_rows}\n"
+            f"Head:\n{X.head()}\n"
+        )
     assert len(X) > 0, "DataFrame is empty"
 
     # Scaling features
@@ -93,7 +100,14 @@ def add_predictions_to_input_data(input_data: pd.DataFrame, predictions):
 
 
 def get_predictions(input_data: pd.DataFrame, logger: logging.Logger) -> pd.DataFrame:
-    """Returns the input DataFrame with the predictions in the columns."""
+    """
+    Predicts the scores for each match in the input
+    Args:
+        input_data (pd.DataFrame): The input data containing match information
+        Logger (logging.Logger): The logger to use for logging purposes
+    Returns:
+        pd.DataFrame: The input data with the predictions in the columns.
+    """
     logger.debug("Model Input:")
     logger.debug(input_data.head())
     predictions = predict(input_data)

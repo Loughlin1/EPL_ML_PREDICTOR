@@ -17,18 +17,6 @@ from .fixtures import add_teams, add_matches
 from ..mappings.load_mappings import load_team_ids_mapping, load_team_name_mapping
 
 
-def parse_score(score):
-    """Parse score (e.g., '2–1') into home_goals, away_goals, result."""
-    if pd.isna(score) or score == "":
-        return None, None, None
-    try:
-        home, away = map(int, score.split("–"))
-        result = "H" if home > away else "A" if away > home else "D"
-        return home, away, result
-    except (ValueError, AttributeError):
-        return None, None, None
-
-
 def import_historical_fixtures(start_year: int = 2014, end_year: int = 2024) -> None:
     """
     Load historical fixtures data from CSVs and JSON mappings into teams and matches tables.

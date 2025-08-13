@@ -131,10 +131,3 @@ with col2:
     if st.session_state.matchweek_no < 38:
         st.button("Next Matchweek ⏩", on_click=next_matchweek)
 
-
-# # Schedule to fetch new data every hour
-# schedule.every().hour.do(scrape_fixtures)
-
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)

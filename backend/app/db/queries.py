@@ -33,27 +33,7 @@ def get_seasons_fixtures(
             query = query.filter(Match.away_team_id == away_team_id)
         results = query.all()
         # Return as list of dicts with team names
-        return [
-            {
-                "season": m.season,
-                "week": m.week,
-                "day": m.day,
-                "date": m.date,
-                "time": m.time,
-                "home_team": m.home_team.name if m.home_team else None,
-                "away_team": m.away_team.name if m.away_team else None,
-                "home_team_fullname": m.home_team.fullname if m.home_team else None,
-                "away_team_fullname": m.away_team.fullname if m.away_team else None,
-                "FTHG": m.home_goals,
-                "FTAG": m.away_goals,
-                "Score": f"{m.home_goals}-{m.away_goals}",
-                "Result": m.result,
-                "attendance": m.attendance,
-                "venue": m.venue,
-                "referee": m.referee,
-            }
-            for m in results
-        ]
+        return [m.to_dict() for m in results]
 
 
 def get_players(name: str = None) -> List[Dict[str, Any]]:
@@ -70,10 +50,7 @@ def get_players(name: str = None) -> List[Dict[str, Any]]:
         query = session.query(Player)
         if name:
             query = query.filter(Player.name == name)
-        return [
-            {"player_id": p.player_id, "name": p.name, "initials": p.initials}
-            for p in query.all()
-        ]
+        return [ p.to_dict() for p in query.all()]
 
 
 def get_players_ratings(
@@ -95,18 +72,7 @@ def get_players_ratings(
             query = query.filter(PlayerRating.season == season)
         if player_id:
             query = query.filter(PlayerRating.player_id == player_id)
-        return [
-            {
-                "rating_id": r.rating_id,
-                "player_id": r.player_id,
-                "player_name": r.player.name if r.player else None,
-                "season": r.season,
-                "rating": r.rating,
-                "position": r.position,
-                # Add other fields as needed
-            }
-            for r in query.all()
-        ]
+        return [r.to_dict() for r in query.all()]
 
 
 def get_shooting_stats(
@@ -128,34 +94,7 @@ def get_shooting_stats(
             query = query.filter(MatchShootingStat.team_id == team_id)
         if match_id:
             query = query.filter(MatchShootingStat.match_id == match_id)
-        return [
-            {
-                "stat_id": s.stat_id,
-                "match_id": s.match_id,
-                "team_id": s.team_id,
-                "team_name": s.team.name if s.team else None,
-                "round": s.round,
-                "day": s.day,
-                "date": s.match.date,
-                "week": s.match.week,
-                "time": s.match.time if s.match else None,
-                "venue": s.venue,
-                "result": s.result,
-                "gf": s.gf,
-                "ga": s.ga,
-                "opponent": s.opponent,
-                "sh": s.sh,
-                "sot": s.sot,
-                "sot_percent": s.sot_percent,
-                "g_per_sh": s.g_per_sh,
-                "g_per_sot": s.g_per_sot,
-                "dist": s.dist,
-                "pk": s.pk,
-                "pkatt": s.pkatt,
-                "fk": s.fk,
-            }
-            for s in query.all()
-        ]
+        return [s.to_dict() for s in query.all()]
 
 
 def get_teams(
@@ -180,15 +119,7 @@ def get_teams(
             query = query.filter(Team.team_id == team_id)
         if fbref_team_id:
             query = query.filter(Team.fbref_team_id == fbref_team_id)
-        return [
-            {
-                "team_id": t.team_id,
-                "name": t.name,
-                "fullname": t.fullname,
-                "fbref_team_id": t.fbref_team_id,
-            }
-            for t in query.all()
-        ]
+        return [t.to_dict() for t in query.all()]
 
 
 def get_teams_names() -> List[str]:
@@ -223,14 +154,7 @@ def get_team_details(team_identifier: str = None, by: str = "name") -> Dict[str,
         elif by == "fbref_team_id":
             query = query.filter(Team.fbref_team_id == team_identifier)
         team = query.first()
-        if team:
-            return {
-                "team_id": team.team_id,
-                "name": team.name,
-                "fullname": team.fullname,
-                "fbref_team_id": team.fbref_team_id,
-            }
-        return {}
+        return team.to_dict() if team else {}
 
 
 def get_teams_by_season(seasons: list[str]) -> List[Dict[str, Any]]:
@@ -261,15 +185,7 @@ def get_teams_by_season(seasons: list[str]) -> List[Dict[str, Any]]:
         )
         # Combine and deduplicate teams
         teams = {t.team_id: t for t in home_teams + away_teams}
-        return [
-            {
-                "team_id": t.team_id,
-                "name": t.name,
-                "fullname": t.fullname,
-                "fbref_team_id": t.fbref_team_id,
-            }
-            for t in teams.values()
-        ]
+        return [t.to_dict() for t in teams.values()]
 
 
 def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -> int:
@@ -324,9 +240,8 @@ def get_lineups(season: str = None, week: int = None, match_id: int = None) -> l
         return [lineup.to_dict() for lineup in lineups]
 
 
-
-
 if __name__ == "__main__":
     print(get_players(name="Nani"))
     print(get_teams_names())
     print(get_lineups())
+    print(get_teams())

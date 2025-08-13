@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Query, HTTPException
 from ...services.data_processing.data_loader import get_this_seasons_fixtures_data
-from ...services.web_scraping.fixtures.fixtures_scraper import scrape_fixtures
+from ...services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_fixtures
 from ...services.web_scraping.fixtures.shooting_stats_scraper import (
-    scrape_shooting_stats,
+    scrape_and_save_shooting_stats,
 )
 from ...db.queries import get_teams
 
@@ -18,8 +18,8 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     Get EPL fixtures, optionally by matchweek, and optionally force refresh.
     """
     if refresh:
-        scrape_fixtures(season="2024-2025")
-        scrape_shooting_stats(season="2024-2025")
+        scrape_and_save_fixtures(season="2024-2025")
+        scrape_and_save_shooting_stats(season="2024-2025")
     fixtures = get_this_seasons_fixtures_data()
 
     if matchweek is not None:

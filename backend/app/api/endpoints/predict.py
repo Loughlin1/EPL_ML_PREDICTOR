@@ -18,7 +18,7 @@ COLUMN_MAPPING = {
     "home_team": "Home",
     "away_team": "Away",
     "Score": "Score",
-    "Result": "Result",
+    "result": "Result",
     "PredScore": "PredScore",
     "PredResult": "PredResult",
     "venue": "Venue",

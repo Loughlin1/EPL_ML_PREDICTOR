@@ -20,6 +20,9 @@ class Player(Base):
     def __repr__(self):
         return f"<Player(name='{self.name}')>"
 
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Team(Base):
     """
@@ -44,6 +47,9 @@ class Team(Base):
 
     def __repr__(self):
         return f"<Team(name='{self.name}', fullname='{self.fullname}')>"
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class PlayerRating(Base):
@@ -75,6 +81,11 @@ class PlayerRating(Base):
 
     def __repr__(self):
         return f"<PlayerRating(player='{self.player.name}', season='{self.season}')>"
+
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data["player_name"] = self.player.name if self.player else None
+        return data
 
 
 class Match(Base):
@@ -112,6 +123,18 @@ class Match(Base):
     def __repr__(self):
         return f"<Match(season='{self.season}', date='{self.date}', home_team='{self.home_team.name}', away_team='{self.away_team.name}')>"
 
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        # Add foreign attributes
+        data["home_team"] = self.home_team.name if self.home_team else None
+        data["away_team"] = self.away_team.name if self.away_team else None
+        data["home_team_fullname"] = self.home_team.fullname if self.home_team else None
+        data["away_team_fullname"] = self.away_team.fullname if self.away_team else None
+        data["Score"] = f"{self.home_goals}-{self.away_goals}"
+        data["FTHG"] = self.home_goals
+        data["FTAG"] = self.away_goals
+        return data
+
 
 class MatchShootingStat(Base):
     """
@@ -142,6 +165,13 @@ class MatchShootingStat(Base):
     match = relationship("Match", back_populates="shooting_stats")
     team = relationship("Team", back_populates="shooting_stats")
 
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data["team_name"] = self.team.name if self.team else None
+        data["time"] = self.match.time if self.match else None
+        data["week"] = self.match.week if self.match else None
+        data["date"] = self.match.date if self.match else None
+        return data
 
 class Lineup(Base):
     """
@@ -160,3 +190,9 @@ class Lineup(Base):
 
     def __repr__(self):
         return f"<Lineup(match_id='{self.match_id}', player='{self.player.name}', team='{self.team.name}')>"
+
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data["team_name"] = self.team.name if self.team else None
+        data["player_name"] = self.player.name if self.player else None
+        return data

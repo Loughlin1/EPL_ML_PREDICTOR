@@ -15,9 +15,9 @@ FOOTBALL_DATA_BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 CURRENT_SEASON = settings.CURRENT_SEASON
 
 
-def scrape_fixtures(season: str = None) -> None:
+def scrape_and_save_fixtures(season: str = None) -> None:
     """
-    Function to scrape the fixtures data from the web and save it to a CSV file.
+    Function to scrape the fixtures data from the web and saves it to the database.
     Args:
         season (str): The season for which fixtures are being scraped.
                       E.g. ("2024-2025") (defaults to current season)
@@ -37,4 +37,4 @@ def scrape_fixtures(season: str = None) -> None:
 
 
 if __name__ == "__main__":
-    scrape_fixtures("2024-2025")
+    scrape_and_save_fixtures("2024-2025")

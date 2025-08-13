@@ -67,7 +67,7 @@ def scrape_teams_stats(seasons, squad_id, team_name) -> pd.DataFrame:
         print(f"No valid data for team {team_name} in seasons {seasons}")
 
 
-def scrape_shooting_stats(seasons: list[str]) -> None:
+def scrape_and_save_shooting_stats(seasons: list[str]) -> None:
     """
     Scrapes shooting stats from the web and saves it to database
     """
@@ -85,5 +85,5 @@ def scrape_shooting_stats(seasons: list[str]) -> None:
 if __name__ == "__main__":
     seasons = generate_seasons(2024, 2024)
     print(seasons)
-    scrape_shooting_stats(seasons)
+    scrape_and_save_shooting_stats(seasons)
     print(f"Shooting stats scraped for seasons: {seasons}")
