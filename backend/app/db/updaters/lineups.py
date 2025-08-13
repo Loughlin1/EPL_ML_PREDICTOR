@@ -2,11 +2,11 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import select
 from ..database import get_session
-from ..models import Match, Team, Player, MatchLineup
-from ..services.data_processing.data_loader import load_json_file
-from ..core.paths import data_dir
-from .upsert_team import upsert_team
-from ..loaders.add_player_ratings import add_players
+from ..models import Match, Team, Player, Lineup
+from ...services.data_processing.data_loader import load_json_file
+from ...core.paths import data_dir
+from .teams import upsert_team
+from ..loaders.player_ratings import add_players
 
 
 def upsert_lineups(
@@ -30,14 +30,6 @@ def upsert_lineups(
         home_team: Home team name for single match.
         away_team: Away team name for single match.
     """
-    # Load team name mappings
-    try:
-        team_name_mapping = load_json_file(f"{data_dir}/team_names_mapping.json")
-    except FileNotFoundError:
-        print(
-            "Warning: team_names_mapping.json not found. Assuming exact team name matches."
-        )
-        team_name_mapping = {}
 
     with get_session() as session:
         # Get team IDs
@@ -94,19 +86,19 @@ def upsert_lineups(
             )
             return
 
-        # Ensure teams exist
-        team_names = set()
-        if df is not None:
-            team_names.update(df["Home"].dropna().unique())
-            team_names.update(df["Away"].dropna().unique())
-        else:
-            team_names.update([home_team, away_team])
-        team_df = pd.DataFrame({"Name": list(team_names)})
-        upsert_team(df=team_df)
+        # # Ensure teams exist
+        # team_names = set()
+        # if df is not None:
+        #     team_names.update(df["Home"].dropna().unique())
+        #     team_names.update(df["Away"].dropna().unique())
+        # else:
+        #     team_names.update([home_team, away_team])
+        # team_df = pd.DataFrame({"Name": list(team_names)})
+        # # upsert_team(df=team_df)
 
-        # Refresh team map after upsert
-        all_teams = session.execute(select(Team.name, Team.team_id)).all()
-        team_map = {t.name: t.team_id for t in all_teams}
+        # # Refresh team map after upsert
+        # all_teams = session.execute(select(Team.name, Team.team_id)).all()
+        # team_map = {t.name: t.team_id for t in all_teams}
 
         # Collect all player names for upsert
         all_players = set()
@@ -136,8 +128,8 @@ def upsert_lineups(
                 if pd.isna(home_team) or pd.isna(away_team):
                     print(f"Skipping row {idx} on {date}: Missing Home or Away team.")
                     continue
-                home_team = team_name_mapping.get(home_team, home_team)
-                away_team = team_name_mapping.get(away_team, away_team)
+                # home_team = team_name_mapping.get(home_team, home_team)
+                # away_team = team_name_mapping.get(away_team, away_team)
 
                 home_team_id = team_map.get(home_team)
                 away_team_id = team_map.get(away_team)
@@ -186,7 +178,7 @@ def upsert_lineups(
                             )
                             continue
                         lineup = session.execute(
-                            select(MatchLineup).filter_by(
+                            select(Lineup).filter_by(
                                 match_id=match.match_id,
                                 team_id=team_id,
                                 player_id=player_id,
@@ -199,7 +191,7 @@ def upsert_lineups(
                                 f"Updated lineup for player_id={player_id} (starting) in match_id={match.match_id}."
                             )
                         else:
-                            lineup = MatchLineup(
+                            lineup = Lineup(
                                 match_id=match.match_id,
                                 team_id=team_id,
                                 formation=formation,
@@ -220,7 +212,7 @@ def upsert_lineups(
                             )
                             continue
                         lineup = session.execute(
-                            select(MatchLineup).filter_by(
+                            select(Lineup).filter_by(
                                 match_id=match.match_id,
                                 team_id=team_id,
                                 player_id=player_id,
@@ -233,7 +225,7 @@ def upsert_lineups(
                                 f"Updated lineup for player_id={player_id} (sub) in match_id={match.match_id}."
                             )
                         else:
-                            lineup = MatchLineup(
+                            lineup = Lineup(
                                 match_id=match.match_id,
                                 team_id=team_id,
                                 formation=formation,

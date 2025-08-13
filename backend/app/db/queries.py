@@ -1,4 +1,4 @@
-from .models import Player, Team, PlayerRating, Match, MatchShootingStat
+from .models import Player, Team, PlayerRating, Match, MatchShootingStat, Lineup
 from .database import get_session
 from typing import List, Dict, Any, Optional
 
@@ -42,6 +42,8 @@ def get_seasons_fixtures(
                 "time": m.time,
                 "home_team": m.home_team.name if m.home_team else None,
                 "away_team": m.away_team.name if m.away_team else None,
+                "home_team_fullname": m.home_team.fullname if m.home_team else None,
+                "away_team_fullname": m.away_team.fullname if m.away_team else None,
                 "FTHG": m.home_goals,
                 "FTAG": m.away_goals,
                 "Score": f"{m.home_goals}-{m.away_goals}",
@@ -270,6 +272,61 @@ def get_teams_by_season(seasons: list[str]) -> List[Dict[str, Any]]:
         ]
 
 
+def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -> int:
+    """
+    Get the match ID for a given season and team IDs.
+    Args:
+        season (str): The season of the match.
+        home_team_id (int): The ID of the home team.
+        away_team_id (int): The ID of the away team.
+    Returns:
+        int: The match ID for the given season and team IDs.
+    """
+    with get_session() as session:
+        matches = session.query(Match).filter(
+            Match.season == season,
+            Match.week == week,
+            Match.home_team_id == home_team_id,
+            Match.away_team_id == away_team_id,
+        ).first()
+        return matches.match_id if matches else None
+
+
+def get_lineups(season: str = None, week: int = None, match_id: int = None) -> list[dict]:
+    """
+    Get the lineups for a given season and week.
+    Args:
+        season (str): The season of the match.
+        week (int): The week of the match.
+        match_id (int): The ID of the match
+    Returns:
+        list[dict]: A list of dictionaries containing the lineups for the given filters
+    """
+    with get_session() as session:
+        query = session.query(Lineup)
+        if match_id is not None:
+            query = query.filter(
+                Lineup.match_id == match_id,
+            )
+        elif season is not None and week is not None:
+            query = query.filter(
+                Lineup.season == season,
+                Lineup.week == week,
+            )
+        elif season is not None:
+            query = query.filter(
+                Lineup.season == season,
+            )
+        elif week is not None:
+            query = query.filter(Lineup.week == week)
+
+        lineups = query.all()       
+        return [lineup.to_dict() for lineup in lineups]
+
+
+
+
 if __name__ == "__main__":
     print(get_players(name="Nani"))
     print(get_teams_names())
+    print(get_lineups())

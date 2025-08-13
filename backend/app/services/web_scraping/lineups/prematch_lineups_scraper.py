@@ -123,12 +123,24 @@ def find_lineups(driver: webdriver.Chrome, team: str):
         return [], []
 
 
-def get_match_report(home_team: str, away_team: str) -> dict:
+def get_match_report(home_team: str, away_team: str, month: str) -> dict:
+    """
+    Retrieves the match report for a given month and team.
+    Args:
+        home_team (str): The name of the home team.
+        away_team (str): The name of the away team.
+        month (str): The month for which the match report is to be retrieved.
+    Returns:
+        dict: A dictionary containing the match report for the given month and team.
+        
+        The keys are **'home_formation', 'away_formation', 'home_starting_lineup', 
+        'home_subs_list', 'away_starting_lineup', 'away_subs_list'**.
+
+    """
     options = Options()
     options.headless = True
     driver = webdriver.Chrome(options=options)
-    current_month = "2025-05"  # datetime.date.today().strftime('%Y-%m')
-    target_url = f"{base_url}/{current_month}"
+    target_url = f"{base_url}/{month}"
     driver.get(target_url)
 
     link = find_match_link(driver, home_team, away_team)
@@ -150,6 +162,7 @@ def get_match_report(home_team: str, away_team: str) -> dict:
         "away_starting_lineup": away_starting_lineup,
         "away_subs_list": away_subs_list,
     }
+
 
 
 # print(get_match_report("Ipswich Town", "West Ham United"))
