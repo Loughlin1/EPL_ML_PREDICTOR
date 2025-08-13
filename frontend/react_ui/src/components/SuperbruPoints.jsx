@@ -1,6 +1,6 @@
 const SuperbruPoints = ({pointsThisWeek, totalPoints, globalTopPoints, globalTop250Points}) => {
     return (
-      <div className="mb-4 w-full pt-3 flex gap-3 md:gap-10 align-top text-xs sm:text-sm md:text-l lg:text-xl">
+      <div className="mb-2 w-full pt-3 flex gap-3 md:gap-10 align-top text-xs sm:text-sm md:text-md lg:text-lg">
         <div>
           <h3><strong>SuperBru This Week</strong></h3>
           <p>

@@ -55,7 +55,7 @@ const MatchTable = ({ data }) => {
         <thead className="bg-gray-100 text-left">
           <tr>
             {columns.map((col) => (
-              <th key={col} className="p-1 border text-center">{col}</th>
+              <th key={col} className="p-1 md:p-2 border text-center">{col}</th>
             ))}
           </tr>
         </thead>
@@ -66,7 +66,7 @@ const MatchTable = ({ data }) => {
                <td
                   key={col}
                   className={clsx(
-                    "p-1 border text-center",
+                    "p-1 md:p-2 border text-center",
                     col === "Venue" && "whitespace-normal break-words text-xs md:text-sm"
                   )}
                   style={col === "Venue" ? { maxWidth: 120 } : {}}
