@@ -1,9 +1,7 @@
-from .models import Player, Team, PlayerRating, Match, MatchShootingStat, Lineup
+from .models import Team, Match, MatchShootingStat
 from .database import get_session
 from typing import List, Dict, Any, Optional
-from difflib import SequenceMatcher
-from .loaders.player_ratings import generate_initials
-from sqlalchemy import or_
+
 
 def get_seasons_fixtures(
     season: str = None,
@@ -36,91 +34,6 @@ def get_seasons_fixtures(
         results = query.all()
         # Return as list of dicts with team names
         return [m.to_dict() for m in results]
-
-
-def get_players(name: str = None, initials: str = None, name_contains: str = None, season: str = None) -> List[Dict[str, Any]]:
-    """
-    Retrieve players, optionally filtered by name.
-
-    Args:
-        name (str, optional): The name of the player to filter by.
-
-    Returns:
-        List[Dict[str, Any]]: List of player dictionaries.
-    """
-    with get_session() as session:
-        query = session.query(Player)
-        if season:
-            query = query.join(PlayerRating).filter(PlayerRating.season == season)
-        if name:
-            query = query.filter(Player.name == name)
-        elif initials:
-            query = query.filter(Player.initials == initials)
-        elif name_contains:
-            query = query.filter(
-                Player.name.contains(name_contains)
-            )
-        return [p.to_dict() for p in query.all()]
-
-
-def find_player(scraped_name: str, threshold: float = 0.85) -> dict | None:
-    """
-    Find a matching player in the database.
-    - Exact name match first.
-    - Then exact initials match (generated from scraped name).
-    - Fuzzy match as fallback.
-    Returns player dict or None if no match.
-    """
-    with get_session() as session:
-        # Step 1: Exact match on name or initials
-        player = session.query(Player).filter(
-            or_(Player.name == scraped_name, Player.initials == scraped_name)
-        ).first()
-        if player:
-            return player.to_dict()
-
-        # Step 2: Generate initials from scraped name and match
-        scraped_initials = generate_initials(scraped_name)
-        player = session.query(Player).filter(Player.initials == scraped_initials).first()
-        if player:
-            return player.to_dict()
-
-        # Step 3: Fuzzy match on name (using SequenceMatcher for similarity ratio)
-        all_players = session.query(Player).all()
-        best_match = None
-        best_ratio = 0
-        for p in all_players:
-            ratio = SequenceMatcher(None, p.name.lower(), scraped_name.lower()).ratio()
-            if ratio > best_ratio:
-                best_ratio = ratio
-                best_match = p
-        if best_ratio >= threshold:
-            return best_match.to_dict()
-
-        # No match found
-        return None
-
-
-def get_players_ratings(
-    season: str = None, player_id: int = None
-) -> List[Dict[str, Any]]:
-    """
-    Retrieve player ratings, optionally filtered by season and/or player ID.
-
-    Args:
-        season (str, optional): The season to filter by.
-        player_id (int, optional): The player ID to filter by.
-
-    Returns:
-        List[Dict[str, Any]]: List of player rating dictionaries.
-    """
-    with get_session() as session:
-        query = session.query(PlayerRating)
-        if season:
-            query = query.filter(PlayerRating.season == season)
-        if player_id:
-            query = query.filter(PlayerRating.player_id == player_id)
-        return [r.to_dict() for r in query.all()]
 
 
 def get_shooting_stats(
@@ -260,43 +173,6 @@ def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -
         return matches.match_id if matches else None
 
 
-def get_lineups(
-    season: str = None, week: int = None, match_id: int = None
-) -> list[dict]:
-    """
-    Get the lineups for a given season and week.
-    Args:
-        season (str): The season of the match.
-        week (int): The week of the match.
-        match_id (int): The ID of the match
-    Returns:
-        list[dict]: A list of dictionaries containing the lineups for the given filters
-    """
-    with get_session() as session:
-        query = session.query(Lineup)
-        if match_id is not None:
-            query = query.filter(
-                Lineup.match_id == match_id,
-            )
-        elif season is not None and week is not None:
-            query = query.filter(
-                Lineup.season == season,
-                Lineup.week == week,
-            )
-        elif season is not None:
-            query = query.filter(
-                Lineup.season == season,
-            )
-        elif week is not None:
-            query = query.filter(Lineup.week == week)
-
-        lineups = query.all()
-        return [lineup.to_dict() for lineup in lineups]
-
-
 if __name__ == "__main__":
-    print(get_players(name="Nani"))
     print(get_teams_names())
-    print(get_lineups())
     print(get_teams())
-    # print(get_players_ratings("2024-2025"))
