@@ -18,7 +18,7 @@ class Player(Base):
     ratings = relationship("PlayerRating", back_populates="player")
 
     def __repr__(self):
-        return f"<Player(name='{self.name}')>"
+        return f"<Player(name='{self.name} initials='{self.initials}' player_id='{self.player_id}')>"
 
     def to_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

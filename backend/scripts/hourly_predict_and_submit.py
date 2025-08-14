@@ -23,7 +23,7 @@ def get_upcoming_matches(session: Session) -> list[dict]:
     matches = (
         session.query(Match)
         .filter(Match.season == "2024-2025")
-        .filter(Match.time >= now, Match.time < next_hour)
+        # .filter(Match.time >= now, Match.time < next_hour)
         .all()
     )
     return [match.to_dict() for match in matches]
@@ -66,8 +66,8 @@ def main():
             return
         week = matches[0]["week"]
         get_and_save_lineups_for_matches(matches)
-        predictions = predict_results(matches, logger=logger)
-        submit_to_superbru(predictions, week=week)
+        # predictions = predict_results(matches, logger=logger)
+        # submit_to_superbru(predictions, week=week)
 
 
 if __name__ == "__main__":
