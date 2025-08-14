@@ -34,8 +34,6 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
 @router.get("/teams")
 def get_teams():
     try:
-        # with open(TEAMS_2024_FILEPATH, "r") as f:
-        #     teams = json.load(f)
         teams = get_teams()
         return {"teams": teams}
     except Exception as e:

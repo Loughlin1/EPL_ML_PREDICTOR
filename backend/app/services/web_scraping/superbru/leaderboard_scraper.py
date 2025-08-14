@@ -4,10 +4,6 @@ leaderboard_scraper.py
     Module to scrape leaderboard data from Superbru.
 """
 
-import os
-import sys
-import time
-
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options

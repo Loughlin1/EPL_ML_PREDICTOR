@@ -8,7 +8,7 @@ for predicting full-time home and away goals in English Premier League matches
 using a RandomForestRegressor.
 
 Workflow:
-    1. Load match data from CSV files.
+    1. Load match data from database.
     2. Clean and preprocess the data.
     3. Add new features such as full-time goals, match result, season year, etc.
     4. Calculate rolling averages for shooting statistics and points per game.

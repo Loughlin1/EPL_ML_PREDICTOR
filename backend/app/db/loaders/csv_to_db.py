@@ -8,7 +8,6 @@ from ...core.paths import (
     backend_dir,
     data_dir,
     FIXTURES_TRAINING_DATA_DIR,
-    SHOOTING_TEST_DATA_DIR,
 )
 from ..queries import get_teams, get_shooting_stats, get_team_details
 from .shooting_stats import add_shooting_stats

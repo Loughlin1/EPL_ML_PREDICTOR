@@ -8,22 +8,12 @@ import time
 import pandas as pd
 
 from ....core.config import settings
-from ....core.paths import data_dir
 from ....db.loaders.shooting_stats import add_shooting_stats
 from ....db.queries import get_teams_by_season
-from ...data_processing.data_loader import generate_seasons
 
 
 FOOTBALL_DATA_BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 CURRENT_SEASON = settings.CURRENT_SEASON
-
-
-def save_to_csv(df: pd.DataFrame, team_name: str):
-    if " " in team_name:
-        team_name = team_name.replace(" ", "-")
-    csv_filepath = f"{data_dir}/shooting_stats/{team_name}.csv"
-    df.to_csv(csv_filepath)
-    print(f"Saved {team_name} to {csv_filepath}")
 
 
 def scrape_season_stats(url: str):
@@ -80,10 +70,3 @@ def scrape_and_save_shooting_stats(seasons: list[str]) -> None:
             time.sleep(10)
         counter += 1
     print("Scraping completed")
-
-
-if __name__ == "__main__":
-    seasons = generate_seasons(2024, 2024)
-    print(seasons)
-    scrape_and_save_shooting_stats(seasons)
-    print(f"Shooting stats scraped for seasons: {seasons}")

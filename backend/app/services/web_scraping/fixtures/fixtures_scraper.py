@@ -31,9 +31,6 @@ def scrape_and_save_fixtures(season: str = None) -> None:
     df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"})[0]
     upsert_fixtures(df, season=season)
     print(f"Fixtures data fetched and saved to database")
-    # filepath = FIXTURES_TEST_DATA_FILEPATH
-    # df.to_csv(filepath)
-    # print(f"Fixtures data fetched and saved to {filepath}")
 
 
 if __name__ == "__main__":

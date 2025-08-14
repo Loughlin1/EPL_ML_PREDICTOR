@@ -11,7 +11,6 @@ import random
 import os
 import io
 
-from ....core.paths import PLAYER_RATINGS_DATA_DIR
 from ....db.loaders.player_ratings import clean_player_name, add_players, add_ratings
 
 
@@ -71,9 +70,6 @@ def scrape_all_fifa_ratings(start_season: int, end_season: int):
 
     # Set page load timeout
     driver.set_page_load_timeout(30)  # 30 seconds max for page load
-
-    # Ensure output directory exists
-    os.makedirs(PLAYER_RATINGS_DATA_DIR, exist_ok=True)
 
     print("Starting to scrape ratings data...")
     for version in range(start_season, end_season + 1):
@@ -138,20 +134,3 @@ def scrape_all_fifa_ratings(start_season: int, end_season: int):
         time.sleep(random.uniform(5, 10))  # Delay between seasons
 
     driver.quit()
-
-
-def parse_fifa_ratings_csv(filepath: str):
-    """
-    Parse and clean a FIFA ratings CSV file.
-
-    Args:
-        filepath (str): Path to the CSV file.
-    """
-    df = pd.read_csv(filepath, index_col=False)
-    df.dropna(thresh=6, inplace=True)
-    df.to_csv(filepath, index=False)
-
-
-# if __name__ == "__main__":
-#     scrape_all_fifa_ratings(15, 25)
-# parse_fifa_ratings_csv(f"{PLAYER_RATINGS_DATA_DIR}/epl_players_fifa17.csv")
