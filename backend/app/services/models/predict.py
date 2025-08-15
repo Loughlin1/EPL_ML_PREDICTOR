@@ -89,9 +89,9 @@ def predict(input_data: pd.DataFrame):
 
 def add_predictions_to_input_data(input_data: pd.DataFrame, predictions):
     future_scores = predictions.astype(int)
-    input_data["PredScore"] = [f"{h}–{a}" for h, a in future_scores]
+    input_data["PredScore"] = [f"{h}-{a}" for h, a in future_scores]
     input_data[["PredFTHG", "PredFTAG"]] = (
-        input_data["PredScore"].str.split("–", expand=True).astype(int)
+        input_data["PredScore"].str.split("-", expand=True).astype(int)
     )
     input_data["PredResult"] = [
         "H" if h > a else "D" if h == a else "A" for h, a in future_scores
