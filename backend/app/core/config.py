@@ -1,5 +1,10 @@
-from pydantic_settings import BaseSettings
-from pydantic import field_validator, ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict, DotEnvSettingsSource, EnvSettingsSource, InitSettingsSource
+from pydantic import field_validator
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file FIRST
+load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -7,7 +12,6 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     DATABASE_URL: str
-
     ALLOWED_ORIGINS: str = ""
 
     # App specific variables
@@ -15,17 +19,17 @@ class Settings(BaseSettings):
     SUPERBRU_TARGET_URL: str
     SUPERBRU_USERNAME: str
     SUPERBRU_PASSWORD: str
-
     CURRENT_SEASON: str = "2024-2025"
 
     @field_validator("ALLOWED_ORIGINS")
     def validate_allowed_origins(cls, v: str) -> list[str]:
         return [origin.strip() for origin in v.split(",")] if v else []
 
-    model_config = ConfigDict(
+    model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
+        extra="ignore",
     )
 
 

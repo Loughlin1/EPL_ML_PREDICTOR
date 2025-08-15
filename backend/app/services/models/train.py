@@ -89,9 +89,6 @@ def preprocess_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     assert not X.isnull().any().any(), "Data contains NaNs"
     assert len(X) > 0, "DataFrame is empty"
 
-    # Scaling features
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
     return X, y
 
 
@@ -103,10 +100,13 @@ def train_pipeline():
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
+    # Scaling features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
 
     # Train model
     model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
+    model.fit(X_train_scaled, y_train)
 
     # Save model
     save_model(model, "random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
