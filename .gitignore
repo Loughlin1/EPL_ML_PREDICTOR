@@ -9,3 +9,5 @@
 # Ignore data files
 data/
 *.pkl
+
+**/nn_tuning_dir/

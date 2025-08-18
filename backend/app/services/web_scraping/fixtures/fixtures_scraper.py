@@ -34,4 +34,4 @@ def scrape_and_save_fixtures(season: str = None) -> None:
 
 
 if __name__ == "__main__":
-    scrape_and_save_fixtures("2024-2025")
+    scrape_and_save_fixtures()

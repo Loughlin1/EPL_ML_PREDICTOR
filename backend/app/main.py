@@ -11,6 +11,13 @@ from .api.endpoints import (
 )
 
 from .core.config import settings
+# from .core.logging_config import LOGGING_CONFIG
+# from logging.config import dictConfig
+import logging
+
+# dictConfig(LOGGING_CONFIG)
+# logger = logging.getLogger("app") # Get your custom logger instance
+
 
 app = FastAPI(
     title="EPL Predictor API",
@@ -18,7 +25,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
 )
-print(settings)
+
 # CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,

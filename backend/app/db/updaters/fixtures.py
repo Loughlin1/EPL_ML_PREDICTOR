@@ -110,7 +110,7 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
                         match.away_goals = away_goals
                         match.result = result
                     # Update other fields if provided
-                    match.week = row.get("week", match.week)
+                    match.week = row.get("Wk", match.week)
                     match.day = row.get("Day", match.day)
                     match.time = (
                         datetime.strptime(row["Time"], "%H:%M").time()
@@ -133,7 +133,7 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
                     # Create new match
                     match = Match(
                         season=season,
-                        week=row.get("week"),
+                        week=row.get("Wk"),
                         day=row.get("Day"),
                         date=date,
                         time=datetime.strptime(row["Time"], "%H:%M").time()
@@ -163,8 +163,3 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
 
         session.commit()
 
-
-if __name__ == "__main__":
-    # Example usage
-    df = pd.read_csv("../../data/season_2023.csv")
-    update_match_results(df, season="2023-2024")

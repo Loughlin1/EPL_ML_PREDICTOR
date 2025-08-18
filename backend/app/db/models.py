@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, Float, String, Boolean, Date, Time, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, Boolean, Date, Time, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import date, time
+from datetime import date, time, datetime
 
 from .database import Base
 
@@ -114,4 +114,19 @@ class MatchShootingStat(Base):
         data["time"] = self.match.time if self.match else None
         data["week"] = self.match.week if self.match else None
         data["date"] = self.match.date if self.match else None
+        return data
+
+
+class PredictionsCache(Base):
+    __tablename__ = "predictions_cache"
+    id = Column(Integer, primary_key=True)
+    match_id = Column(Integer, ForeignKey("matches.match_id"), nullable=False, unique=True)
+    pred_fthg = Column(Integer, nullable=False)
+    pred_ftag = Column(Integer, nullable=False)
+    pred_score = Column(String, nullable=False)
+    pred_result = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
         return data

@@ -1,0 +1,5 @@
+{
+    "model_name": "Linear Regression",
+    "train_mse": 1.4585526315789474,
+    "val_mse": 1.4598684210526316
+}

@@ -11,13 +11,66 @@ from ...core.paths import SAVED_MODELS_DIRECTORY
 from ..data_processing.data_loader import load_training_data, clean_data
 from ..models.save_load import load_model
 from ..models.train import preprocess_data
-from ..models.config import LABELS
+from ..models.config import LABELS, FEATURES
 
 
 def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
     """
-    Evaluates model performance on football score predictions with multiple metrics.
+    Evaluate model performance using MAE, RMSE, and accuracy metrics.
+    
+    Args:
+        y_true (pd.DataFrame): Actual results with FTHG, FTAG columns.
+        y_pred (pd.DataFrame): Predicted results with FTHG, FTAG columns.
+    
+    Returns:
+        dict: Metrics including MAE, RMSE, and accuracy for home and away goals.
+    
+    Raises:
+        ValueError: If required columns are missing or contain invalid data.
     """
+    # Validate required columns
+    required_cols = ["FTHG", "FTAG"]
+    for df, name in [(y_true, "y_true"), (y_pred, "y_pred")]:
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Missing required columns in {name}: {missing_cols}")
+
+    # Create copies to avoid modifying input
+    y_true = y_true.copy()
+    y_pred = y_pred.copy()
+
+    # Convert goal columns to numeric, handling invalid values
+    for col in ["FTHG", "FTAG"]:
+        y_true[col] = pd.to_numeric(y_true[col], errors="coerce")
+        y_pred[col] = pd.to_numeric(y_pred[col], errors="coerce")
+
+    # Filter rows with valid FTHG/FTAG (exclude future matches)
+    valid_mask = y_true[["FTHG", "FTAG"]].notna().all(axis=1) & y_pred[["FTHG", "FTAG"]].notna().all(axis=1)
+    if not valid_mask.any():
+        print("No valid matches with FTHG and FTAG for evaluation")
+        return {
+            "MAE_Home": 0,
+            "MAE_Away": 0,
+            "MAE_Total": 0,
+            "RMSE_Home": 0,
+            "RMSE_Away": 0,
+            "RMSE_Total": 0,
+            "R2_Home": 0,
+            "R2_Away": 0,
+            "Correct_Results": 0,
+            "Correct_Result_%": 0,
+            "Correct_Scores": 0,
+            "Correct_Scores_%": 0,
+            "Goal_Difference_Accuracy": 0,
+        }
+
+    y_true = y_true[valid_mask].copy()
+    y_pred = y_pred[valid_mask].copy()
+
+    # Convert to integers
+    y_true[["FTHG", "FTAG"]] = y_true[["FTHG", "FTAG"]].astype(int)
+    y_pred[["FTHG", "FTAG"]] = y_pred[["FTHG", "FTAG"]].astype(int)
+
     y_true = y_true.reset_index(drop=True)
     y_pred = y_pred.reset_index(drop=True)
 
@@ -79,10 +132,12 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
 
 
 def evaluate_model():
-    model = load_model("random_forest_model.pkl", SAVED_MODELS_DIRECTORY)
+    model = load_model(SAVED_MODELS_DIRECTORY, "best_model.joblib")
     df = load_training_data()
     df = clean_data(df)
-    X, y = preprocess_data(df)
+    df = preprocess_data(df)
+    X = df[FEATURES]
+    y = df[LABELS]
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42
     )

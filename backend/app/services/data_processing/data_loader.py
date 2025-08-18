@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import json
+import pytz
+from datetime import datetime, timedelta
 
 from ..models.config import TRAINING_DATA_START_SEASON, TRAINING_DATA_END_SEASON
 from ...core.config import settings
@@ -36,11 +38,19 @@ def generate_seasons(start_year: int, end_year: int) -> list[str]:
     return seasons
 
 
-def load_training_data() -> pd.DataFrame:
-    """Load training fixtures data from database"""
+def load_training_data(start_season: int = None) -> pd.DataFrame:
+    """
+    Load training fixtures data from database
+    Args:
+        start_year: int (e.g. 2014 for "2014-2015")
+    Returns:
+        pd.DataFrame
+    """
     dfs = []
+    if not start_season:
+        start_season = TRAINING_DATA_START_SEASON
     for season in generate_seasons(
-        start_year=TRAINING_DATA_START_SEASON, end_year=TRAINING_DATA_END_SEASON
+        start_year=start_season, end_year=TRAINING_DATA_END_SEASON
     ):
         df = pd.DataFrame(get_seasons_fixtures(season=season))
         if not df.empty:

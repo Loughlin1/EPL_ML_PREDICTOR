@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     SUPERBRU_TARGET_URL: str
     SUPERBRU_USERNAME: str
     SUPERBRU_PASSWORD: str
-    CURRENT_SEASON: str = "2024-2025"
+    CURRENT_SEASON: str = "2025-2026"
 
     @field_validator("ALLOWED_ORIGINS")
     def validate_allowed_origins(cls, v: str) -> list[str]:

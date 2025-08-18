@@ -4,12 +4,15 @@ from ...services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_f
 from ...services.web_scraping.fixtures.shooting_stats_scraper import (
     scrape_and_save_shooting_stats,
 )
-from ...db.queries import get_teams
-
+from ...db.queries import get_teams, check_missing_results
+from ...core.config import settings
+import logging
 
 router = APIRouter(
     tags=["Fixtures"],
 )
+
+logger = logging.getLogger(__name__)
 
 
 @router.get("/fixtures")
@@ -17,10 +20,12 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     """
     Get EPL fixtures, optionally by matchweek, and optionally force refresh.
     """
-    if refresh:
-        scrape_and_save_fixtures(season="2024-2025")
-        scrape_and_save_shooting_stats(season="2024-2025")
     fixtures = get_this_seasons_fixtures_data()
+    date_check_refresh = check_missing_results(logger=logger)
+    if refresh or date_check_refresh:
+        print("Refreshing data")
+        scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
+        scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
 
     if matchweek is not None:
         fixtures = fixtures[fixtures["week"] == matchweek]

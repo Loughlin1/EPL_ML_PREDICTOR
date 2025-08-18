@@ -34,29 +34,22 @@ COLUMN_MAPPING = {
 def predict_matches(request: MatchInput):
     try:
         df_input = pd.DataFrame(request.data)
-        result_df = predictor.get_predictions(df_input, logger)
-        result_df = result_df[COLUMN_MAPPING.keys()]
-        result_df = result_df.rename(columns=COLUMN_MAPPING)
+        print(df_input.head())
+        predictions_df = predictor.predict_pipeline(
+            df_input, cache_duration_hours=24, logger=logger
+        )
+        # Renaming columns
+        predictions_df = predictions_df[COLUMN_MAPPING.keys()]
+        predictions_df = predictions_df.rename(columns=COLUMN_MAPPING)
         # Map long venue name to short name
-        result_df["Venue"] = result_df["Venue"].replace(
+        predictions_df["Venue"] = predictions_df["Venue"].replace(
             "The American Express Community Stadium", "The AMEX"
         )
-        return result_df.to_dict(orient="records")
+        predictions_df["Score"] = predictions_df["Score"].replace("None-None", "")
+        return predictions_df.to_dict(orient="records")
 
     except Exception as e:
         error = traceback.format_exc()
         logger.error(f"Prediction failed: {str(error)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# @router.post("/predict/base-model")
-# def predict_matches(request: MatchInput):
-#     try:
-#         df_input = pd.DataFrame(request.data)
-#         result_df = predictor.get_predictions(df_input, logger)
-#         result_df.columns = result_df.columns.str.upper()
-#         return result_df[COLUMNS].to_dict(orient="records")
-
-#     except Exception as e:
-#         logger.error(f"Prediction failed: {str(e)}")
-#         raise HTTPException(status_code=500, detail=str(e))

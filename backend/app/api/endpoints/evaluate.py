@@ -24,7 +24,8 @@ def evaluate_matches(request: MatchInput):
         return evaluate_model_performance(y_true, y_pred)
 
     except Exception as e:
-        logger.error(f"Evaluation failed: {str(e)}")
+        error = traceback.format_exc()
+        logger.error(f"Evaluation failed: {str(error)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

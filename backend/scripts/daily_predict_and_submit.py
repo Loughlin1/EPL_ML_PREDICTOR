@@ -1,6 +1,8 @@
 import datetime
+from zoneinfo import ZoneInfo
 import pandas as pd
 import logging
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from app.db.database import get_session
 from app.db.models import Match
@@ -13,12 +15,11 @@ logger = logging.getLogger(__name__)
 
 def get_upcoming_matches(session: Session) -> list[dict]:
     """Get upcoming matches from the database for the next hour."""
-    now = datetime.datetime.now()
-    next_hour = now + datetime.timedelta(hours=1)
+    today = datetime.datetime.now(ZoneInfo('Europe/London')).date()
     matches = (
         session.query(Match)
-        .filter(Match.season == "2024-2025")
-        .filter(Match.time >= now, Match.time < next_hour)
+        .filter(Match.season == settings.CURRENT_SEASON)
+        .filter(and_(Match.date == today))
         .all()
     )
     return [match.to_dict() for match in matches]
@@ -36,10 +37,12 @@ def main():
     with get_session() as session:
         # Refresh matches data
         matches = get_upcoming_matches(session)
+        print(matches)
         if not matches:
             print("No matches starting in the next hour.")
             return
         week = matches[0]["week"]
+        print(week)
         predictions = predict_results(matches, logger=logger)
         submit_to_superbru(predictions, week=week)
 
