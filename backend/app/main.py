@@ -1,8 +1,9 @@
-# from .core.logging_config import LOGGING_CONFIG
-# from logging.config import dictConfig
+import logging
+import traceback
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .api.endpoints import (
     content,
@@ -16,9 +17,11 @@ from .api.endpoints import (
 )
 from .core.config import settings
 
-# dictConfig(LOGGING_CONFIG)
-# logger = logging.getLogger("app") # Get your custom logger instance
-
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="EPL Predictor API",
@@ -27,7 +30,6 @@ app = FastAPI(
     docs_url="/docs",
 )
 
-# CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -35,6 +37,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception(
+        "Unhandled exception on %s %s", request.method, request.url.path
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
 
 
 @app.get("/api/status")

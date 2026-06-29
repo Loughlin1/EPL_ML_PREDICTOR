@@ -1,19 +1,17 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
 from ...core.config import settings
-from ...db.queries import check_missing_results, get_available_seasons, get_teams
+from ...db.queries import check_missing_results, get_available_seasons
+from ...db.queries import get_teams as db_get_teams
 from ...services.data_processing.data_loader import get_this_seasons_fixtures_data
 from ...services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_fixtures
 from ...services.web_scraping.fixtures.shooting_stats_scraper import (
     scrape_and_save_shooting_stats,
 )
 
-router = APIRouter(
-    tags=["Fixtures"],
-)
-
+router = APIRouter(tags=["Fixtures"])
 logger = logging.getLogger(__name__)
 
 
@@ -40,24 +38,19 @@ def get_fixtures(
         date_check_refresh = check_missing_results(logger=logger)
         if refresh or date_check_refresh:
             try:
-                print("Refreshing data")
                 scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
                 scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
             except Exception as e:
-                logger.warning(f"Scrape failed, serving cached DB data: {e}")
+                logger.warning("Scrape failed, serving cached DB data: %s", e)
 
     if matchweek is not None:
         fixtures = fixtures[fixtures["week"] == matchweek]
 
-    fixtures = fixtures.replace([float("inf"), float("-inf")], None)
-    fixtures = fixtures.fillna("")
+    fixtures = fixtures.replace([float("inf"), float("-inf")], None).fillna("")
     return fixtures.to_dict(orient="records")
 
 
 @router.get("/teams")
 def get_teams():
-    try:
-        teams = get_teams()
-        return {"teams": teams}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load teams: {str(e)}")
+    """Return all teams in the database."""
+    return {"teams": db_get_teams()}

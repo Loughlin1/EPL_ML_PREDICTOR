@@ -1,16 +1,13 @@
 import logging
-import traceback
 
 import pandas as pd
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from ...core.config import settings
 from ...schemas import MatchInput
 from ...services.models import predict as predictor
 
-router = APIRouter(
-    tags=["Model"],
-)
+router = APIRouter(tags=["Model"])
 logger = logging.getLogger(__name__)
 
 COLUMN_MAPPING = {
@@ -31,28 +28,22 @@ COLUMN_MAPPING = {
     "PredFTAG": "PredFTAG",
 }
 
+VENUE_ALIASES = {"The American Express Community Stadium": "The AMEX"}
+
 
 @router.post("/predict")
 def predict_matches(request: MatchInput):
-    try:
-        df_input = pd.DataFrame(request.data)
-        season = request.season or settings.CURRENT_SEASON
-        predictions_df = predictor.predict_pipeline(
-            df_input, cache_duration_hours=24, logger=logger, season=season
-        )
-        # Renaming columns
-        predictions_df = predictions_df[COLUMN_MAPPING.keys()]
-        predictions_df = predictions_df.rename(columns=COLUMN_MAPPING)
-        # Map long venue name to short name
-        predictions_df["Venue"] = predictions_df["Venue"].replace(
-            "The American Express Community Stadium", "The AMEX"
-        )
-        predictions_df["Score"] = predictions_df["Score"].replace("None-None", "")
-        predictions_df = predictions_df.replace([float("inf"), float("-inf")], None)
-        predictions_df = predictions_df.fillna("")
-        return predictions_df.to_dict(orient="records")
+    """Run prediction pipeline and return sanitised results."""
+    season = request.season or settings.CURRENT_SEASON
+    df_input = pd.DataFrame(request.data)
+    predictions_df = predictor.predict_pipeline(
+        df_input, cache_duration_hours=24, logger=logger, season=season
+    )
 
-    except Exception as e:
-        error = traceback.format_exc()
-        logger.error(f"Prediction failed: {str(error)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    predictions_df = predictions_df[COLUMN_MAPPING.keys()].rename(columns=COLUMN_MAPPING)
+    for long, short in VENUE_ALIASES.items():
+        predictions_df["Venue"] = predictions_df["Venue"].replace(long, short)
+    predictions_df["Score"] = predictions_df["Score"].replace("None-None", "")
+    predictions_df = predictions_df.replace([float("inf"), float("-inf")], None).fillna("")
+
+    return predictions_df.to_dict(orient="records")
