@@ -1,7 +1,3 @@
-import logging
-from logging.config import dictConfig
-
-
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -24,7 +20,7 @@ LOGGING_CONFIG = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": "app.log",
-            "maxBytes": 10485760, # 10MB
+            "maxBytes": 10485760,  # 10MB
             "backupCount": 5,
             "formatter": "default",
             "level": "DEBUG",
@@ -46,7 +42,7 @@ LOGGING_CONFIG = {
             "level": "INFO",
             "propagate": False,
         },
-        "app": { # Custom logger for your application
+        "app": {  # Custom logger for your application
             "handlers": ["console", "file"],
             "level": "DEBUG",
             "propagate": False,

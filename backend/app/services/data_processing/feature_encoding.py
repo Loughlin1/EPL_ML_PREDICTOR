@@ -1,4 +1,5 @@
 import pickle
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -23,7 +24,9 @@ def encode_team_name_features(df: pd.DataFrame, encoder: LabelEncoder) -> pd.Dat
 def fit_venue_encoder(df: pd.DataFrame) -> LabelEncoder:
     venue_encoder = LabelEncoder()
     venues = df["venue"].unique()
-    venues = np.append(venues, ["Portman Road Stadium", "Hill Dickinson Stadium"])  # Adding new stadiums
+    venues = np.append(
+        venues, ["Portman Road Stadium", "Hill Dickinson Stadium"]
+    )  # Adding new stadiums
     # print(f"The stadiums: \n {venues}")
     venue_encoder.fit(venues)
     return venue_encoder

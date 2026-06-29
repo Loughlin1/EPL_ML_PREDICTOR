@@ -5,12 +5,12 @@ shooting_stats_scraper.py
 """
 
 import time
+
 import pandas as pd
 
 from ....core.config import settings
 from ....db.loaders.shooting_stats import add_shooting_stats
 from ....db.queries import get_teams_by_season
-
 
 FOOTBALL_DATA_BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 CURRENT_SEASON = settings.CURRENT_SEASON

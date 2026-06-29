@@ -4,13 +4,13 @@ import pandas as pd
 def get_superbru_points(df: pd.DataFrame) -> int:
     """
     Calculate points scored based on the accuracy of predictions.
-    
+
     Args:
         df (pd.DataFrame): DataFrame with columns FTHG, FTAG, PredFTHG, PredFTAG, Result, PredResult.
-    
+
     Returns:
         int: Total Superbru points scored.
-    
+
     Raises:
         ValueError: If required columns are missing or contain invalid data.
     """
@@ -19,7 +19,7 @@ def get_superbru_points(df: pd.DataFrame) -> int:
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
         raise ValueError(f"Missing required columns: {missing_cols}")
-    
+
     # Create a copy to avoid modifying input
     df = df.copy()
 
@@ -28,23 +28,25 @@ def get_superbru_points(df: pd.DataFrame) -> int:
     for col in goal_cols:
         # Convert to numeric, coercing errors to NaN
         df[col] = pd.to_numeric(df[col], errors="coerce")
-    
+
     # Check for NA in predictions
     if df[["PredFTHG", "PredFTAG"]].isna().any().any():
-        raise ValueError("PredFTHG or PredFTAG contains NaN values, ensure predictions are complete")
-    
+        raise ValueError(
+            "PredFTHG or PredFTAG contains NaN values, ensure predictions are complete"
+        )
+
     # Convert predictions to integers
     df[["PredFTHG", "PredFTAG"]] = df[["PredFTHG", "PredFTAG"]].astype(int)
-    
+
     # Filter rows with valid FTHG/FTAG for scoring (exclude future matches)
     valid_df = df.dropna(subset=["FTHG", "FTAG"]).copy()
     if valid_df.empty:
         print("No valid matches with FTHG and FTAG for scoring")
         return 0
-    
+
     # Convert FTHG/FTAG to integers for valid rows
     valid_df[["FTHG", "FTAG"]] = valid_df[["FTHG", "FTAG"]].astype(int)
-    
+
     points = 0
 
     # Exact scores: 3 points for exact match of home and away goals
@@ -77,17 +79,17 @@ def get_superbru_points(df: pd.DataFrame) -> int:
     two_goals_out_condition = (condition3 | condition4 | condition5) & condition6
 
     close_scores_condition = (
-        (df["Result"] == df["PredResult"]) &  # Correct result
-        (one_goal_out_condition | two_goals_out_condition) &  # Close score conditions
-        (~exact_scores)  # Exclude exact scores to avoid double-counting
+        (df["Result"] == df["PredResult"])  # Correct result
+        & (one_goal_out_condition | two_goals_out_condition)  # Close score conditions
+        & (~exact_scores)  # Exclude exact scores to avoid double-counting
     )
     points += 1.5 * close_scores_condition.sum()
 
     # Correct result: 1 point for correct result (win/loss/draw) without close or exact score
     correct_result_condition = (
-        (df["Result"] == df["PredResult"]) &  # Correct result
-        (~exact_scores) &  # Not an exact score
-        (~close_scores_condition)  # Not a close score
+        (df["Result"] == df["PredResult"])  # Correct result
+        & (~exact_scores)  # Not an exact score
+        & (~close_scores_condition)  # Not a close score
     )
     points += correct_result_condition.sum()
 

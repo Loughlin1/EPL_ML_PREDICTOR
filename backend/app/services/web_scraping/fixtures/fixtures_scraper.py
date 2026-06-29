@@ -4,12 +4,10 @@ fixtures_scraper.py
     Module to scrape fixtures data from the web and return it in a structured format.
 """
 
-import time
 import pandas as pd
 
-from ....db.updaters.fixtures import upsert_fixtures
 from ....core.config import settings
-
+from ....db.updaters.fixtures import upsert_fixtures
 
 FOOTBALL_DATA_BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 CURRENT_SEASON = settings.CURRENT_SEASON
@@ -30,7 +28,7 @@ def scrape_and_save_fixtures(season: str = None) -> None:
 
     df = pd.read_html(url, attrs={"id": f"sched_{season}_9_1"})[0]
     upsert_fixtures(df, season=season)
-    print(f"Fixtures data fetched and saved to database")
+    print("Fixtures data fetched and saved to database")
 
 
 if __name__ == "__main__":

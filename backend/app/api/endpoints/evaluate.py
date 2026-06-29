@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
-import pandas as pd
 import logging
 import traceback
 
+import pandas as pd
+from fastapi import APIRouter, HTTPException
+
 from ...schemas import MatchInput
-from ...services.models.evaluation import evaluate_model, evaluate_model_performance
 from ...services.models.config import LABELS
+from ...services.models.evaluation import evaluate_model, evaluate_model_performance
 
 router = APIRouter(
     tags=["Model"],

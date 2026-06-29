@@ -1,10 +1,12 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
+
 from alembic import context
+from sqlalchemy import engine_from_config, pool
+
+from app.db.database import engine  # Reuse your existing engine, if defined
 
 # Import your SQLAlchemy Base and database configuration
 from app.db.models import Base  # Adjust this import based on your actual module path
-from app.db.database import engine  # Reuse your existing engine, if defined
 
 # This is the Alembic Config object, which provides access to the values within the .ini file
 config = context.config

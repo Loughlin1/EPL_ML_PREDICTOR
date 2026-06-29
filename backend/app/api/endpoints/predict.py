@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
-import pandas as pd
 import logging
 import traceback
 
-from ...services.models import predict as predictor
+import pandas as pd
+from fastapi import APIRouter, HTTPException
+
 from ...schemas import MatchInput
+from ...services.models import predict as predictor
 
 router = APIRouter(
     tags=["Model"],
@@ -52,4 +53,3 @@ def predict_matches(request: MatchInput):
         error = traceback.format_exc()
         logger.error(f"Prediction failed: {str(error)}")
         raise HTTPException(status_code=500, detail=str(e))
-

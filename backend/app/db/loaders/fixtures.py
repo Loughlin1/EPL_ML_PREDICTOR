@@ -1,7 +1,9 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
+
 from ..database import get_session
-from ..models import Team, Match
+from ..models import Match, Team
 
 
 def parse_score(score):
@@ -92,7 +94,7 @@ def add_matches(df: pd.DataFrame, season: str, team_map: dict) -> dict:
     with get_session() as session:
         for _, row in df.iterrows():
             if "Date" not in df.columns or pd.isna(row.get("Date")):
-                print(f"Skipping row: Missing or invalid Date.")
+                print("Skipping row: Missing or invalid Date.")
                 continue
             try:
                 date = datetime.strptime(row["Date"], "%Y-%m-%d").date()

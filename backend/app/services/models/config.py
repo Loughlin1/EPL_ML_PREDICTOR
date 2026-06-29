@@ -1,6 +1,16 @@
-TRAINING_DATA_START_SEASON = 2014       # 2014-2015
-TRAINING_DATA_END_SEASON = 2024         # 2024-2025
-SHOOTING_STATS_COLS = ["gf", "ga", "sh", "sot", "sot_percent", "g_per_sh", "g_per_sot", "pk", "pkatt"]
+TRAINING_DATA_START_SEASON = 2014  # 2014-2015
+TRAINING_DATA_END_SEASON = 2024  # 2024-2025
+SHOOTING_STATS_COLS = [
+    "gf",
+    "ga",
+    "sh",
+    "sot",
+    "sot_percent",
+    "g_per_sh",
+    "g_per_sot",
+    "pk",
+    "pkatt",
+]
 SH_ROLLING_HOME_COLS = [f"{c}_rolling_h" for c in SHOOTING_STATS_COLS]
 SH_ROLLING_AWAY_COLS = [f"{c}_rolling_a" for c in SHOOTING_STATS_COLS]
 SH_ROLLING_COLS = SH_ROLLING_HOME_COLS + SH_ROLLING_AWAY_COLS

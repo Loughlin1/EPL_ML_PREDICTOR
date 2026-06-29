@@ -1,6 +1,7 @@
-import pytest
 from typing import Union
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

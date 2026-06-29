@@ -1,9 +1,11 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
+from fuzzywuzzy import process
 from sqlalchemy import select
+
 from ..database import get_session
 from ..models import Match, Team
-from fuzzywuzzy import process
 
 
 def parse_score(score):
@@ -162,4 +164,3 @@ def upsert_fixtures(df: pd.DataFrame, season: str) -> None:
                 continue
 
         session.commit()
-

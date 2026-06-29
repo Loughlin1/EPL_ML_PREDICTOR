@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
 import json
 import logging
 import traceback
+
+from fastapi import APIRouter, HTTPException
 
 from ...core.paths import CONTENT_DIR
 

@@ -8,23 +8,23 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 from ...core.paths import SAVED_MODELS_DIRECTORY
-from ..data_processing.data_loader import load_training_data, clean_data
+from ..data_processing.data_loader import clean_data, load_training_data
+from ..models.config import FEATURES, LABELS
 from ..models.save_load import load_model
 from ..models.train import preprocess_data
-from ..models.config import LABELS, FEATURES
 
 
 def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
     """
     Evaluate model performance using MAE, RMSE, and accuracy metrics.
-    
+
     Args:
         y_true (pd.DataFrame): Actual results with FTHG, FTAG columns.
         y_pred (pd.DataFrame): Predicted results with FTHG, FTAG columns.
-    
+
     Returns:
         dict: Metrics including MAE, RMSE, and accuracy for home and away goals.
-    
+
     Raises:
         ValueError: If required columns are missing or contain invalid data.
     """
@@ -45,7 +45,9 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
         y_pred[col] = pd.to_numeric(y_pred[col], errors="coerce")
 
     # Filter rows with valid FTHG/FTAG (exclude future matches)
-    valid_mask = y_true[["FTHG", "FTAG"]].notna().all(axis=1) & y_pred[["FTHG", "FTAG"]].notna().all(axis=1)
+    valid_mask = y_true[["FTHG", "FTAG"]].notna().all(axis=1) & y_pred[
+        ["FTHG", "FTAG"]
+    ].notna().all(axis=1)
     if not valid_mask.any():
         print("No valid matches with FTHG and FTAG for evaluation")
         return {

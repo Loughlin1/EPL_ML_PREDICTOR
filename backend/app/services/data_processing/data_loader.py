@@ -1,12 +1,10 @@
-import os
-import pandas as pd
 import json
-import pytz
-from datetime import datetime, timedelta
 
-from ..models.config import TRAINING_DATA_START_SEASON, TRAINING_DATA_END_SEASON
+import pandas as pd
+
 from ...core.config import settings
-from ...db.queries import get_seasons_fixtures, get_team_details, get_shooting_stats
+from ...db.queries import get_seasons_fixtures, get_shooting_stats, get_team_details
+from ..models.config import TRAINING_DATA_END_SEASON, TRAINING_DATA_START_SEASON
 
 
 def load_json_file(filepath):

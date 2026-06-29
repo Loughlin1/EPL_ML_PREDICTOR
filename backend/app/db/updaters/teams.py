@@ -1,9 +1,9 @@
 import pandas as pd
 from sqlalchemy import select
+
 from ..database import get_session
+from ..mappings.load_mappings import load_team_ids_mapping, load_team_name_mapping
 from ..models import Team
-from ..mappings.load_mappings import load_team_name_mapping, load_team_ids_mapping
-from ...core.paths import data_dir
 
 
 def upsert_team(

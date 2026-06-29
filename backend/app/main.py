@@ -1,19 +1,19 @@
+# from .core.logging_config import LOGGING_CONFIG
+# from logging.config import dictConfig
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .api.endpoints import (
-    predict,
-    train,
+    content,
     evaluate,
     fixtures,
     matchweek,
+    predict,
     superbru,
-    content,
+    train,
 )
-
 from .core.config import settings
-# from .core.logging_config import LOGGING_CONFIG
-# from logging.config import dictConfig
-import logging
 
 # dictConfig(LOGGING_CONFIG)
 # logger = logging.getLogger("app") # Get your custom logger instance

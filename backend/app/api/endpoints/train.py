@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException
 import logging
 import traceback
 
-from ...services.models.train import train_model
+from fastapi import APIRouter, HTTPException
 
+from ...services.models.train import train_model
 
 router = APIRouter(
     tags=["Model"],

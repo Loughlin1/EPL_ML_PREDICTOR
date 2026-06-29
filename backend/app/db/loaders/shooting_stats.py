@@ -1,8 +1,10 @@
-from sqlalchemy import select
-from ..database import get_session
-from ..models import Match, Team, MatchShootingStat
 from datetime import datetime
+
 import pandas as pd
+from sqlalchemy import select
+
+from ..database import get_session
+from ..models import Match, MatchShootingStat, Team
 
 
 def add_shooting_stats(df: pd.DataFrame, team_name: str, seasons: list[str]) -> None:

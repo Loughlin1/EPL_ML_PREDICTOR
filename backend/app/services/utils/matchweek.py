@@ -1,5 +1,6 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
 
 
 def get_current_matchweek(fixtures_df: pd.DataFrame) -> int:

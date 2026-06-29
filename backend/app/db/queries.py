@@ -1,10 +1,12 @@
-from .models import Team, Match, MatchShootingStat
-from .database import get_session
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-from sqlalchemy import or_, func
 import logging
+from datetime import datetime
+from typing import Any, Dict, List
+
 import pytz
+from sqlalchemy import func, or_
+
+from .database import get_session
+from .models import Match, MatchShootingStat, Team
 
 
 def get_seasons_fixtures(
@@ -177,13 +179,15 @@ def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -
         return matches.match_id if matches else None
 
 
-def check_missing_results(logger: logging.Logger, current_datetime: datetime = None) -> bool:
+def check_missing_results(
+    logger: logging.Logger, current_datetime: datetime = None
+) -> bool:
     """
     Check for matches that have been played (date + time + 2 hours in past) but have missing home_goals or away_goals.
-    
+
     Args:
         current_datetime (datetime, optional): Current datetime for comparison. Defaults to now in UK (Europe/London).
-    
+
     Returns:
         bool: True if any past matches have missing home_goals or away_goals, False otherwise.
     """
@@ -193,31 +197,36 @@ def check_missing_results(logger: logging.Logger, current_datetime: datetime = N
         current_datetime = datetime.now(uk_tz)
     else:
         current_datetime = current_datetime.astimezone(uk_tz)
-    
+
     with get_session() as session:
         # Combine date and time in SQL, defaulting time to 00:00:00 if NULL
         match_datetime = func.coalesce(
-            func.datetime(Match.date, Match.time),
-            func.datetime(Match.date, "00:00:00")
+            func.datetime(Match.date, Match.time), func.datetime(Match.date, "00:00:00")
         )
-        
+
         # Add 2 hours for match duration
         match_end_datetime = func.datetime(match_datetime, "+2 hours")
-        
+
         # Query matches where end time is past and results are missing
-        missing_results = session.query(Match).filter(
-            Match.date.isnot(None),
-            match_end_datetime < current_datetime,
-            or_(Match.home_goals.is_(None), Match.away_goals.is_(None))
-        ).all()
-        
+        missing_results = (
+            session.query(Match)
+            .filter(
+                Match.date.isnot(None),
+                match_end_datetime < current_datetime,
+                or_(Match.home_goals.is_(None), Match.away_goals.is_(None)),
+            )
+            .all()
+        )
+
         # Log findings
         if missing_results:
             match_ids = [match.match_id for match in missing_results]
-            logger.warning(f"Found {len(missing_results)} past matches with missing home_goals/away_goals: {match_ids}")
+            logger.warning(
+                f"Found {len(missing_results)} past matches with missing home_goals/away_goals: {match_ids}"
+            )
         else:
             logger.info("No past matches with missing home_goals/away_goals found")
-        
+
         return bool(missing_results)
 
 

@@ -1,6 +1,6 @@
 import logging
+
 from app.core.config import settings
-from app.db.database import get_session
 from app.services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_fixtures
 from app.services.web_scraping.fixtures.shooting_stats_scraper import (
     scrape_and_save_shooting_stats,

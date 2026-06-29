@@ -1,7 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict, DotEnvSettingsSource, EnvSettingsSource, InitSettingsSource
-from pydantic import field_validator
 from dotenv import load_dotenv
-import os
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Load environment variables from .env file FIRST
 load_dotenv()

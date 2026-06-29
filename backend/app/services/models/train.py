@@ -19,9 +19,8 @@ Workflow:
 """
 
 import logging
-import pandas as pd
+
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -29,9 +28,9 @@ from ...core.paths import (
     SAVED_MODELS_DIRECTORY,
 )
 from ..data_processing.data_loader import clean_data, load_training_data
+from ..models.config import FEATURES, LABELS
 from ..models.save_load import save_model, save_scaler
-from ..models.config import FEATURES, LABELS, SH_ROLLING_HOME_COLS
-from .preprocess import preprocess_data, check_data
+from .preprocess import check_data, preprocess_data
 
 
 def train_pipeline():
@@ -61,7 +60,9 @@ def train_pipeline():
 
 
 def train_model():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
     logger = logging.getLogger(__name__)
     logger.info("Starting training pipeline...")
     train_pipeline()

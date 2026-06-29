@@ -1,10 +1,11 @@
 # tests/conftest.py
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 
-import os
+from app.main import app
 
 os.environ["SUPERBRU_TARGET_URL"] = ""
 os.environ["USERNAME"] = ""

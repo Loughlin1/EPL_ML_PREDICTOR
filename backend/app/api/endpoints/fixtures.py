@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Query, HTTPException
+import logging
+
+from fastapi import APIRouter, HTTPException, Query
+
+from ...core.config import settings
+from ...db.queries import check_missing_results, get_teams
 from ...services.data_processing.data_loader import get_this_seasons_fixtures_data
 from ...services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_fixtures
 from ...services.web_scraping.fixtures.shooting_stats_scraper import (
     scrape_and_save_shooting_stats,
 )
-from ...db.queries import get_teams, check_missing_results
-from ...core.config import settings
-import logging
 
 router = APIRouter(
     tags=["Fixtures"],

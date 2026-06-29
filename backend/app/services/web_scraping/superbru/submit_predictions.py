@@ -1,11 +1,12 @@
 import time
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+from ....core.config import settings
 from .login import login_to_superbru
 from .popups import close_pop_up
-from ....core.config import settings
 
 # ABBREVIATIONS:
 # h - home team, a - away team
@@ -55,7 +56,9 @@ def find_and_input_predictions(driver: webdriver, predictions: list[dict]) -> No
             By.XPATH, "//input[@class='editable-dropdown soccer-right-score']"
         )
 
-        for h_element, a_element in zip(home_team_goal_inputs, away_team_goal_inputs):
+        for h_element, a_element in zip(
+            home_team_goal_inputs, away_team_goal_inputs, strict=False
+        ):
             h_team_name = h_element.get_attribute("data-bru-team-name")
             a_team_name = a_element.get_attribute("data-bru-team-name")
             if check_team_names_match(
