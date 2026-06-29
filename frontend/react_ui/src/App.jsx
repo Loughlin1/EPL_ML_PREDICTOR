@@ -60,7 +60,7 @@ function App() {
         const pointsRes = await postPoints(predictionData);
         const allPts = pointsRes.data.points;
 
-        const topPtsRes = await getTopPoints();
+        const topPtsRes = await getTopPoints(season);
         const { global_top, global_top_250 } = topPtsRes.data;
 
         const modelValPerf = await getModelEvaluation();

@@ -37,31 +37,39 @@ def calculate_superbru_points(request: MatchInput):
 
 
 @router.get("/points/top/global")
-def get_leaderboard_points():
+def get_leaderboard_points(season: str = None):
     """
-    Get the top global points on SuperBru leaderboard.
+    Get the top global points on SuperBru leaderboard, cached per season.
     """
+    from ...core.config import settings
+
+    target_season = season or settings.CURRENT_SEASON
+
+    cache = {}
     if os.path.exists(CACHE_PATH):
         with open(CACHE_PATH, "r") as f:
             cache = json.load(f)
-            ts = datetime.fromisoformat(cache["timestamp"])
-            if datetime.now() - ts < CACHE_TTL:
-                return {
-                    "global_top": cache["global_top"],
-                    "global_top_250": cache["global_top_250"],
-                }
-    # Run scraper if cache is missing/expired
-    global_top, global_top_250 = get_top_points()
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
 
+    entry = cache.get(target_season)
+    if entry:
+        is_finished_season = target_season != settings.CURRENT_SEASON
+        ts = datetime.fromisoformat(entry["timestamp"])
+        if is_finished_season or datetime.now() - ts < CACHE_TTL:
+            return {
+                "global_top": entry["global_top"],
+                "global_top_250": entry["global_top_250"],
+            }
+
+    # Run scraper if cache is missing/expired for this season
+    global_top, global_top_250 = get_top_points()
+
+    cache[target_season] = {
+        "timestamp": datetime.now().isoformat(),
+        "global_top": global_top,
+        "global_top_250": global_top_250,
+    }
+    os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
     with open(CACHE_PATH, "w") as f:
-        json.dump(
-            {
-                "timestamp": datetime.now().isoformat(),
-                "global_top": global_top,
-                "global_top_250": global_top_250,
-            },
-            f,
-        )
+        json.dump(cache, f, indent=2)
+
     return {"global_top": global_top, "global_top_250": global_top_250}
