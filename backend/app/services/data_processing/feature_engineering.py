@@ -139,7 +139,9 @@ def create_rolling_shooting_stats(teams: list[str]) -> pd.DataFrame:
         rolling_dfs.append(rolling_df)
 
     # Concatenate and select relevant columns
-    combined_df = pd.concat(rolling_dfs, ignore_index=False)
+    combined_df = pd.concat(
+        [df.dropna(axis=1, how="all") for df in rolling_dfs], ignore_index=False
+    )
     merged_df = merge_team_stats(combined_df)
     return merged_df
 

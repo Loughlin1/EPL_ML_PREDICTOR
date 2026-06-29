@@ -11,6 +11,7 @@ from ...services.data_processing.data_loader import get_this_seasons_fixtures_da
 from ...services.models.predict import check_cache, predict_pipeline
 from ...services.models.summary import get_or_compute_summary
 from ...services.utils.matchweek import get_current_matchweek
+from ...services.utils.superbru_points_calculator import get_superbru_points
 
 router = APIRouter(prefix="/seasons", tags=["Seasons"])
 logger = logging.getLogger(__name__)
@@ -101,13 +102,21 @@ def get_matchweek(season: str, week: int):
             )
 
         df = pd.DataFrame(rows)
+
+        # Compute superbru points for this week server-side
+        try:
+            points_df = df.rename(columns={"result": "Result"})
+            week_points = get_superbru_points(points_df)
+        except Exception:
+            week_points = 0
+
         # Keep only columns that exist in both the data and COLUMN_MAPPING
         cols = [k for k in COLUMN_MAPPING if k in df.columns]
         df = df[cols].rename(columns=COLUMN_MAPPING)
         df["Score"] = df["Score"].replace("None-None", "")
         df["Venue"] = df["Venue"].replace("The American Express Community Stadium", "The AMEX")
 
-        return _sanitise(df.to_dict(orient="records"))
+        return {"matches": _sanitise(df.to_dict(orient="records")), "week_points": week_points}
 
     except HTTPException:
         raise

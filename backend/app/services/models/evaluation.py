@@ -45,6 +45,10 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
         y_true[col] = pd.to_numeric(y_true[col], errors="coerce")
         y_pred[col] = pd.to_numeric(y_pred[col], errors="coerce")
 
+    # Align indexes before filtering to avoid reindex warnings
+    y_true = y_true.reset_index(drop=True)
+    y_pred = y_pred.reset_index(drop=True)
+
     # Filter rows with valid FTHG/FTAG (exclude future matches)
     valid_mask = y_true[["FTHG", "FTAG"]].notna().all(axis=1) & y_pred[
         ["FTHG", "FTAG"]

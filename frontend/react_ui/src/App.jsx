@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   getSeasons, getSeasonSummary, getSeasonMatchweek,
-  getMatchweekData, getTopPoints, postPoints, getModelEvaluation
+  getMatchweekData, getTopPoints, getModelEvaluation
 } from './api';
 import Header from './components/Header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
@@ -74,16 +74,8 @@ function App() {
       setLoadingWeek(true);
       try {
         const res = await getMatchweekData(season, matchweek);
-        const data = res.data;
-        setMatchweekData(data);
-
-        // Points for this week
-        try {
-          const ptsRes = await postPoints(data);
-          setPointsThisWeek(ptsRes.data.points || 0);
-        } catch {
-          setPointsThisWeek(0);
-        }
+        setMatchweekData(res.data.matches || []);
+        setPointsThisWeek(res.data.week_points || 0);
       } catch (error) {
         console.error('Error fetching matchweek data', error);
       } finally {
