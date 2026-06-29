@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   getSeasons, getSeasonSummary, getSeasonMatchweek,
-  getMatchweekData, getTopPoints, getModelEvaluation
+  getMatchweekData, getTopPoints,
 } from './api';
 import Header from './components/Header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
@@ -83,28 +83,12 @@ function App() {
   const handleNext = () => { if (matchweek < 38) setMatchweek((w) => w + 1); };
 
   return (
-    <div className="p-6 grid w-full">
-      <Header />
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
-        <h1 className="text-3xl font-bold">⚽️ EPL Match Result Predictor</h1>
-        {availableSeasons.length > 0 && (
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Season</label>
-            <select
-              value={season || ''}
-              onChange={(e) => setSeason(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded bg-white hover:border-gray-400 cursor-pointer text-sm"
-            >
-              {availableSeasons.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-      <p className="mb-6 text-gray-600">
-        Visualize match predictions and Superbru scoring
-      </p>
+    <div className="p-3 grid w-full">
+      <Header
+        season={season}
+        availableSeasons={availableSeasons}
+        onSeasonChange={setSeason}
+      />
 
       {loadingSeason ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-500 min-w-full">
@@ -121,7 +105,7 @@ function App() {
             availableSeasons={availableSeasons}
           />
 
-          <div id="predictions" className="overflow-auto min-w-full">
+          <div className="overflow-auto min-w-full">
             <MatchweekMenuBar
               matchweek={matchweek}
               handlePrev={handlePrev}
@@ -145,9 +129,7 @@ function App() {
         </>
       )}
 
-      <div id="model">
-        <ModelExplanation />
-      </div>
+      <ModelExplanation />
       <Footer />
     </div>
   );

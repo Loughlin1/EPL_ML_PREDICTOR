@@ -2,78 +2,112 @@
     "content": {
         "model_explanation": {
             "title": "Model Explanation",
-            "description": "The model chosen for predicting the full-time home and away goals in English Premier League matches is the RandomForestRegressor. This decision was made after comparing various models and considering several factors:",
+            "description": "Match outcomes are predicted using a Random Forest Regressor trained separately for each season. The model predicts full-time home and away goals, from which the result and Superbru score are derived. It was selected after comparing multiple regressors for its ability to capture non-linear feature interactions without heavy manual tuning.",
             "points": [
                 {
-                    "title": "Handling of Complex Interactions:",
+                    "title": "Elo Ratings",
                     "subpoints": [
-                        "The RandomForestRegressor is capable of capturing complex interactions between features without requiring extensive feature engineering.",
-                        "It can handle both numerical and categorical data effectively, which is crucial for our dataset that includes features like team names, match dates, and venues."
+                        "Each team carries a running Elo rating updated after every match (K=30).",
+                        "Home teams receive a +100 advantage. At each new season, ratings regress 20% toward the 1500 base to reflect squad turnover.",
+                        "The pre-match Elo for home (elo_h) and away (elo_a) teams are the model's strongest signals of relative team strength."
                     ]
                 },
                 {
-                    "title": "Robustness to Overfitting",
+                    "title": "Rolling Shooting Stats (3-game window)",
                     "subpoints": [
-                        "Random forests are less prone to overfitting compared to individual decision trees. This is achieved by averaging the results of multiple trees, which reduces variance and improves generalization to unseen data."
+                        "Shots, shots on target, goals, and other shooting metrics are averaged over the team's last 3 matches.",
+                        "Separate rolling features are computed for the home team (_h suffix) and the away team (_a suffix).",
+                        "A left-closed window ensures only pre-match data is used, preventing data leakage."
                     ]
                 },
                 {
-                    "title": "Feature Importance",
+                    "title": "Rolling xG (Expected Goals)",
                     "subpoints": [
-                        "The model provides insights into feature importance, helping us understand which features contribute most to the predictions. This is valuable for refining the model and making informed decisions based on the results."
+                        "xG for and xG against are averaged over the last 3 matches for each team (xg_rolling_h/a, xg_against_rolling_h/a).",
+                        "Sourced from FBref shooting CSVs. Falls back to 0 for seasons before xG data was tracked (pre-2017)."
                     ]
                 },
                 {
-                    "title": "Performance",
+                    "title": "Head-to-Head History",
                     "subpoints": [
-                        "The RandomForestRegressor demonstrated strong performance during training and testing phases. It was able to accurately predict the full-time home and away goals, as well as the match results, based on historical data and engineered features."
+                        "Average goals scored and conceded in the last 5 meetings between the two teams (both home and away directions).",
+                        "Defaults to the league average (1.5) when no H2H history exists."
                     ]
                 },
                 {
-                    "title": "Scalability",
+                    "title": "Previous Season Standings",
                     "subpoints": [
-                        "The model scales well with large datasets, making it suitable for our extensive dataset that spans multiple seasons and includes detailed match statistics."
+                        "Each team's final position, goals for, goals against, and goal difference from the prior season are included (pos/gf/ga/gd_last_season_h/a).",
+                        "Newly promoted teams that were not in the EPL the prior season receive default values (rank 18, league-average goals)."
+                    ]
+                },
+                {
+                    "title": "Days Rest",
+                    "subpoints": [
+                        "The number of days since each team's previous match (days_rest_h, days_rest_a).",
+                        "Captures fatigue and fixture congestion effects, particularly relevant mid-season."
+                    ]
+                },
+                {
+                    "title": "Cumulative Season Points & PPG",
+                    "subpoints": [
+                        "Points accumulated so far in the current season for each team (cum_pts_h, cum_pts_a).",
+                        "Rolling 3-game points per game (ppg_rolling_h/a) captures recent form independently of the overall season tally."
+                    ]
+                },
+                {
+                    "title": "Match Context",
+                    "subpoints": [
+                        "Kick-off hour captures early/late-kick-off effects.",
+                        "Team names and venue are label-encoded as categorical features."
                     ]
                 }
             ]
         },
         "model_workflow": {
-            "title": "Model Workflow",
-            "description": "The workflow for training and using the model involves several steps:",
+            "title": "How It Works",
+            "description": "The pipeline runs end-to-end from raw data to per-matchweek predictions. Each season uses its own trained model so the feature distributions are kept in-sample.",
             "steps": [
                 {
-                    "title": "Data Loading and Cleaning",
+                    "title": "Data Collection",
                     "substeps": [
-                        "Match data is loaded from CSV files, cleaned, and preprocessed to ensure consistency and accuracy."
+                        "Historical match results are scraped from football-data.co.uk and cached in SQLite.",
+                        "Shooting and xG stats are scraped from FBref and saved as per-team CSVs.",
+                        "Previous season standings are read from a consolidated 2000–2025 CSV."
                     ]
                 },
                 {
                     "title": "Feature Engineering",
                     "substeps": [
-                        "New features are added, such as full-time goals, match results, season year, and encoded categorical variables."
-                    ]
-                },
-                {
-                    "title": "Encoding",
-                    "substeps": [
-                        "Categorical features like team names and venues are encoded using LabelEncoder to convert them into numerical values suitable for the model."
+                        "Elo ratings are computed chronologically across all seasons with a season-start regression.",
+                        "Rolling shooting stats, rolling xG, PPG, days rest, H2H averages, and prior-season standings are all added as features.",
+                        "Categorical variables (team names, venue) are label-encoded."
                     ]
                 },
                 {
                     "title": "Model Training",
                     "substeps": [
-                        "The dataset is split into training and testing sets.",
-                        "The RandomForestRegressor model is trained on the training set and evaluated on the testing set to ensure its accuracy and generalization."
+                        "A separate RandomForestRegressor is trained per season on all prior seasons' data.",
+                        "Hyperparameters are tuned via a dedicated script (tune_random_forest.py) using cross-validation.",
+                        "Trained models and scalers are persisted with joblib for fast prediction serving."
                     ]
                 },
                 {
-                    "title": "Prediction",
+                    "title": "Prediction & Scoring",
                     "substeps": [
-                        "The trained model is used to predict future match outcomes based on the input features.",
-                        "Predictions include full-time home and away goals, match results, and points scored based on the accuracy of the predictions."
+                        "For upcoming fixtures, the same feature pipeline runs with known pre-match values; unplayed match stats are imputed from rolling averages.",
+                        "Predicted home and away goals are rounded to the nearest integer to produce a scoreline.",
+                        "The result (H/D/A) and Superbru points are derived from the predicted scoreline."
+                    ]
+                },
+                {
+                    "title": "Daily Updates",
+                    "substeps": [
+                        "A daily script (daily_predict_and_submit.py) refreshes predictions for the current matchweek.",
+                        "A second script (daily_update_results.py) pulls actual results and updates Superbru scoring."
                     ]
                 }
-           ]
+            ]
         }
     }
 }

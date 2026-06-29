@@ -68,7 +68,7 @@ export default function StatsPanel({
   const modelName = seasonSummary?.model_name;
 
   return (
-    <div className="w-full mb-4 space-y-4">
+    <div className="w-full mb-3 space-y-3">
 
       <div>
         <div className="flex items-center gap-3 mb-2">
