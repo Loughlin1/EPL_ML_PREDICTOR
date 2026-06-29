@@ -8,8 +8,6 @@ SHOOTING_STATS_COLS = [
     "sot_percent",
     "g_per_sh",
     "g_per_sot",
-    "pk",
-    "pkatt",
 ]
 SH_ROLLING_HOME_COLS = [f"{c}_rolling_h" for c in SHOOTING_STATS_COLS]
 SH_ROLLING_AWAY_COLS = [f"{c}_rolling_a" for c in SHOOTING_STATS_COLS]
