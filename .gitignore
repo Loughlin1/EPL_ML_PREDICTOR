@@ -11,3 +11,6 @@ data/
 *.pkl
 
 **/nn_tuning_dir/
+
+# Database
+*.db
