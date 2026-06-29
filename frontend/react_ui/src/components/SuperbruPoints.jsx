@@ -1,4 +1,4 @@
-const SuperbruPoints = ({pointsThisWeek, totalPoints, globalTopPoints, globalTop250Points}) => {
+const SuperbruPoints = ({pointsThisWeek, totalPoints, globalTopPoints, globalTop10PctPoints, ukTop10PctPoints}) => {
     return (
       <div className="mb-2 w-full pt-3 flex gap-3 md:gap-10 align-top text-xs sm:text-sm md:text-md lg:text-lg">
         <div>
@@ -19,7 +19,10 @@ const SuperbruPoints = ({pointsThisWeek, totalPoints, globalTopPoints, globalTop
             Global Top: <strong>{globalTopPoints}</strong>
           </p>
           <p>
-            Global Top 250: <strong>{globalTop250Points}</strong>
+            Global Top 10%: <strong>{globalTop10PctPoints}</strong>
+          </p>
+          <p>
+            UK Top 10%: <strong>{ukTop10PctPoints}</strong>
           </p>
         </div>
       </div>

@@ -26,5 +26,7 @@ def test_retrieve_superbru_leaderboard_points():
     assert isinstance(resj, dict)
     assert "global_top" in resj
     assert isinstance(resj["global_top"], Union[int, float])
-    assert "global_top_250" in resj
-    assert isinstance(resj["global_top_250"], Union[int, float])
+    assert "global_top_10_pct" in resj
+    assert isinstance(resj["global_top_10_pct"], Union[int, float])
+    assert "uk_top_10_pct" in resj
+    assert isinstance(resj["uk_top_10_pct"], Union[int, float])

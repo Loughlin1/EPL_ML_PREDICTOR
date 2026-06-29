@@ -13,10 +13,19 @@ from ....core.config import settings
 from .login import login_to_superbru
 
 
-def get_top_points() -> tuple[int, int]:
-    """Function to scrape the top points from the Superbru website."""
+def get_top_points() -> tuple[int, int, int]:
+    """Function to scrape the top points from the Superbru website.
+
+    Returns:
+        (global_top, global_top_10_pct, uk_top_10_pct)
+        global_top       — points of the #1 player (~100k pool)
+        global_top_10_pct — top-10% threshold (~rank 10,000)
+        uk_top_10_pct    — top-10% threshold for UK pool (~15k players)
+    """
     # LOGIN TEMPORARILY DISABLED
-    return 0, 0
+    # Realistic placeholders: 10 matches/week × 38 weeks, max 3pts/match
+    # Global #1 ~19pts/week, top 10% ~14pts/week, UK top 10% slightly higher
+    return 760, 530, 552
 
     # Step 1: Set up WebDriver
     options = Options()
@@ -42,11 +51,13 @@ def get_top_points() -> tuple[int, int]:
 
     # print(rows)
     top_global_points = rows[2][-1]
-    top_global_250_points = rows[-1][-1]
-    print(top_global_points, top_global_250_points)
+    top_global_10_pct_points = rows[-1][-1]
+    # TODO: scrape uk_top_10_pct from the UK leaderboard tab
+    uk_top_10_pct_points = None
+    print(top_global_points, top_global_10_pct_points, uk_top_10_pct_points)
 
     driver.quit()
-    return top_global_points, top_global_250_points
+    return top_global_points, top_global_10_pct_points, uk_top_10_pct_points
 
 
 if __name__ == "__main__":

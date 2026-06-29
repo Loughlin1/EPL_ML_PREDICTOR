@@ -61,7 +61,8 @@ class SeasonsResponse(BaseModel):
 
 class SuperbruLeaderboardResponse(BaseModel):
     global_top: Any
-    global_top_250: Any
+    global_top_10_pct: Any
+    uk_top_10_pct: Any
 
 
 class TrainResponse(BaseModel):

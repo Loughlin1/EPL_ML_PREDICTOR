@@ -12,6 +12,8 @@ from ..core.paths import SUPERBRU_LEADERBOARD_CACHE as CACHE_PATH
 
 CACHE_TTL = timedelta(days=90)
 
+_CURRENT_KEYS = {"global_top", "global_top_10_pct", "uk_top_10_pct"}
+
 
 def get_leaderboard(season: str) -> dict:
     """
@@ -21,29 +23,29 @@ def get_leaderboard(season: str) -> dict:
     refreshed after CACHE_TTL expires.
 
     Returns:
-        dict with keys: global_top, global_top_250
+        dict with keys: global_top, global_top_10_pct, uk_top_10_pct
     """
     cache = _load_cache()
     entry = cache.get(season)
 
-    if entry:
+    if entry and _CURRENT_KEYS.issubset(entry):
         is_finished = season != settings.CURRENT_SEASON
         ts = datetime.fromisoformat(entry["timestamp"])
         if is_finished or datetime.now() - ts < CACHE_TTL:
-            return {"global_top": entry["global_top"], "global_top_250": entry["global_top_250"]}
+            return {k: entry[k] for k in _CURRENT_KEYS}
 
-    # Cache missing or expired — scrape fresh data
     from .web_scraping.superbru.leaderboard_scraper import get_top_points
-    global_top, global_top_250 = get_top_points()
+    global_top, global_top_10_pct, uk_top_10_pct = get_top_points()
 
     cache[season] = {
         "timestamp": datetime.now().isoformat(),
         "global_top": global_top,
-        "global_top_250": global_top_250,
+        "global_top_10_pct": global_top_10_pct,
+        "uk_top_10_pct": uk_top_10_pct,
     }
     _save_cache(cache)
 
-    return {"global_top": global_top, "global_top_250": global_top_250}
+    return {"global_top": global_top, "global_top_10_pct": global_top_10_pct, "uk_top_10_pct": uk_top_10_pct}
 
 
 def _load_cache() -> dict:

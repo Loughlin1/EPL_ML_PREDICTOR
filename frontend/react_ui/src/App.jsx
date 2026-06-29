@@ -20,7 +20,8 @@ function App() {
   const [seasonSummary, setSeasonSummary] = useState(null);
   const [pointsThisWeek, setPointsThisWeek] = useState(0);
   const [globalTopPoints, setGlobalTop] = useState(0);
-  const [globalTop250Points, setGlobalTop250] = useState(0);
+  const [globalTop10PctPoints, setGlobalTop10Pct] = useState(0);
+  const [ukTop10PctPoints, setUkTop10Pct] = useState(0);
   const [modelValidationPerf, setModelValidationPerf] = useState([]);
   const [loadingSeason, setLoadingSeason] = useState(true);
   const [loadingWeek, setLoadingWeek] = useState(false);
@@ -54,9 +55,10 @@ function App() {
         ]);
         setSeasonSummary(summaryRes.data);
         setMatchweek(mwRes.data.current_matchweek);
-        const { global_top, global_top_250 } = topPtsRes.data;
+        const { global_top, global_top_10_pct, uk_top_10_pct } = topPtsRes.data;
         setGlobalTop(global_top);
-        setGlobalTop250(global_top_250);
+        setGlobalTop10Pct(global_top_10_pct);
+        setUkTop10Pct(uk_top_10_pct);
         setModelValidationPerf(modelValRes.data);
       } catch (error) {
         console.error('Error fetching season data', error);
@@ -140,7 +142,8 @@ function App() {
             pointsThisWeek={pointsThisWeek}
             totalPoints={totalPoints}
             globalTopPoints={globalTopPoints}
-            globalTop250Points={globalTop250Points}
+            globalTop10PctPoints={globalTop10PctPoints}
+            ukTop10PctPoints={ukTop10PctPoints}
           />
 
           <div id="predictions" className="overflow-auto min-w-full">
