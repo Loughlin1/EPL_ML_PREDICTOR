@@ -5,6 +5,7 @@ from ...core.paths import (
     VENUE_ENCODER_FILEPATH,
 )
 from ...db.queries import get_teams_names
+from ..data_processing.data_loader import load_training_data
 from ..data_processing.feature_encoding import (
     encode_day_of_week,
     encode_season_column,
@@ -43,9 +44,12 @@ def preprocess_data(df: pd.DataFrame, test_data: bool = True) -> pd.DataFrame:
         team_encoder = load_encoder_file(TEAM_ENCODER_FILEPATH)
         venue_encoder = load_encoder_file(VENUE_ENCODER_FILEPATH)
     else:
-        # Fit encoders
-        team_encoder = fit_team_name_encoder(df)
-        venue_encoder = fit_venue_encoder(df)
+        # Fit encoders on all teams/venues ever seen in the DB so that promoted
+        # sides are never unseen when encoding a future season's fixture list.
+        all_data = load_training_data()
+        all_venues = all_data["venue"].dropna().unique().tolist()
+        team_encoder = fit_team_name_encoder(df, all_known_teams=teams)
+        venue_encoder = fit_venue_encoder(df, all_known_venues=all_venues)
         save_encoder_to_file(team_encoder, filepath=TEAM_ENCODER_FILEPATH)
         save_encoder_to_file(venue_encoder, filepath=VENUE_ENCODER_FILEPATH)
 

@@ -5,13 +5,15 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 
-def fit_team_name_encoder(df: pd.DataFrame) -> LabelEncoder:
+def fit_team_name_encoder(df: pd.DataFrame, all_known_teams: list[str] | None = None) -> LabelEncoder:
     team_encoder = LabelEncoder()
-    all_teams = pd.concat([df["home_team"], df["away_team"]]).unique()
-    all_teams = np.append(
-        all_teams, "Ipswich Town"
-    )  # Adding team since it was promoted
-    team_encoder.fit(all_teams)
+    if all_known_teams:
+        # Fit on every team that has ever appeared in the DB so promoted sides
+        # are never unseen when encoding a future season's data.
+        team_encoder.fit(sorted(set(all_known_teams)))
+    else:
+        all_teams = pd.concat([df["home_team"], df["away_team"]]).unique()
+        team_encoder.fit(all_teams)
     return team_encoder
 
 
@@ -21,14 +23,12 @@ def encode_team_name_features(df: pd.DataFrame, encoder: LabelEncoder) -> pd.Dat
     return df
 
 
-def fit_venue_encoder(df: pd.DataFrame) -> LabelEncoder:
+def fit_venue_encoder(df: pd.DataFrame, all_known_venues: list[str] | None = None) -> LabelEncoder:
     venue_encoder = LabelEncoder()
-    venues = df["venue"].unique()
-    venues = np.append(
-        venues, ["Portman Road Stadium", "Hill Dickinson Stadium"]
-    )  # Adding new stadiums
-    # print(f"The stadiums: \n {venues}")
-    venue_encoder.fit(venues)
+    if all_known_venues:
+        venue_encoder.fit(sorted(set(all_known_venues)))
+    else:
+        venue_encoder.fit(sorted(df["venue"].dropna().unique()))
     return venue_encoder
 
 
