@@ -15,6 +15,9 @@ from .login import login_to_superbru
 
 def get_top_points() -> tuple[int, int]:
     """Function to scrape the top points from the Superbru website."""
+    # LOGIN TEMPORARILY DISABLED
+    return 0, 0
+
     # Step 1: Set up WebDriver
     options = Options()
     options.headless = False  # True

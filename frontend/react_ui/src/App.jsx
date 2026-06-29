@@ -20,6 +20,7 @@ function App() {
   const [globalTopPoints, setGlobalTop] = useState(0);
   const [globalTop250Points, setGlobalTop250] = useState(0);
   const [modelValidationPerf, setModelValidationPerf] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +53,8 @@ function App() {
         setGlobalTop250(global_top_250);
       } catch (error) {
         console.error('Error fetching initial data', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -111,8 +114,15 @@ function App() {
       } />
       <SuperbruPoints pointsThisWeek={pointsThisWeek} totalPoints={totalPoints} globalTopPoints={globalTopPoints} globalTop250Points={globalTop250Points}/>
       <div id="predictions" className="overflow-auto">
-        <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext}/>
-        <MatchTable data={filtered} />
+        <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext} handleJump={setMatchweek}/>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500">
+            <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
+            <p className="text-sm">Loading fixtures and predictions…</p>
+          </div>
+        ) : (
+          <MatchTable data={filtered} />
+        )}
       </div>
       <div id="model">
         <ModelExplanation />

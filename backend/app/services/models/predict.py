@@ -126,26 +126,25 @@ def predict_pipeline(
     match_ids = fixtures_df["match_id"].tolist()
 
     with get_session() as db:
-        # if check_cache(match_ids, cache_duration_hours, db):
-        #     logger.info("Returning all cached predictions")
-        #     predictions = get_cached_predictions(match_ids, db)
-        #     result_df = fixtures_df.copy()
-        #     predictions_df = pd.DataFrame(predictions, index=fixtures_df.index)
-        #     result_df[["PredFTHG", "PredFTAG", "PredScore", "PredResult"]] = predictions_df[["pred_fthg", "pred_ftag", "pred_score", "pred_result"]]
-        #     return result_df
-
-        ### Rerun predictions for all
-
-        # Load historical data for Elo and other features
-        historical_df = load_training_data()
-        historical_df = clean_data(historical_df)
-
-        # Load new season fixtures
+        # Load new season fixtures (needed for both cache and full pipeline paths)
         fixtures_raw = get_this_seasons_fixtures_data()
         fthg_ftag = fixtures_raw[["match_id", "FTHG", "FTAG"]].copy()
         fixtures_df = clean_data(
             fixtures_raw.drop(columns=["FTHG", "FTAG"], errors="ignore")
         )
+
+        if check_cache(match_ids, cache_duration_hours, db):
+            logger.info("Returning all cached predictions")
+            predictions = get_cached_predictions(match_ids, db)
+            result_df = fixtures_df.copy()
+            predictions_df = pd.DataFrame(predictions, index=fixtures_df.index)
+            result_df[["PredFTHG", "PredFTAG", "PredScore", "PredResult"]] = predictions_df[["pred_fthg", "pred_ftag", "pred_score", "pred_result"]].values
+            result_df = result_df.merge(fthg_ftag, on="match_id", how="left")
+            return result_df
+
+        # Load historical data for Elo and other features
+        historical_df = load_training_data()
+        historical_df = clean_data(historical_df)
 
         # Combine historical and new season data for consistent Elo calculation
         combined_df = pd.concat([historical_df, fixtures_df], ignore_index=True)
@@ -195,7 +194,7 @@ def predict_pipeline(
     result_df = fixtures_df.copy()
     result_df[["PredFTHG", "PredFTAG", "PredScore", "PredResult"]] = new_season_df[
         ["PredFTHG", "PredFTAG", "PredScore", "PredResult"]
-    ]
+    ].values
     result_df = result_df.merge(fthg_ftag, on="match_id", how="left")
     logger.info("Predictions generated successfully")
     return result_df
