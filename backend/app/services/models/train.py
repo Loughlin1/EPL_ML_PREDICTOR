@@ -21,7 +21,6 @@ Workflow:
 import logging
 
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from ...core.config import settings
@@ -57,13 +56,14 @@ def train_pipeline(season: str = None):
     df = load_training_data(end_season=end_year)
     df = clean_data(df)
     df = preprocess_data(df, test_data=False)
+    df = df.sort_values("date").reset_index(drop=True)
     X = df[FEATURES]
     y = df[LABELS]
     check_data(X)
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    split_idx = int(len(df) * 0.8)
+    X_train, X_val = X.iloc[:split_idx], X.iloc[split_idx:]
+    y_train, y_val = y.iloc[:split_idx], y.iloc[split_idx:]
     # Scaling features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)

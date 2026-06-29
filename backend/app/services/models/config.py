@@ -31,6 +31,8 @@ FEATURES = [
     "elo_a",
     "h2h_avg_goals_h",
     "h2h_avg_goals_a",
+    "cum_pts_h",
+    "cum_pts_a",
 ]
 FEATURES.extend(SH_ROLLING_HOME_COLS)
 FEATURES.extend(SH_ROLLING_AWAY_COLS)

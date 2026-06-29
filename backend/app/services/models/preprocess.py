@@ -16,6 +16,7 @@ from ..data_processing.feature_encoding import (
     save_encoder_to_file,
 )
 from ..data_processing.feature_engineering import (
+    add_cumulative_season_points,
     add_elo_ratings,
     add_h2h_features,
     add_hour_feature,
@@ -59,6 +60,7 @@ def preprocess_data(df: pd.DataFrame, test_data: bool = True) -> pd.DataFrame:
     df = add_hour_feature(df)
     df = add_rolling_shooting_stats(df, teams)
     df = calculate_match_points(df)
+    df = add_cumulative_season_points(df)
     df = add_ppg_features(df, teams)
     df = add_previous_season_rank(df)
     df = add_elo_ratings(df)

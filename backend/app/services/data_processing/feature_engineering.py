@@ -398,3 +398,35 @@ def add_h2h_features(
         ["h2h_avg_goals_h", "h2h_avg_goals_a"]
     ].fillna(default_goals)
     return df
+
+
+def add_cumulative_season_points(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds cumulative points earned so far in the current season for each team,
+    computed strictly from matches before each game (no data leakage).
+
+    Requires 'date', 'season', 'home_team', 'away_team', 'home_points', 'away_points'.
+    Adds 'cum_pts_h' and 'cum_pts_a'.
+    """
+    df = df.copy().sort_values(["season", "date"]).reset_index(drop=True)
+    df["cum_pts_h"] = 0.0
+    df["cum_pts_a"] = 0.0
+
+    for (season,), season_df in df.groupby("season", sort=False):
+        season_idx = season_df.index
+        cumulative: dict[str, float] = {}
+
+        for idx in season_idx:
+            row = df.loc[idx]
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+
+            df.at[idx, "cum_pts_h"] = cumulative.get(home_team, 0.0)
+            df.at[idx, "cum_pts_a"] = cumulative.get(away_team, 0.0)
+
+            # Update after recording pre-match values
+            if pd.notna(row["home_points"]) and pd.notna(row["away_points"]):
+                cumulative[home_team] = cumulative.get(home_team, 0.0) + row["home_points"]
+                cumulative[away_team] = cumulative.get(away_team, 0.0) + row["away_points"]
+
+    return df
