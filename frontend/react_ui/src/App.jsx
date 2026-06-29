@@ -112,7 +112,7 @@ function App() {
   };
 
   return (
-    <div className="p-6 grid max-w-screen-xl mx-auto w-full">
+    <div className="p-6 grid w-full">
       <Header></Header>
       <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
         <h1 className="text-3xl font-bold">⚽️ EPL Match Result Predictor</h1>
@@ -151,10 +151,10 @@ function App() {
         </div>
       } />
       <SuperbruPoints pointsThisWeek={pointsThisWeek} totalPoints={totalPoints} globalTopPoints={globalTopPoints} globalTop250Points={globalTop250Points}/>
-      <div id="predictions" className="overflow-auto">
+      <div id="predictions" className="overflow-auto min-w-full">
         <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext} handleJump={setMatchweek}/>
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500 min-w-full">
             <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
             <p className="text-sm">Loading fixtures and predictions…</p>
           </div>

@@ -52,7 +52,7 @@ const MatchTable = ({ data }) => {
   };
 
   return (
-    <div className="w-full max-w-6xl overflow-x-auto bg-white shadow rounded-xl">
+    <div className="w-full overflow-x-auto bg-white shadow rounded-xl">
       <table className="min-w-full border-collapse text-xs md:text-sm">
         <thead className="bg-gray-100 text-left">
           <tr>
