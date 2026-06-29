@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 import pytz
 from sqlalchemy import func, or_
+from sqlalchemy.orm import joinedload
 
 from .database import get_session
 from .models import Match, MatchShootingStat, PredictionsCache, Team
@@ -56,7 +57,10 @@ def get_shooting_stats(
         List[Dict[str, Any]]: List of shooting stat dictionaries.
     """
     with get_session() as session:
-        query = session.query(MatchShootingStat)
+        query = session.query(MatchShootingStat).options(
+            joinedload(MatchShootingStat.match),
+            joinedload(MatchShootingStat.team),
+        )
         if team_id:
             query = query.filter(MatchShootingStat.team_id == team_id)
         if match_id:

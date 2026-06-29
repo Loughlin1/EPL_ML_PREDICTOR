@@ -155,6 +155,16 @@ def add_previous_season_standing(df: pd.DataFrame, default_rank: int = 18) -> pd
     standings_df = pd.read_csv(f"{data_dir}/standings/2000-2025.csv")
     standings_df = standings_df[["Season", "Pos", "Team", "GF", "GA", "GD"]].copy()
 
+    # GD column uses Unicode minus (U+2212) in some rows — normalise to ASCII
+    for col in ["GF", "GA", "GD"]:
+        standings_df[col] = (
+            standings_df[col]
+            .astype(str)
+            .str.replace("−", "-", regex=False)
+            .str.replace("+", "", regex=False)
+            .pipe(pd.to_numeric, errors="coerce")
+        )
+
     def reformat_season(season: str) -> str:
         year = int(season.split("-")[0])
         return f"{year}-{year + 1}"
