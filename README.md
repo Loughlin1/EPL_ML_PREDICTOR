@@ -1,6 +1,33 @@
 # EPL ML Predictor
 
-A full-stack application that predicts English Premier League match outcomes using machine learning. Predictions are made per season using a linear regression model trained on historical match data, Elo ratings, rolling shooting stats, head-to-head records, and points-per-game features.
+A full-stack application that predicts English Premier League match outcomes using machine learning. Predictions are made per season using a Random Forest Regressor trained on historical match data, Elo ratings, rolling xG/shooting stats, head-to-head records, days rest, prior-season standings, and points-per-game features.
+
+## Screenshots
+
+### Dashboard overview
+Season performance stats, Superbru leaderboard comparison, and matchweek predictions in one view.
+
+![Dashboard overview](docs/screenshots/dashboard_overview.png)
+
+### Match predictions table
+Per-matchweek results showing actual score, model predicted score, and result accuracy.
+
+![Match predictions table](docs/screenshots/match_predictions_table.png)
+
+### Season history modal
+Model accuracy and Superbru points charted across all seasons, benchmarked against random and always-home baselines.
+
+![Season history modal](docs/screenshots/season_history_modal.png)
+
+### Model explanation
+Collapsible cards describing each feature group used by the Random Forest model.
+
+![Model explanation](docs/screenshots/model_explanation.png)
+
+### How it works
+Step-by-step pipeline walkthrough from data collection through to daily prediction updates.
+
+![How it works](docs/screenshots/how_it_works.png)
 
 ## Architecture
 
@@ -12,7 +39,7 @@ A full-stack application that predicts English Premier League match outcomes usi
 
 - **Frontend**: React + Tailwind CSS
 - **Backend**: FastAPI + SQLAlchemy (SQLite)
-- **ML**: LinearRegression with StandardScaler, trained per season, persisted via joblib
+- **ML**: RandomForestRegressor, trained per season, persisted via joblib
 - **Data**: Scraped from fbref.com and football-data.co.uk; cached in SQLite
 
 ## Directory Structure
