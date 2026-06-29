@@ -146,73 +146,148 @@ def create_rolling_shooting_stats(teams: list[str]) -> pd.DataFrame:
     return merged_df
 
 
-def add_previous_season_rank(df: pd.DataFrame, default_rank: int = 18) -> pd.DataFrame:
+def add_previous_season_standing(df: pd.DataFrame, default_rank: int = 18) -> pd.DataFrame:
     """
-    Adds previous season's ranking for home and away teams to the dataset.
-
-    Args:
-        df (pd.DataFrame): Input dataset with 'season', 'home_team', 'away_team' columns.
-        standings_df (pd.DataFrame): Standings data with 'Season', 'Pos', 'Team' columns.
-        default_rank (int): Rank for teams not in previous season (e.g., promoted teams).
-
-    Returns:
-        pd.DataFrame: Dataset with 'pos_last_season_h' and 'pos_last_season_a' columns.
+    Adds previous season's rank, GF, GA, and GD for home and away teams.
+    Promoted teams that weren't in the EPL the prior season get default values.
     """
-    df = df.copy()  # Avoid modifying input
+    df = df.copy()
     standings_df = pd.read_csv(f"{data_dir}/standings/2000-2025.csv")
-    standings_df = standings_df[["Season", "Pos", "Team"]].copy()
+    standings_df = standings_df[["Season", "Pos", "Team", "GF", "GA", "GD"]].copy()
 
     def reformat_season(season: str) -> str:
         year = int(season.split("-")[0])
         return f"{year}-{year + 1}"
 
-    # Function to get previous season
     def get_prev_season(season: str) -> str:
         year = int(season.split("-")[0])
         return f"{year - 1}-{year}"
 
-    # Add previous season column
     standings_df["Season"] = standings_df["Season"].apply(reformat_season)
-    # print(df.head)
     df["prev_season"] = df["season"].apply(get_prev_season)
 
-    # Merge for home team rank
-    df = pd.merge(
-        df,
-        standings_df[["Season", "Team", "Pos"]].rename(
-            columns={"Team": "home_team", "Pos": "pos_last_season_h"}
-        ),
-        how="left",
-        left_on=["prev_season", "home_team"],
-        right_on=["Season", "home_team"],
-    )
+    league_avg_gf = standings_df["GF"].mean()
+    league_avg_ga = standings_df["GA"].mean()
+    league_avg_gd = standings_df["GD"].mean()
 
-    # Merge for away team rank
-    df = pd.merge(
-        df,
-        standings_df[["Season", "Team", "Pos"]].rename(
-            columns={"Team": "away_team", "Pos": "pos_last_season_a"}
-        ),
-        how="left",
-        left_on=["prev_season", "away_team"],
-        right_on=["Season", "away_team"],
-    )
+    for side, team_col in [("h", "home_team"), ("a", "away_team")]:
+        rename = {
+            "Team": team_col,
+            "Pos": f"pos_last_season_{side}",
+            "GF": f"gf_last_season_{side}",
+            "GA": f"ga_last_season_{side}",
+            "GD": f"gd_last_season_{side}",
+        }
+        df = pd.merge(
+            df,
+            standings_df.rename(columns=rename),
+            how="left",
+            left_on=["prev_season", team_col],
+            right_on=["Season", team_col],
+        )
+        df[f"pos_last_season_{side}"] = df[f"pos_last_season_{side}"].fillna(default_rank)
+        df[f"gf_last_season_{side}"] = df[f"gf_last_season_{side}"].fillna(league_avg_gf)
+        df[f"ga_last_season_{side}"] = df[f"ga_last_season_{side}"].fillna(league_avg_ga)
+        df[f"gd_last_season_{side}"] = df[f"gd_last_season_{side}"].fillna(league_avg_gd)
 
-    # Fill missing ranks (e.g., promoted teams) with default
-    df["pos_last_season_h"] = df["pos_last_season_h"].fillna(default_rank)
-    df["pos_last_season_a"] = df["pos_last_season_a"].fillna(default_rank)
-
-    # Drop temporary columns
     df = df.drop(
-        columns=["prev_season", "Season_x", "home_team_y", "Season_y", "away_team_y"],
+        columns=["prev_season", "Season_x", "Season_y", "home_team_y", "away_team_y"],
         errors="ignore",
     )
+    return df
 
-    # # Debug: Check non-zero ranks
-    # print("Sample with new features:")
-    # print(df[["season", "home_team", "away_team", "pos_last_season_h", "pos_last_season_a"]].head())
-    # print("Non-zero pos_last_season_h:", (df["pos_last_season_h"] != default_rank).sum())
-    # print("Non-zero pos_last_season_a:", (df["pos_last_season_a"] != default_rank).sum())
+
+def add_days_rest(df: pd.DataFrame, default_days: int = 7) -> pd.DataFrame:
+    """
+    Adds days since each team's previous match as 'days_rest_h' and 'days_rest_a'.
+    Defaults to `default_days` for a team's first match of the dataset.
+    """
+    df = df.copy().sort_values("date").reset_index(drop=True)
+    df["days_rest_h"] = float(default_days)
+    df["days_rest_a"] = float(default_days)
+
+    last_match: dict[str, pd.Timestamp] = {}
+
+    for idx, row in df.iterrows():
+        home_team = row["home_team"]
+        away_team = row["away_team"]
+        match_date = row["date"]
+
+        if home_team in last_match:
+            df.at[idx, "days_rest_h"] = (match_date - last_match[home_team]).days
+        if away_team in last_match:
+            df.at[idx, "days_rest_a"] = (match_date - last_match[away_team]).days
+
+        last_match[home_team] = match_date
+        last_match[away_team] = match_date
+
+    return df
+
+
+def add_xg_rolling_stats(df: pd.DataFrame, teams: list[str], window: int = 3) -> pd.DataFrame:
+    """
+    Adds rolling xG for and xG against averages for each team from the shooting
+    stats CSV files (xG is not stored in the DB).
+
+    Adds columns: xg_rolling_h, xg_against_rolling_h, xg_rolling_a, xg_against_rolling_a.
+    Falls back to 0 when xG data is unavailable (pre-2017 seasons).
+    """
+    xg_records = []
+
+    for team in teams:
+        # Normalise team name to match CSV filenames
+        csv_name = team.replace(" ", "-").replace("'", "")
+        path = data_dir / "shooting_stats" / f"{csv_name}.csv"
+        if not path.exists():
+            continue
+
+        raw = pd.read_csv(path)
+        if "xG" not in raw.columns or "Date" not in raw.columns:
+            continue
+
+        raw = raw.dropna(subset=["Date"]).copy()
+        raw["date"] = pd.to_datetime(raw["Date"], format="%Y-%m-%d", errors="coerce")
+        raw = raw.dropna(subset=["date"]).sort_values("date").reset_index(drop=True)
+        raw["xG"] = pd.to_numeric(raw["xG"], errors="coerce").fillna(0)
+        raw["GA_xg"] = pd.to_numeric(raw["GA"], errors="coerce").fillna(0)
+
+        # Rolling xG for and against (left-closed = exclude current match)
+        raw["xg_rolling"] = raw["xG"].rolling(window, min_periods=1, closed="left").mean().fillna(0)
+        raw["xg_against_rolling"] = raw["GA_xg"].rolling(window, min_periods=1, closed="left").mean().fillna(0)
+
+        for _, row in raw.iterrows():
+            is_home = str(row.get("Venue", "")).strip() == "Home"
+            xg_records.append({
+                "date": row["date"],
+                "team": team,
+                "is_home": is_home,
+                "xg_rolling": row["xg_rolling"],
+                "xg_against_rolling": row["xg_against_rolling"],
+            })
+
+    if not xg_records:
+        for col in ["xg_rolling_h", "xg_against_rolling_h", "xg_rolling_a", "xg_against_rolling_a"]:
+            df[col] = 0.0
+        return df
+
+    xg_df = pd.DataFrame(xg_records)
+    xg_home = xg_df[xg_df["is_home"]].rename(columns={
+        "team": "home_team",
+        "xg_rolling": "xg_rolling_h",
+        "xg_against_rolling": "xg_against_rolling_h",
+    })[["date", "home_team", "xg_rolling_h", "xg_against_rolling_h"]]
+
+    xg_away = xg_df[~xg_df["is_home"]].rename(columns={
+        "team": "away_team",
+        "xg_rolling": "xg_rolling_a",
+        "xg_against_rolling": "xg_against_rolling_a",
+    })[["date", "away_team", "xg_rolling_a", "xg_against_rolling_a"]]
+
+    df = pd.merge(df, xg_home, how="left", on=["date", "home_team"])
+    df = pd.merge(df, xg_away, how="left", on=["date", "away_team"])
+
+    for col in ["xg_rolling_h", "xg_against_rolling_h", "xg_rolling_a", "xg_against_rolling_a"]:
+        df[col] = df[col].fillna(0.0)
 
     return df
 

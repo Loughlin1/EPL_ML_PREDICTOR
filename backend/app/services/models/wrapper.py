@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 
@@ -30,3 +32,29 @@ class GoalPredictor:
             np.round(self.home_model.predict(X)).astype(int),
             np.round(self.away_model.predict(X)).astype(int),
         ])
+
+    def feature_importances(self, feature_names: list[str]) -> dict[str, list]:
+        """
+        Return feature importances (or coefficients) for home and away models.
+
+        For tree-based models uses feature_importances_; for linear models uses
+        the absolute value of coefficients. Returns a dict with keys 'home' and
+        optionally 'away', each a list of (feature, importance) tuples sorted
+        descending by importance.
+        """
+        def _extract(model, label: str):
+            if hasattr(model, "feature_importances_"):
+                scores = model.feature_importances_
+            elif hasattr(model, "coef_"):
+                coef = model.coef_
+                # Multi-output linear: coef_ shape is (n_outputs, n_features)
+                scores = np.abs(coef).mean(axis=0) if coef.ndim > 1 else np.abs(coef)
+            else:
+                raise ValueError(f"{label} model has no feature_importances_ or coef_")
+            pairs = sorted(zip(feature_names, scores.tolist()), key=lambda x: x[1], reverse=True)
+            return pairs
+
+        result = {"home": _extract(self.home_model, "home")}
+        if self.away_model is not None:
+            result["away"] = _extract(self.away_model, "away")
+        return result
