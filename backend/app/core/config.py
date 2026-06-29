@@ -1,9 +1,20 @@
+from datetime import datetime
+
 from dotenv import load_dotenv
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Load environment variables from .env file FIRST
 load_dotenv()
+
+
+def _current_season() -> str:
+    now = datetime.now()
+    year = now.year
+    # EPL season starts in August
+    if now.month >= 8:
+        return f"{year}-{year + 1}"
+    return f"{year - 1}-{year}"
 
 
 class Settings(BaseSettings):
@@ -18,7 +29,7 @@ class Settings(BaseSettings):
     SUPERBRU_TARGET_URL: str
     SUPERBRU_USERNAME: str
     SUPERBRU_PASSWORD: str
-    CURRENT_SEASON: str = "2025-2026"
+    CURRENT_SEASON: str = _current_season()
 
     @field_validator("ALLOWED_ORIGINS")
     def validate_allowed_origins(cls, v: str) -> list[str]:
