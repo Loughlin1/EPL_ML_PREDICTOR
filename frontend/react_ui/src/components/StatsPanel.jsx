@@ -4,6 +4,14 @@ import SeasonHistoryModal from './SeasonHistoryModal';
 const fmt = (v, decimals = 1) =>
   v == null || v === '' ? '—' : Number(v).toFixed(decimals);
 
+function SectionLabel({ children }) {
+  return (
+    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
+      {children}
+    </p>
+  );
+}
+
 function MetricCard({ label, value, sub }) {
   return (
     <div className="bg-gray-50 rounded-lg p-3">
@@ -37,7 +45,6 @@ function BenchmarkBar({ label, value, max, color, isModel }) {
 
 export default function StatsPanel({
   seasonSummary,
-  pointsThisWeek,
   globalTopPoints,
   globalTop10PctPoints,
   ukTop10PctPoints,
@@ -59,39 +66,36 @@ export default function StatsPanel({
   const benchMax = globalTopPoints || 1;
 
   return (
-    <div className="w-full mb-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
-        <MetricCard
-          label="Correct results"
-          value={`${correctResultPct}%`}
-          sub={`${correctResultN} / ${played} matches`}
-        />
-        <MetricCard
-          label="Correct scores"
-          value={`${correctScorePct}%`}
-          sub={`${correctScoreN} / ${played} matches`}
-        />
-        <MetricCard
-          label="Goal MAE"
-          value={mae}
-          sub="avg goals off per match"
-        />
-        <MetricCard
-          label="Superbru points"
-          value={fmt(totalPoints, 1)}
-          sub={`${fmt(pointsThisWeek, 1)} pts this week`}
-        />
-        <MetricCard
-          label="Matches played"
-          value={played}
-          sub={`of ${total}`}
-        />
+    <div className="w-full mb-4 space-y-4">
+
+      <div>
+        <SectionLabel>Season performance</SectionLabel>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <MetricCard
+            label="Correct results"
+            value={`${correctResultPct}%`}
+            sub={`${correctResultN} / ${played} matches`}
+          />
+          <MetricCard
+            label="Correct scores"
+            value={`${correctScorePct}%`}
+            sub={`${correctScoreN} / ${played} matches`}
+          />
+          <MetricCard
+            label="Goal MAE"
+            value={mae}
+            sub="avg goals off per match"
+          />
+          <MetricCard
+            label="Superbru points"
+            value={fmt(totalPoints, 1)}
+            sub={`${played} of ${total} matches played`}
+          />
+        </div>
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-4 mt-2">
-        <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 font-medium">
-          Superbru leaderboard — how we compare
-        </p>
+      <div className="bg-gray-50 rounded-lg p-4">
+        <SectionLabel>Superbru leaderboard — how we compare (season)</SectionLabel>
         <div className="max-w-lg">
           <BenchmarkBar label="Global top" value={globalTopPoints} max={benchMax} color="#888780" />
           <BenchmarkBar label="UK top 10%" value={ukTop10PctPoints} max={benchMax} color="#B4B2A9" />

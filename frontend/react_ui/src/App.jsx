@@ -115,7 +115,6 @@ function App() {
         <>
           <StatsPanel
             seasonSummary={seasonSummary}
-            pointsThisWeek={pointsThisWeek}
             globalTopPoints={globalTopPoints}
             globalTop10PctPoints={globalTop10PctPoints}
             ukTop10PctPoints={ukTop10PctPoints}
@@ -129,6 +128,11 @@ function App() {
               handleNext={handleNext}
               handleJump={setMatchweek}
             />
+            {!loadingWeek && pointsThisWeek > 0 && (
+              <p className="text-sm text-gray-500 mt-1 mb-2">
+                Superbru points this matchweek: <span className="font-medium text-gray-800">{pointsThisWeek}</span>
+              </p>
+            )}
             {loadingWeek ? (
               <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500 min-w-full">
                 <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
