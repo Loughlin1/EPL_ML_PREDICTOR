@@ -78,6 +78,9 @@ def get_matchweek(season: str, week: int) -> dict:
 
     cols = [k for k in COLUMN_MAPPING if k in df.columns]
     df = df[cols].rename(columns=COLUMN_MAPPING)
+    for col in ("Date", "Time"):
+        if col in df.columns:
+            df[col] = df[col].astype(str)
     df["Score"] = df["Score"].replace("None-None", "")
     for long, short in VENUE_ALIASES.items():
         df["Venue"] = df["Venue"].replace(long, short)
