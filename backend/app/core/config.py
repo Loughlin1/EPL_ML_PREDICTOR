@@ -21,14 +21,14 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./epl.db"
     ALLOWED_ORIGINS: str = ""
 
     # App specific variables
-    FOOTBALL_DATA_BASE_URL: str
-    SUPERBRU_TARGET_URL: str
-    SUPERBRU_USERNAME: str
-    SUPERBRU_PASSWORD: str
+    FOOTBALL_DATA_BASE_URL: str = ""
+    SUPERBRU_TARGET_URL: str = ""
+    SUPERBRU_USERNAME: str = ""
+    SUPERBRU_PASSWORD: str = ""
     CURRENT_SEASON: str = _current_season()
 
     @field_validator("ALLOWED_ORIGINS")

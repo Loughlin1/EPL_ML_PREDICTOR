@@ -33,4 +33,9 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: .
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///./epl.db' }}
+          FOOTBALL_DATA_BASE_URL: ${{ secrets.FOOTBALL_DATA_BASE_URL || '' }}
+          SUPERBRU_TARGET_URL: ${{ secrets.SUPERBRU_TARGET_URL || '' }}
+          SUPERBRU_USERNAME: ${{ secrets.SUPERBRU_USERNAME || '' }}
+          SUPERBRU_PASSWORD: ${{ secrets.SUPERBRU_PASSWORD || '' }}
         run: python -m pytest tests/ --disable-warnings -v
