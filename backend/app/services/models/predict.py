@@ -181,15 +181,7 @@ def predict_pipeline(
         model = load_model_for_season(season)
 
         # Predictions
-        if isinstance(model, dict):  # Single-output model (e.g., Poisson Regression)
-            future_scores = np.column_stack(
-                [
-                    np.round(model["model_home"].predict(X_scaled)).astype(int),
-                    np.round(model["model_away"].predict(X_scaled)).astype(int),
-                ]
-            )
-        else:
-            future_scores = np.round(model.predict(X_scaled)).astype(int)
+        future_scores = model.predict(X_scaled)
 
         # Assign predictions
         new_season_df = assign_predictions(new_season_df, future_scores)

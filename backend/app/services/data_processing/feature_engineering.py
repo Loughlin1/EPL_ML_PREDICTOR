@@ -412,7 +412,7 @@ def add_cumulative_season_points(df: pd.DataFrame) -> pd.DataFrame:
     df["cum_pts_h"] = 0.0
     df["cum_pts_a"] = 0.0
 
-    for (season,), season_df in df.groupby("season", sort=False):
+    for season, season_df in df.groupby("season", sort=False):
         season_idx = season_df.index
         cumulative: dict[str, float] = {}
 

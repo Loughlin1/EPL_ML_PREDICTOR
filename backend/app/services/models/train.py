@@ -30,6 +30,7 @@ from ...core.paths import (
 from ..data_processing.data_loader import clean_data, load_training_data
 from ..models.config import FEATURES, LABELS
 from ..models.save_load import save_model, save_model_for_season, save_scaler, save_scaler_for_season
+from ..models.wrapper import GoalPredictor
 from .preprocess import check_data, preprocess_data
 
 
@@ -68,8 +69,8 @@ def train_pipeline(season: str = None):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
 
-    # Train model
-    model = LinearRegression()
+    # Train model — swap the estimator here to change the model type
+    model = GoalPredictor(LinearRegression())
     model.fit(X_train_scaled, y_train)
 
     # Save artifacts — season-scoped if a season was given, otherwise default
@@ -87,8 +88,6 @@ def train_pipeline(season: str = None):
 def _cache_predictions_and_summary(season: str, scaler, model) -> None:
     """After training, generate predictions for the test season and persist summary."""
     import logging
-
-    import numpy as np
 
     from ..data_processing.data_loader import clean_data, get_this_seasons_fixtures_data
     from ..models.config import FEATURES
@@ -119,13 +118,7 @@ def _cache_predictions_and_summary(season: str, scaler, model) -> None:
     check_data(X)
     X_scaled = scaler.transform(X)
 
-    if isinstance(model, dict):
-        future_scores = np.column_stack([
-            np.round(model["model_home"].predict(X_scaled)).astype(int),
-            np.round(model["model_away"].predict(X_scaled)).astype(int),
-        ])
-    else:
-        future_scores = np.round(model.predict(X_scaled)).astype(int)
+    future_scores = model.predict(X_scaled)
 
     new_season_df = assign_predictions(new_season_df, future_scores)
 
