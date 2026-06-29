@@ -19,7 +19,7 @@ help: ## Show this help message
 ##@ Development
 
 backend-dev: ## Start FastAPI with hot-reload on :8000
-	cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	cd backend && uv run --active uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 frontend-dev: ## Start Vite dev server on :5173
 	cd frontend/react_ui && npm run dev
@@ -34,7 +34,7 @@ dev: ## Start backend and frontend dev servers (requires two terminals)
 ##@ Production
 
 backend: ## Start FastAPI production server on :8000
-	cd backend && export PYTHONPATH=$(PWD) && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+	cd backend && export PYTHONPATH=$(PWD) && uv run --active uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 frontend: ## Build and preview the React frontend
 	cd frontend/react_ui && npm run build && npm run preview
@@ -46,10 +46,10 @@ frontend: ## Build and preview the React frontend
 ##@ Quality
 
 tests: ## Run the backend test suite
-	cd backend && PYTHONPATH=. uv run pytest tests/ --disable-warnings -v
+	cd backend && PYTHONPATH=. uv run --active pytest tests/ --disable-warnings -v
 
 lint: ## Lint and format backend with ruff
-	cd backend && uv run ruff check . --fix && uv run ruff format .
+	cd backend && uv run --active ruff check . --fix && uv run --active ruff format .
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model training
@@ -58,8 +58,8 @@ lint: ## Lint and format backend with ruff
 ##@ Model training
 
 train-all: ## Train a model for every season in the database
-	cd backend && PYTHONPATH=. uv run python scripts/train_all_seasons.py
+	cd backend && PYTHONPATH=. uv run --active python scripts/train_all_seasons.py
 
 train-season: ## Train for a single season  e.g. make train-season SEASON=2024-2025
 	@test -n "$(SEASON)" || (echo "Error: SEASON is required. Usage: make train-season SEASON=2024-2025" && exit 1)
-	cd backend && PYTHONPATH=. uv run python scripts/train_all_seasons.py --season $(SEASON)
+	cd backend && PYTHONPATH=. uv run --active python scripts/train_all_seasons.py --season $(SEASON)
