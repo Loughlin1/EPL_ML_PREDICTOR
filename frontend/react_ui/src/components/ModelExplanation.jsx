@@ -20,7 +20,7 @@ function ModelExplanation() {
   }, []);
 
   return (
-    <div className='max-w-3xl'>
+    <div className='w-full max-w-5xl overflow-x-auto'>
       {explanation && (
         <div>
           <h2 className="text-base md:text-xl font-semibold whitespace-nowrap pt-5">
