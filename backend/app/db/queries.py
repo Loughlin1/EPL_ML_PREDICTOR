@@ -99,6 +99,13 @@ def get_teams_names() -> List[str]:
     return [team["name"] for team in get_teams()]
 
 
+def get_all_venues() -> List[str]:
+    """Return all distinct non-null venue names across every season in the DB."""
+    with get_session() as session:
+        rows = session.query(Match.venue).filter(Match.venue.isnot(None)).distinct().all()
+        return [r[0] for r in rows]
+
+
 def get_team_details(team_identifier: str = None, by: str = "name") -> Dict[str, Any]:
     """
     Retrieve details for a specific team by name, team ID, or fbref team ID.
