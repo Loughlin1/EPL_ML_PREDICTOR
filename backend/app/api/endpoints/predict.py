@@ -47,6 +47,8 @@ def predict_matches(request: MatchInput):
             "The American Express Community Stadium", "The AMEX"
         )
         predictions_df["Score"] = predictions_df["Score"].replace("None-None", "")
+        predictions_df = predictions_df.replace([float("inf"), float("-inf")], None)
+        predictions_df = predictions_df.fillna("")
         return predictions_df.to_dict(orient="records")
 
     except Exception as e:

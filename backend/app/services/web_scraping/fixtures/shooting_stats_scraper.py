@@ -4,9 +4,11 @@ shooting_stats_scraper.py
     Module to scrape shooting stats data from the web
 """
 
+import io
 import time
 
 import pandas as pd
+import requests
 
 from ....core.config import settings
 from ....db.loaders.shooting_stats import add_shooting_stats
@@ -15,10 +17,20 @@ from ....db.queries import get_teams_by_season
 FOOTBALL_DATA_BASE_URL = settings.FOOTBALL_DATA_BASE_URL
 CURRENT_SEASON = settings.CURRENT_SEASON
 
+_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/125.0.0.0 Safari/537.36"
+    )
+}
+
 
 def scrape_season_stats(url: str):
     try:
-        df = pd.read_html(url, attrs={"id": "matchlogs_for"})[0]
+        response = requests.get(url, headers=_HEADERS, timeout=30)
+        response.raise_for_status()
+        df = pd.read_html(io.StringIO(response.text), attrs={"id": "matchlogs_for"})[0]
         return df if not df.empty else None
     except Exception as e:
         print(f"Failed to scrape {url}: {e}")

@@ -141,9 +141,10 @@ def predict_pipeline(
         historical_df = clean_data(historical_df)
 
         # Load new season fixtures
-        fixtures_df = get_this_seasons_fixtures_data()
+        fixtures_raw = get_this_seasons_fixtures_data()
+        fthg_ftag = fixtures_raw[["match_id", "FTHG", "FTAG"]].copy()
         fixtures_df = clean_data(
-            fixtures_df.drop(columns=["FTHG", "FTAG"], errors="ignore")
+            fixtures_raw.drop(columns=["FTHG", "FTAG"], errors="ignore")
         )
 
         # Combine historical and new season data for consistent Elo calculation
@@ -195,5 +196,6 @@ def predict_pipeline(
     result_df[["PredFTHG", "PredFTAG", "PredScore", "PredResult"]] = new_season_df[
         ["PredFTHG", "PredFTAG", "PredScore", "PredResult"]
     ]
+    result_df = result_df.merge(fthg_ftag, on="match_id", how="left")
     logger.info("Predictions generated successfully")
     return result_df

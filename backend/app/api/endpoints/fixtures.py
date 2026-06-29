@@ -25,9 +25,12 @@ def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
     fixtures = get_this_seasons_fixtures_data()
     date_check_refresh = check_missing_results(logger=logger)
     if refresh or date_check_refresh:
-        print("Refreshing data")
-        scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
-        scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
+        try:
+            print("Refreshing data")
+            scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
+            scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
+        except Exception as e:
+            logger.warning(f"Scrape failed, serving cached DB data: {e}")
 
     if matchweek is not None:
         fixtures = fixtures[fixtures["week"] == matchweek]
