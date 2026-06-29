@@ -16,6 +16,18 @@ const METRICS = [
   { key: 'MAE_Total',          label: 'Goal MAE',           unit: '',   decimals: 2, lowerIsBetter: true },
 ];
 
+// Baseline reference lines shown per metric
+const BASELINES = {
+  'Correct_Result_%': [
+    { label: 'Always home win (44.6%)', value: 44.6, color: '#F59E0B' },
+    { label: 'Random guess (33.3%)',    value: 33.3, color: '#EF4444' },
+  ],
+  'Correct_Scores_%': [
+    { label: 'Always 1-1 (10.6%)', value: 10.6, color: '#F59E0B' },
+    { label: 'Always 1-0 (9.2%)',  value:  9.2, color: '#EF4444' },
+  ],
+};
+
 function shortSeason(s) {
   const [a, b] = s.split('-');
   return `${a.slice(2)}-${b.slice(2)}`;
@@ -68,6 +80,18 @@ export default function SeasonHistoryModal({ availableSeasons, onClose }) {
   const ukTop10 = availableSeasons.map((s) => leaderboards[s]?.uk_top_10_pct ?? null);
 
   const showBenchmarks = activeMetric.key === 'superbru_points';
+  const activeBaselines = BASELINES[activeMetric.key] ?? [];
+
+  const baselineDatasets = activeBaselines.map((b) => ({
+    label: b.label,
+    data: labels.map(() => b.value),
+    borderColor: b.color,
+    borderWidth: 1.5,
+    borderDash: [5, 4],
+    pointRadius: 0,
+    tension: 0,
+    fill: false,
+  }));
 
   const chartData = {
     labels,
@@ -83,6 +107,7 @@ export default function SeasonHistoryModal({ availableSeasons, onClose }) {
         tension: 0.3,
         fill: true,
       },
+      ...baselineDatasets,
       ...(showBenchmarks ? [
         {
           label: 'Global top 10%',
@@ -113,7 +138,7 @@ export default function SeasonHistoryModal({ availableSeasons, onClose }) {
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: { display: showBenchmarks, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+      legend: { display: showBenchmarks || activeBaselines.length > 0, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
       tooltip: {
         callbacks: {
           label: (ctx) => {
