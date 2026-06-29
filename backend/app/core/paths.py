@@ -25,6 +25,7 @@ LINEUPS_TRAINING_DATA_DIR = data_dir / "lineups_training_data"
 
 # CACHE
 SUPERBRU_LEADERBOARD_CACHE = data_dir / "cache" / "leaderboard.json"
+SEASON_SUMMARIES_CACHE = data_dir / "cache" / "season_summaries.json"
 
 # CONTENT
 CONTENT_DIR = backend_dir / "app" / "content"

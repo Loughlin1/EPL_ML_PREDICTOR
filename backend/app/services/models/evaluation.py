@@ -7,10 +7,11 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
+from ...core.config import settings
 from ...core.paths import SAVED_MODELS_DIRECTORY
 from ..data_processing.data_loader import clean_data, load_training_data
 from ..models.config import FEATURES, LABELS
-from ..models.save_load import load_model
+from ..models.save_load import load_model, load_model_for_season, load_scaler_for_season
 from ..models.train import preprocess_data
 
 
@@ -133,9 +134,13 @@ def evaluate_model_performance(y_true: pd.DataFrame, y_pred: pd.DataFrame):
     }
 
 
-def evaluate_model():
-    model = load_model(SAVED_MODELS_DIRECTORY, "best_model.joblib")
-    df = load_training_data()
+def evaluate_model(season: str = None):
+    if season is None:
+        season = settings.CURRENT_SEASON
+    model = load_model_for_season(season)
+    scaler = load_scaler_for_season(season)
+    training_end_year = int(season.split("-")[0]) - 1
+    df = load_training_data(end_season=training_end_year)
     df = clean_data(df)
     df = preprocess_data(df)
     X = df[FEATURES]
@@ -143,8 +148,8 @@ def evaluate_model():
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
-
-    y_pred = model.predict(X_val)
+    X_val_scaled = scaler.transform(X_val)
+    y_pred = model.predict(X_val_scaled)
     y_pred = pd.DataFrame(y_pred, columns=LABELS)
     results = evaluate_model_performance(y_val, y_pred)
     return results

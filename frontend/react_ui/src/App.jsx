@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getMatchweek, getSeasons, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation, getModelEvaluation } from './api';
+import {
+  getSeasons, getSeasonSummary, getSeasonMatchweek,
+  getMatchweekData, getTopPoints, postPoints, getModelEvaluation
+} from './api';
 import Header from './components/Header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
 import MatchTable from './components/MatchTable';
@@ -13,27 +16,23 @@ function App() {
   const [season, setSeason] = useState(null);
   const [availableSeasons, setAvailableSeasons] = useState([]);
   const [matchweek, setMatchweek] = useState(1);
-  const [allFixtures, setAllFixtures] = useState([]);
-  const [predictions, setPredictions] = useState([]);
+  const [matchweekData, setMatchweekData] = useState([]);
+  const [seasonSummary, setSeasonSummary] = useState(null);
   const [pointsThisWeek, setPointsThisWeek] = useState(0);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [totalPredictonsEvaluation, setTotalPredictionsEvaluation] = useState([]);
-  const [thisWeekPredictonsEvaluation, setThisWeekPredictionsEvaluation] = useState([]);
   const [globalTopPoints, setGlobalTop] = useState(0);
   const [globalTop250Points, setGlobalTop250] = useState(0);
   const [modelValidationPerf, setModelValidationPerf] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingSeason, setLoadingSeason] = useState(true);
+  const [loadingWeek, setLoadingWeek] = useState(false);
 
-  // On mount: load available seasons then trigger the main data fetch
+  // On mount: load available seasons
   useEffect(() => {
     const init = async () => {
       try {
-        const seasonsRes = await getSeasons();
-        const seasons = seasonsRes.data.seasons;
+        const res = await getSeasons();
+        const seasons = res.data.seasons;
         setAvailableSeasons(seasons);
-        // Default to the latest season
-        const latest = seasons[seasons.length - 1];
-        setSeason(latest);
+        setSeason(seasons[seasons.length - 1]);
       } catch (error) {
         console.error('Error fetching seasons', error);
       }
@@ -41,79 +40,69 @@ function App() {
     init();
   }, []);
 
-  // Re-fetch fixtures + predictions whenever the selected season changes
+  // When season changes: fetch summary, current matchweek, leaderboard + model validation
   useEffect(() => {
     if (!season) return;
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchSeasonData = async () => {
+      setLoadingSeason(true);
       try {
-        const mwRes = await getMatchweek();
-        const mw = mwRes.data.current_matchweek;
-        setMatchweek(mw);
-
-        const fixturesRes = await getFixtures(season);
-        const fixtureData = fixturesRes.data;
-
-        const predsRes = await postPredictions(fixtureData, season);
-        const predictionData = predsRes.data;
-
-        const pointsRes = await postPoints(predictionData);
-        const allPts = pointsRes.data.points;
-
-        const topPtsRes = await getTopPoints(season);
+        const [summaryRes, mwRes, topPtsRes, modelValRes] = await Promise.all([
+          getSeasonSummary(season),
+          getSeasonMatchweek(season),
+          getTopPoints(season),
+          getModelEvaluation(),
+        ]);
+        setSeasonSummary(summaryRes.data);
+        setMatchweek(mwRes.data.current_matchweek);
         const { global_top, global_top_250 } = topPtsRes.data;
-
-        const modelValPerf = await getModelEvaluation();
-        setModelValidationPerf(modelValPerf.data);
-
-        const totalEvaluationRes = await postEvaluation(predictionData);
-        setTotalPredictionsEvaluation(totalEvaluationRes.data)
-        setAllFixtures(fixtureData);
-        setPredictions(predictionData);
-        setTotalPoints(allPts);
         setGlobalTop(global_top);
         setGlobalTop250(global_top_250);
+        setModelValidationPerf(modelValRes.data);
       } catch (error) {
-        console.error('Error fetching data', error);
+        console.error('Error fetching season data', error);
       } finally {
-        setLoading(false);
+        setLoadingSeason(false);
       }
     };
-
-    fetchData();
+    fetchSeasonData();
   }, [season]);
 
-  const filtered = predictions.filter((p) => p.week === matchweek);
-
-  const updateWeekPoints = async (weekData) => {
-    try {
-      const res = await postPoints(weekData);
-      setPointsThisWeek(res.data.points || 0);
-      const evaluationRes = await postEvaluation(weekData);
-      setThisWeekPredictionsEvaluation(evaluationRes.data || []);
-    } catch {
-      setPointsThisWeek(0);
-    }
-  };
-
+  // When matchweek changes: fetch just that week's data
   useEffect(() => {
-    if (predictions.length > 0) {
-      const weekData = predictions.filter((p) => p.week === matchweek);
-      updateWeekPoints(weekData);
-    }
-  }, [matchweek, predictions]);
+    if (!season || !matchweek) return;
+    const fetchWeek = async () => {
+      setLoadingWeek(true);
+      try {
+        const res = await getMatchweekData(season, matchweek);
+        const data = res.data;
+        setMatchweekData(data);
 
-  const handlePrev = (matchweek) => {
-    if (matchweek > 1) setMatchweek((prev) => prev - 1);
-  };
+        // Points for this week
+        try {
+          const ptsRes = await postPoints(data);
+          setPointsThisWeek(ptsRes.data.points || 0);
+        } catch {
+          setPointsThisWeek(0);
+        }
+      } catch (error) {
+        console.error('Error fetching matchweek data', error);
+      } finally {
+        setLoadingWeek(false);
+      }
+    };
+    fetchWeek();
+  }, [season, matchweek]);
 
-  const handleNext = (matchweek) => {
-    if (matchweek < 38) setMatchweek((prev) => prev + 1);
-  };
+  const handlePrev = () => { if (matchweek > 1) setMatchweek((w) => w - 1); };
+  const handleNext = () => { if (matchweek < 38) setMatchweek((w) => w + 1); };
+
+  const totalPoints = seasonSummary?.superbru_points ?? 0;
+  const seasonPerf = seasonSummary?.model_performance ?? [];
+  const thisWeekPerf = matchweekData.length > 0 ? [] : []; // computed server-side in summary
 
   return (
     <div className="p-6 grid w-full">
-      <Header></Header>
+      <Header />
       <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
         <h1 className="text-3xl font-bold">⚽️ EPL Match Result Predictor</h1>
         {availableSeasons.length > 0 && (
@@ -134,34 +123,53 @@ function App() {
       <p className="mb-6 text-gray-600">
         Visualize match predictions and Superbru scoring
       </p>
-      <CollapsibleHeader default_state={true} title={"Performance Stats"} content={
-        <div className="mb-4 w-full flex items-center flex-wrap gap-10">
-          <div>
-            <h3><strong>Model Performance (Validation)</strong></h3>
-            <ModelPerformanceStats data={modelValidationPerf} />
-          </div>
-          <div>
-            <h3><strong>This Week's Performance</strong></h3>
-            <ModelPerformanceStats data={thisWeekPredictonsEvaluation} />
-          </div>
-          <div>
-            <h3><strong>This Season's Performance</strong></h3>
-            <ModelPerformanceStats data={totalPredictonsEvaluation} />
-          </div>
+
+      {loadingSeason ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-500 min-w-full">
+          <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
+          <p className="text-sm">Loading season data…</p>
         </div>
-      } />
-      <SuperbruPoints pointsThisWeek={pointsThisWeek} totalPoints={totalPoints} globalTopPoints={globalTopPoints} globalTop250Points={globalTop250Points}/>
-      <div id="predictions" className="overflow-auto min-w-full">
-        <MatchweekMenuBar matchweek={matchweek} handlePrev={handlePrev} handleNext={handleNext} handleJump={setMatchweek}/>
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500 min-w-full">
-            <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
-            <p className="text-sm">Loading fixtures and predictions…</p>
+      ) : (
+        <>
+          <CollapsibleHeader default_state={true} title={"Performance Stats"} content={
+            <div className="mb-4 w-full flex items-center flex-wrap gap-10">
+              <div>
+                <h3><strong>Model Performance (Validation)</strong></h3>
+                <ModelPerformanceStats data={modelValidationPerf} />
+              </div>
+              <div>
+                <h3><strong>This Season's Performance</strong></h3>
+                <ModelPerformanceStats data={seasonPerf} />
+              </div>
+            </div>
+          } />
+
+          <SuperbruPoints
+            pointsThisWeek={pointsThisWeek}
+            totalPoints={totalPoints}
+            globalTopPoints={globalTopPoints}
+            globalTop250Points={globalTop250Points}
+          />
+
+          <div id="predictions" className="overflow-auto min-w-full">
+            <MatchweekMenuBar
+              matchweek={matchweek}
+              handlePrev={handlePrev}
+              handleNext={handleNext}
+              handleJump={setMatchweek}
+            />
+            {loadingWeek ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-4 text-gray-500 min-w-full">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
+                <p className="text-sm">Loading matchweek {matchweek}…</p>
+              </div>
+            ) : (
+              <MatchTable data={matchweekData} />
+            )}
           </div>
-        ) : (
-          <MatchTable data={filtered} />
-        )}
-      </div>
+        </>
+      )}
+
       <div id="model">
         <ModelExplanation />
       </div>

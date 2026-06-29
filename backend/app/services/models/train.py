@@ -76,9 +76,68 @@ def train_pipeline(season: str = None):
     if season:
         save_model_for_season(model, season)
         save_scaler_for_season(scaler, season)
+
+        # Run predictions on the test season and cache them, then save summary
+        _cache_predictions_and_summary(season, scaler, model)
     else:
         save_model(model, "best_model.joblib", SAVED_MODELS_DIRECTORY)
         save_scaler(scaler)
+
+
+def _cache_predictions_and_summary(season: str, scaler, model) -> None:
+    """After training, generate predictions for the test season and persist summary."""
+    import logging
+
+    import numpy as np
+
+    from ..data_processing.data_loader import clean_data, get_this_seasons_fixtures_data
+    from ..models.config import FEATURES
+    from ..models.predict import assign_predictions, update_cache
+    from ..models.summary import save_summary_for_season
+    from ...db.database import get_session
+
+    logger = logging.getLogger(__name__)
+    training_end_year = int(season.split("-")[0]) - 1
+
+    fixtures_raw = get_this_seasons_fixtures_data(season=season)
+    if fixtures_raw.empty:
+        logger.warning(f"No fixtures found for season {season}, skipping prediction cache")
+        return
+
+    fixtures_df = clean_data(fixtures_raw.drop(columns=["FTHG", "FTAG"], errors="ignore"))
+
+    historical_df = load_training_data(end_season=training_end_year)
+    historical_df = clean_data(historical_df)
+
+    from .preprocess import check_data, preprocess_data
+
+    combined_df = __import__("pandas").concat([historical_df, fixtures_df], ignore_index=True)
+    combined_df = preprocess_data(combined_df, test_data=True)
+    new_season_df = combined_df.iloc[len(historical_df):].copy()
+
+    X = new_season_df[FEATURES]
+    check_data(X)
+    X_scaled = scaler.transform(X)
+
+    if isinstance(model, dict):
+        future_scores = np.column_stack([
+            np.round(model["model_home"].predict(X_scaled)).astype(int),
+            np.round(model["model_away"].predict(X_scaled)).astype(int),
+        ])
+    else:
+        future_scores = np.round(model.predict(X_scaled)).astype(int)
+
+    new_season_df = assign_predictions(new_season_df, future_scores)
+
+    with get_session() as db:
+        update_cache(
+            new_season_df[["match_id", "PredFTHG", "PredFTAG", "PredScore", "PredResult"]],
+            db,
+            logger,
+        )
+
+    save_summary_for_season(season)
+    logger.info(f"Predictions cached and summary saved for season {season}")
 
 
 def train_model(season: str = None):

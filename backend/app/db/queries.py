@@ -6,7 +6,7 @@ import pytz
 from sqlalchemy import func, or_
 
 from .database import get_session
-from .models import Match, MatchShootingStat, Team
+from .models import Match, MatchShootingStat, PredictionsCache, Team
 
 
 def get_seasons_fixtures(
@@ -177,6 +177,57 @@ def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -
             .first()
         )
         return matches.match_id if matches else None
+
+
+def get_matchweek_with_predictions(season: str, week: int) -> List[Dict[str, Any]]:
+    """
+    Return all matches for a given season/week joined with their cached predictions.
+    """
+    with get_session() as session:
+        rows = (
+            session.query(Match, PredictionsCache)
+            .outerjoin(PredictionsCache, Match.match_id == PredictionsCache.match_id)
+            .filter(Match.season == season, Match.week == week)
+            .all()
+        )
+        results = []
+        for match, pred in rows:
+            data = match.to_dict()
+            data["PredFTHG"] = pred.pred_fthg if pred else None
+            data["PredFTAG"] = pred.pred_ftag if pred else None
+            data["PredScore"] = pred.pred_score if pred else None
+            data["PredResult"] = pred.pred_result if pred else None
+            results.append(data)
+        return results
+
+
+def get_season_with_predictions(season: str) -> List[Dict[str, Any]]:
+    """
+    Return all matches for a season joined with their cached predictions.
+    Used for summary computation.
+    """
+    with get_session() as session:
+        rows = (
+            session.query(Match, PredictionsCache)
+            .outerjoin(PredictionsCache, Match.match_id == PredictionsCache.match_id)
+            .filter(Match.season == season)
+            .all()
+        )
+        results = []
+        for match, pred in rows:
+            data = match.to_dict()
+            data["PredFTHG"] = pred.pred_fthg if pred else None
+            data["PredFTAG"] = pred.pred_ftag if pred else None
+            data["PredScore"] = pred.pred_score if pred else None
+            data["PredResult"] = pred.pred_result if pred else None
+            results.append(data)
+        return results
+
+
+def get_season_match_ids(season: str) -> List[int]:
+    with get_session() as session:
+        rows = session.query(Match.match_id).filter(Match.season == season).all()
+        return [r[0] for r in rows]
 
 
 def get_available_seasons() -> List[str]:

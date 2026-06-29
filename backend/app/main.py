@@ -10,6 +10,7 @@ from .api.endpoints import (
     fixtures,
     matchweek,
     predict,
+    seasons,
     superbru,
     train,
 )
@@ -50,6 +51,7 @@ app.include_router(evaluate.router, prefix=settings.API_PREFIX)
 ## Fixtures
 app.include_router(fixtures.router, prefix=settings.API_PREFIX)
 app.include_router(matchweek.router, prefix=settings.API_PREFIX)
+app.include_router(seasons.router, prefix=settings.API_PREFIX)
 
 # Superbru
 app.include_router(superbru.router, prefix=settings.API_PREFIX)
