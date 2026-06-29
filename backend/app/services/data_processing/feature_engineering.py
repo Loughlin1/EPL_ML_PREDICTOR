@@ -299,9 +299,12 @@ def add_elo_ratings(
                 )
         current_season = season
 
-        # Get current ratings
+        # Get current ratings (before this match updates them)
         home_elo = elo_ratings[home_team] + home_advantage
         away_elo = elo_ratings[away_team]
+
+        df.at[idx, "elo_h"] = home_elo
+        df.at[idx, "elo_a"] = away_elo
 
         # Update Elo ratings only if FTHG and FTAG are not None
         if pd.notna(row["FTHG"]) and pd.notna(row["FTAG"]):
