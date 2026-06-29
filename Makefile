@@ -1,7 +1,7 @@
 # Makefile for EPL_ML_PREDICTOR
 
 .PHONY: help backend backend-dev frontend frontend-dev dev tests lint \
-        train-all train-season
+        train-all train-season compare-models
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Help
@@ -63,3 +63,6 @@ train-all: ## Train a model for every season in the database
 train-season: ## Train for a single season  e.g. make train-season SEASON=2024-2025
 	@test -n "$(SEASON)" || (echo "Error: SEASON is required. Usage: make train-season SEASON=2024-2025" && exit 1)
 	cd backend && PYTHONPATH=. uv run python scripts/train_all_seasons.py --season $(SEASON)
+
+compare-models: ## Compare model types across all seasons  e.g. make compare-models [OUTPUT=results.csv]
+	cd backend && PYTHONPATH=. uv run python scripts/compare_models.py $(if $(OUTPUT),--output $(OUTPUT),)

@@ -14,6 +14,19 @@ from ...core.paths import SEASON_SUMMARIES_CACHE
 from ...db.queries import get_season_with_predictions
 from ..utils.superbru_points_calculator import get_superbru_points
 from .evaluation import evaluate_model_performance
+from .save_load import load_model_for_season
+
+
+def _get_model_name(season: str) -> str:
+    try:
+        model = load_model_for_season(season)
+        if hasattr(model, "home_model"):  # GoalPredictor wrapper
+            return model.home_model.__class__.__name__
+        if isinstance(model, dict):
+            return next(iter(model.values())).__class__.__name__
+        return model.__class__.__name__
+    except Exception:
+        return "Unknown"
 
 
 def _load_cache() -> dict:
@@ -63,6 +76,7 @@ def compute_season_summary(season: str) -> dict:
         "season": season,
         "superbru_points": superbru_points,
         "model_performance": model_performance,
+        "model_name": _get_model_name(season),
         "matches_played": len(played),
         "matches_total": len(df),
         "computed_at": datetime.utcnow().isoformat(),

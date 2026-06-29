@@ -65,11 +65,20 @@ export default function StatsPanel({
 
   const benchMax = globalTopPoints || 1;
 
+  const modelName = seasonSummary?.model_name;
+
   return (
     <div className="w-full mb-4 space-y-4">
 
       <div>
-        <SectionLabel>Season performance</SectionLabel>
+        <div className="flex items-center gap-3 mb-2">
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Season performance</p>
+          {modelName && (
+            <span className="text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-2 py-0.5 font-medium -mt-2">
+              {modelName}
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <MetricCard
             label="Correct results"
