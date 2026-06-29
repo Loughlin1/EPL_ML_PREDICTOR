@@ -4,6 +4,8 @@ from app.main import app
 
 client = TestClient(app)
 
+EXPECTED_METRICS = ("MAE_Home", "MAE_Away", "MAE_Total", "Correct_Result_%", "Correct_Scores_%")
+
 
 def test_post_evaluate_matches():
     fixtures = client.get("/api/fixtures").json()
@@ -12,7 +14,9 @@ def test_post_evaluate_matches():
     assert response.status_code == 200
     evaluation = response.json()
     assert isinstance(evaluation, dict)
-    assert isinstance(evaluation["MAE_Home"], float)
+    for metric in EXPECTED_METRICS:
+        assert metric in evaluation, f"Expected metric '{metric}' missing"
+        assert isinstance(evaluation[metric], (int, float))
 
 
 def test_get_evaluate_model_validation():
@@ -20,4 +24,6 @@ def test_get_evaluate_model_validation():
     assert response.status_code == 200
     evaluation = response.json()
     assert isinstance(evaluation, dict)
-    assert isinstance(evaluation["MAE_Home"], float)
+    for metric in EXPECTED_METRICS:
+        assert metric in evaluation, f"Expected metric '{metric}' missing"
+        assert isinstance(evaluation[metric], (int, float))
