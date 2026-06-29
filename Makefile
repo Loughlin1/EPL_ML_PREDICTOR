@@ -1,7 +1,7 @@
 # Makefile for EPL_ML_PREDICTOR
 
 .PHONY: help backend backend-dev frontend frontend-dev dev tests lint \
-        train-all train-season compare-models feature-importance
+        train-all train-season compare-models feature-importance tune-rf
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Help
@@ -69,3 +69,6 @@ compare-models: ## Compare model types across all seasons  e.g. make compare-mod
 
 feature-importance: ## Show feature importances for a trained model  e.g. make feature-importance [SEASON=2024-2025] [TOP=10]
 	cd backend && PYTHONPATH=. uv run python scripts/feature_importance.py $(if $(SEASON),--season $(SEASON),) $(if $(TOP),--top $(TOP),)
+
+tune-rf: ## Hyperparameter search for RandomForest  e.g. make tune-rf [N_ITER=60] [CV_SPLITS=4]
+	cd backend && PYTHONPATH=. uv run python scripts/tune_random_forest.py $(if $(N_ITER),--n-iter $(N_ITER),) $(if $(CV_SPLITS),--cv-splits $(CV_SPLITS),)
