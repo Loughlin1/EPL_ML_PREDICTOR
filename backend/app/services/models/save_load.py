@@ -4,7 +4,7 @@ import pickle
 import joblib
 from sklearn.preprocessing import StandardScaler
 
-from ...core.paths import artifacts_dir
+from ...core.paths import SAVED_MODELS_DIRECTORY, artifacts_dir, season_model_path, season_scaler_path
 
 SCALER_FILEPATH = artifacts_dir / "scaler.pkl"
 
@@ -26,17 +26,42 @@ def load_model(
     return model
 
 
+def load_model_for_season(season: str):
+    """Load season-scoped model, falling back to best_model.joblib."""
+    path = season_model_path(season)
+    if path.exists():
+        return joblib.load(path)
+    fallback = SAVED_MODELS_DIRECTORY / "best_model.joblib"
+    return joblib.load(fallback)
+
+
 def save_model(model, model_filename: str, model_directory: str):
     # Saves a machine learning model to a file
     with open(f"{model_directory}/{model_filename}", "wb") as file:
         pickle.dump(model, file)
 
 
+def save_model_for_season(model, season: str) -> None:
+    joblib.dump(model, season_model_path(season))
+
+
 def save_scaler(scaler: StandardScaler) -> None:
     joblib.dump(scaler, SCALER_FILEPATH)
 
 
+def save_scaler_for_season(scaler: StandardScaler, season: str) -> None:
+    joblib.dump(scaler, season_scaler_path(season))
+
+
 def load_scaler() -> StandardScaler:
+    return joblib.load(SCALER_FILEPATH)
+
+
+def load_scaler_for_season(season: str) -> StandardScaler:
+    """Load season-scoped scaler, falling back to the global scaler."""
+    path = season_scaler_path(season)
+    if path.exists():
+        return joblib.load(path)
     return joblib.load(SCALER_FILEPATH)
 
 

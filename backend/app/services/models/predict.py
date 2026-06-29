@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy.orm import Session
 
+from ...core.config import settings
 from ...core.paths import (
     SAVED_MODELS_DIRECTORY,
 )
@@ -21,7 +22,7 @@ from ..data_processing.data_loader import (
 )
 from .config import FEATURES
 from .preprocess import check_data, preprocess_data
-from .save_load import load_model, load_scaler
+from .save_load import load_model, load_model_for_season, load_scaler, load_scaler_for_season
 
 
 def assign_predictions(input_data: pd.DataFrame, future_scores) -> pd.DataFrame:
@@ -113,21 +114,36 @@ def update_cache(predictions_df: pd.DataFrame, db: Session, logger: logging.Logg
 
 
 def predict_pipeline(
-    fixtures_df: pd.DataFrame, cache_duration_hours: int, logger: logging.Logger
+    fixtures_df: pd.DataFrame,
+    cache_duration_hours: int,
+    logger: logging.Logger,
+    season: str = None,
 ):
     """
-    Generate predictions for new season fixtures using historical data for features.
+    Generate predictions for a season's fixtures using historical data for features.
+
+    Args:
+        fixtures_df: DataFrame of fixture rows sent from the endpoint.
+        cache_duration_hours: How long to trust cached predictions.
+        logger: Logger instance.
+        season: Season string e.g. "2024-2025". Defaults to CURRENT_SEASON.
 
     Returns:
         pd.DataFrame: Fixtures with predicted scores (PredFTHG, PredFTAG).
     """
-    logger.info("Starting prediction pipeline")
+    if season is None:
+        season = settings.CURRENT_SEASON
+
+    logger.info(f"Starting prediction pipeline for season {season}")
+
+    # Training data is everything before the target season
+    training_end_year = int(season.split("-")[0]) - 1
 
     match_ids = fixtures_df["match_id"].tolist()
 
     with get_session() as db:
-        # Load new season fixtures (needed for both cache and full pipeline paths)
-        fixtures_raw = get_this_seasons_fixtures_data()
+        # Load season fixtures (needed for both cache and full pipeline paths)
+        fixtures_raw = get_this_seasons_fixtures_data(season=season)
         fthg_ftag = fixtures_raw[["match_id", "FTHG", "FTAG"]].copy()
         fixtures_df = clean_data(
             fixtures_raw.drop(columns=["FTHG", "FTAG"], errors="ignore")
@@ -143,7 +159,7 @@ def predict_pipeline(
             return result_df
 
         # Load historical data for Elo and other features
-        historical_df = load_training_data()
+        historical_df = load_training_data(end_season=training_end_year)
         historical_df = clean_data(historical_df)
 
         # Combine historical and new season data for consistent Elo calculation
@@ -155,17 +171,14 @@ def predict_pipeline(
 
         # Select features
         X = new_season_df[FEATURES]
-        print(X[["elo_h", "elo_a"]].head())
         check_data(X)
 
         # Scaling features
-        scaler = load_scaler()
+        scaler = load_scaler_for_season(season)
         X_scaled = scaler.transform(X)
 
-        # Load model
-        model = load_model(
-            SAVED_MODELS_DIRECTORY, "best_model.joblib", "best_model_metadata.json"
-        )
+        # Load season-scoped model
+        model = load_model_for_season(season)
 
         # Predictions
         if isinstance(model, dict):  # Single-output model (e.g., Poisson Regression)

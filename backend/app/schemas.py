@@ -17,3 +17,4 @@ class PredictResponse(BaseModel):
 
 class MatchInput(BaseModel):
     data: List[Dict[str, Any]]  # List of match data rows
+    season: str = None

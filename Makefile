@@ -9,6 +9,12 @@ help:
 tests:
 	cd backend && PYTHONPATH=. uv run pytest tests/ --disable-warnings
 
+train-all:
+	cd backend && PYTHONPATH=. uv run python scripts/train_all_seasons.py
+
+train-season:
+	cd backend && PYTHONPATH=. uv run python scripts/train_all_seasons.py --season $(SEASON)
+
 backend:
 	cd backend && export PYTHONPATH=$(pwd) && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 

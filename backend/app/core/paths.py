@@ -11,6 +11,14 @@ VENUE_ENCODER_FILEPATH = artifacts_dir / "encoders" / "venue_encoder.pkl"
 TEAM_ENCODER_FILEPATH = artifacts_dir / "encoders" / "team_encoder.pkl"
 SAVED_MODELS_DIRECTORY = artifacts_dir / "models"
 
+
+def season_model_path(season: str) -> Path:
+    return SAVED_MODELS_DIRECTORY / f"model_{season}.joblib"
+
+
+def season_scaler_path(season: str) -> Path:
+    return artifacts_dir / f"scaler_{season}.pkl"
+
 # DATA
 FIXTURES_TRAINING_DATA_DIR = data_dir / "fixtures_training_data"
 LINEUPS_TRAINING_DATA_DIR = data_dir / "lineups_training_data"

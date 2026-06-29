@@ -36,20 +36,21 @@ def generate_seasons(start_year: int, end_year: int) -> list[str]:
     return seasons
 
 
-def load_training_data(start_season: int = None) -> pd.DataFrame:
+def load_training_data(start_season: int = None, end_season: int = None) -> pd.DataFrame:
     """
-    Load training fixtures data from database
+    Load training fixtures data from database.
     Args:
-        start_year: int (e.g. 2014 for "2014-2015")
+        start_season: int start year (e.g. 2014 for "2014-2015")
+        end_season: int end year inclusive (e.g. 2023 for "2023-2024")
     Returns:
         pd.DataFrame
     """
     dfs = []
     if not start_season:
         start_season = TRAINING_DATA_START_SEASON
-    for season in generate_seasons(
-        start_year=start_season, end_year=TRAINING_DATA_END_SEASON
-    ):
+    if not end_season:
+        end_season = TRAINING_DATA_END_SEASON
+    for season in generate_seasons(start_year=start_season, end_year=end_season):
         df = pd.DataFrame(get_seasons_fixtures(season=season))
         if not df.empty:
             dfs.append(df)
@@ -79,14 +80,16 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_this_seasons_fixtures_data() -> pd.DataFrame:
+def get_this_seasons_fixtures_data(season: str = None) -> pd.DataFrame:
     """
-    Reads this seasons fixtures data from database,
-    drops rows with NaN values, and returns the DataFrame.
+    Reads fixtures data for the given season from the database.
+    Defaults to the current season if no season is specified.
 
     Returns:
         pd.DataFrame: DataFrame containing the fixtures data.
     """
-    df = pd.DataFrame(get_seasons_fixtures(season=settings.CURRENT_SEASON))
+    if season is None:
+        season = settings.CURRENT_SEASON
+    df = pd.DataFrame(get_seasons_fixtures(season=season))
     df.dropna(thresh=7, inplace=True)  # Dropping any NaN rows in the data
     return df

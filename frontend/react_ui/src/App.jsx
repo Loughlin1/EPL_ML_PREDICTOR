@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMatchweek, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation, getModelEvaluation } from './api';
+import { getMatchweek, getSeasons, getFixtures, postPredictions, postPoints, getTopPoints, postEvaluation, getModelEvaluation } from './api';
 import Header from './components/Header';
 import MatchweekMenuBar from './components/MatchweekMenuBar';
 import MatchTable from './components/MatchTable';
@@ -10,6 +10,8 @@ import CollapsibleHeader from './components/CollapsibleHeader';
 import Footer from './components/Footer';
 
 function App() {
+  const [season, setSeason] = useState(null);
+  const [availableSeasons, setAvailableSeasons] = useState([]);
   const [matchweek, setMatchweek] = useState(1);
   const [allFixtures, setAllFixtures] = useState([]);
   const [predictions, setPredictions] = useState([]);
@@ -22,17 +24,37 @@ function App() {
   const [modelValidationPerf, setModelValidationPerf] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // On mount: load available seasons then trigger the main data fetch
   useEffect(() => {
+    const init = async () => {
+      try {
+        const seasonsRes = await getSeasons();
+        const seasons = seasonsRes.data.seasons;
+        setAvailableSeasons(seasons);
+        // Default to the latest season
+        const latest = seasons[seasons.length - 1];
+        setSeason(latest);
+      } catch (error) {
+        console.error('Error fetching seasons', error);
+      }
+    };
+    init();
+  }, []);
+
+  // Re-fetch fixtures + predictions whenever the selected season changes
+  useEffect(() => {
+    if (!season) return;
     const fetchData = async () => {
+      setLoading(true);
       try {
         const mwRes = await getMatchweek();
         const mw = mwRes.data.current_matchweek;
         setMatchweek(mw);
 
-        const fixturesRes = await getFixtures();
+        const fixturesRes = await getFixtures(season);
         const fixtureData = fixturesRes.data;
 
-        const predsRes = await postPredictions(fixtureData);
+        const predsRes = await postPredictions(fixtureData, season);
         const predictionData = predsRes.data;
 
         const pointsRes = await postPoints(predictionData);
@@ -52,14 +74,14 @@ function App() {
         setGlobalTop(global_top);
         setGlobalTop250(global_top_250);
       } catch (error) {
-        console.error('Error fetching initial data', error);
+        console.error('Error fetching data', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [season]);
 
   const filtered = predictions.filter((p) => p.week === matchweek);
 
@@ -92,7 +114,23 @@ function App() {
   return (
     <div className="p-6 grid max-w-screen-xl mx-auto w-full">
       <Header></Header>
-      <h1 className="text-3xl font-bold mb-2">⚽️ EPL Match Result Predictor</h1>
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
+        <h1 className="text-3xl font-bold">⚽️ EPL Match Result Predictor</h1>
+        {availableSeasons.length > 0 && (
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-600">Season</label>
+            <select
+              value={season || ''}
+              onChange={(e) => setSeason(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded bg-white hover:border-gray-400 cursor-pointer text-sm"
+            >
+              {availableSeasons.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
       <p className="mb-6 text-gray-600">
         Visualize match predictions and Superbru scoring
       </p>

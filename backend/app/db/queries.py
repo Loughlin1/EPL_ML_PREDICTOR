@@ -179,6 +179,16 @@ def get_match_id(season: str, week: str, home_team_id: int, away_team_id: int) -
         return matches.match_id if matches else None
 
 
+def get_available_seasons() -> List[str]:
+    """
+    Return a sorted list of seasons that have fixture data in the DB.
+    """
+    with get_session() as session:
+        rows = session.query(Match.season).distinct().all()
+        seasons = sorted([r[0] for r in rows if r[0]])
+        return seasons
+
+
 def check_missing_results(
     logger: logging.Logger, current_datetime: datetime = None
 ) -> bool:

@@ -4,6 +4,7 @@ import traceback
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 
+from ...core.config import settings
 from ...schemas import MatchInput
 from ...services.models import predict as predictor
 
@@ -35,9 +36,9 @@ COLUMN_MAPPING = {
 def predict_matches(request: MatchInput):
     try:
         df_input = pd.DataFrame(request.data)
-        print(df_input.head())
+        season = request.season or settings.CURRENT_SEASON
         predictions_df = predictor.predict_pipeline(
-            df_input, cache_duration_hours=24, logger=logger
+            df_input, cache_duration_hours=24, logger=logger, season=season
         )
         # Renaming columns
         predictions_df = predictions_df[COLUMN_MAPPING.keys()]

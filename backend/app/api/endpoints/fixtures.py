@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Query
 
 from ...core.config import settings
-from ...db.queries import check_missing_results, get_teams
+from ...db.queries import check_missing_results, get_available_seasons, get_teams
 from ...services.data_processing.data_loader import get_this_seasons_fixtures_data
 from ...services.web_scraping.fixtures.fixtures_scraper import scrape_and_save_fixtures
 from ...services.web_scraping.fixtures.shooting_stats_scraper import (
@@ -17,27 +17,40 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
+@router.get("/seasons")
+def list_seasons():
+    """Return all seasons that have fixture data in the database."""
+    return {"seasons": get_available_seasons()}
+
+
 @router.get("/fixtures")
-def get_fixtures(matchweek: int = Query(None), refresh: bool = False):
+def get_fixtures(
+    matchweek: int = Query(None),
+    refresh: bool = False,
+    season: str = Query(None),
+):
     """
-    Get EPL fixtures, optionally by matchweek, and optionally force refresh.
+    Get EPL fixtures, optionally by matchweek and/or season.
+    Only attempts a live scrape refresh for the current season.
     """
-    fixtures = get_this_seasons_fixtures_data()
-    date_check_refresh = check_missing_results(logger=logger)
-    if refresh or date_check_refresh:
-        try:
-            print("Refreshing data")
-            scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
-            scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
-        except Exception as e:
-            logger.warning(f"Scrape failed, serving cached DB data: {e}")
+    target_season = season or settings.CURRENT_SEASON
+    fixtures = get_this_seasons_fixtures_data(season=target_season)
+
+    if target_season == settings.CURRENT_SEASON:
+        date_check_refresh = check_missing_results(logger=logger)
+        if refresh or date_check_refresh:
+            try:
+                print("Refreshing data")
+                scrape_and_save_fixtures(season=settings.CURRENT_SEASON)
+                scrape_and_save_shooting_stats([settings.CURRENT_SEASON])
+            except Exception as e:
+                logger.warning(f"Scrape failed, serving cached DB data: {e}")
 
     if matchweek is not None:
         fixtures = fixtures[fixtures["week"] == matchweek]
 
-    # Handle NaN, inf, -inf for JSON serialization
     fixtures = fixtures.replace([float("inf"), float("-inf")], None)
-    fixtures = fixtures.fillna("")  # Or fill with "N/A" or 0 depending on column
+    fixtures = fixtures.fillna("")
     return fixtures.to_dict(orient="records")
 
 

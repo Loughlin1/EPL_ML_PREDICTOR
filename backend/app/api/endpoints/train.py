@@ -12,9 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/train")
-def run_training():
+def run_training(season: str = None):
+    """
+    Train a model. If `season` is provided (e.g. "2024-2025"), trains on all data
+    before that season and saves season-scoped artifacts. Otherwise trains on all
+    available data and saves the default model used for the current season.
+    """
     try:
-        result = train_model()
+        result = train_model(season=season)
         return result
     except Exception as e:
         error = traceback.format_exc()

@@ -24,18 +24,37 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+from ...core.config import settings
 from ...core.paths import (
     SAVED_MODELS_DIRECTORY,
 )
 from ..data_processing.data_loader import clean_data, load_training_data
 from ..models.config import FEATURES, LABELS
-from ..models.save_load import save_model, save_scaler
+from ..models.save_load import save_model, save_model_for_season, save_scaler, save_scaler_for_season
 from .preprocess import check_data, preprocess_data
 
 
-def train_pipeline():
+def train_pipeline(season: str = None):
+    """
+    Train a model for the given season.
+
+    If season is provided, trains on all data *before* that season and saves
+    season-scoped artifacts (model_{season}.joblib, scaler_{season}.pkl).
+    If no season is given, trains on all available data and saves the default
+    best_model.joblib used for the current season.
+
+    Args:
+        season: Target season string e.g. "2024-2025". Trains on data up to
+                but not including this season.
+    """
+    if season:
+        # e.g. "2024-2025" → train on 2014-2023
+        end_year = int(season.split("-")[0]) - 1
+    else:
+        end_year = None  # use config default
+
     # Load data
-    df = load_training_data()
+    df = load_training_data(end_season=end_year)
     df = clean_data(df)
     df = preprocess_data(df, test_data=False)
     X = df[FEATURES]
@@ -48,26 +67,30 @@ def train_pipeline():
     # Scaling features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    save_scaler(scaler)
 
     # Train model
     model = LinearRegression()
-    # model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train_scaled, y_train)
 
-    # Save model
-    save_model(model, "best_model.joblib", SAVED_MODELS_DIRECTORY)
+    # Save artifacts — season-scoped if a season was given, otherwise default
+    if season:
+        save_model_for_season(model, season)
+        save_scaler_for_season(scaler, season)
+    else:
+        save_model(model, "best_model.joblib", SAVED_MODELS_DIRECTORY)
+        save_scaler(scaler)
 
 
-def train_model():
+def train_model(season: str = None):
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
     logger = logging.getLogger(__name__)
-    logger.info("Starting training pipeline...")
-    train_pipeline()
+    label = season or settings.CURRENT_SEASON
+    logger.info(f"Starting training pipeline for season {label}...")
+    train_pipeline(season=season)
     logger.info("Training complete. Model saved.")
-    return {"status": "success", "message": "Model trained and saved."}
+    return {"status": "success", "message": f"Model trained and saved for season {label}."}
 
 
 if __name__ == "__main__":
