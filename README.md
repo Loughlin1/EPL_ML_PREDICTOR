@@ -1,118 +1,148 @@
-# EPL_ML_project
-## Overview
-This project aims to predict English Premier League (EPL) match outcomes using machine learning techniques. The model is trained on historical match data and various features such as team statistics, player performance, and more.
+# EPL ML Predictor
 
-## Features
-- Data preprocessing and feature engineering
-- Multiple machine learning models for prediction
-- Model evaluation and comparison
-- Visualization of results
+A full-stack application that predicts English Premier League match outcomes using machine learning. Predictions are made per season using a linear regression model trained on historical match data, Elo ratings, rolling shooting stats, head-to-head records, and points-per-game features.
 
+## Architecture
 
-## Design
-
-### 🧩 System Design
-
-#### 📌 Overview
-
-The EPL Predictor Web App is a full-stack application that predicts the outcome of English Premier League (EPL) matches using machine learning. It is transitioning from a Streamlit-based UI to a decoupled architecture with a React frontend and FastAPI backend for improved scalability and user experience.
-
-#### ⚙️ Architecture
 ```
-[React Frontend] <---> [FastAPI Backend API] <---> [ML Model & Utilities]
-                                    |
-                                    V
-                          [Database / Data Storage]
+[React Frontend] <──> [FastAPI Backend] <──> [SQLite DB]
+                              │
+                    [ML Pipeline (scikit-learn)]
 ```
-- Frontend: Built in React with TypeScript and TailwindCSS
-- Backend: Built in FastAPI with Python
-- Model Pipeline: Includes data scraping, cleaning, training, and prediction modules
-- Data Storage: Models and datasets stored locally or in cloud (S3/DB planned)
 
-📁 Directory Structure
-```bash
+- **Frontend**: React + Tailwind CSS
+- **Backend**: FastAPI + SQLAlchemy (SQLite)
+- **ML**: LinearRegression with StandardScaler, trained per season, persisted via joblib
+- **Data**: Scraped from fbref.com and football-data.co.uk; cached in SQLite
+
+## Directory Structure
+
+```
 EPL_ML_PREDICTOR/
-│
 ├── backend/
 │   ├── app/
-│   │   ├── main.py               # FastAPI entrypoint
-│   │   ├── api/endpoints/        # Routes: predict, train, etc.
-│   │   ├── core/                 # Configs and utils
-│   │   ├── models/               # Pydantic request/response models
-│   │   ├── services/             # ML logic: predict, train, scrape
-│   └── requirements.txt
+│   │   ├── main.py                  # FastAPI entrypoint, global exception handler
+│   │   ├── api/endpoints/           # Thin route handlers (fixtures, seasons, predict, etc.)
+│   │   ├── core/                    # Config, paths
+│   │   ├── db/                      # SQLAlchemy models, queries, migrations
+│   │   ├── schemas/                 # Pydantic request/response models
+│   │   └── services/                # All business logic
+│   │       ├── data_processing/     # Feature engineering, data loading
+│   │       ├── models/              # Train, predict, evaluate, summary
+│   │       ├── utils/               # Matchweek, superbru points calculator
+│   │       ├── web_scraping/        # fbref + football-data scrapers
+│   │       ├── seasons_service.py   # Matchweek fetch + prediction cache logic
+│   │       └── superbru_service.py  # Leaderboard cache logic
+│   ├── scripts/
+│   │   └── train_all_seasons.py     # CLI to train models for all or one season
+│   └── tests/                       # pytest integration tests
 │
 ├── frontend/
-│   ├── src/
-│   │   ├── components/           # React UI components
-│   │   ├── pages/                # Route pages (predict, train, about)
-│   │   ├── services/             # API handlers using Axios
-│   │   └── App.tsx
-│   └── package.json
+│   └── react_ui/
+│       ├── src/
+│       │   ├── App.jsx              # Season/matchweek state, data fetching
+│       │   ├── api.js               # Axios API calls
+│       │   └── components/          # MatchTable, MatchweekMenuBar, etc.
+│       └── package.json
 │
-└── README.md
+└── Makefile
 ```
 
-#### 🚀 Core Features
+## Getting Started
 
-#### MVP
-- 🧠 Predict match result between two EPL teams
-- 📊 View predicted probabilities (Win/Draw/Loss)
-- 🔁 Trigger model retraining via admin control
-- 🏷️ Dynamic dropdown for EPL teams
+### Prerequisites
 
-#### Backend Endpoints (FastAPI)
-| Method | Route                         | Description                                  |
-|--------|-------------------------------|----------------------------------------------|
-| POST   | `/predict`                    | Returns prediction from model                |
-| POST   | `/train`                      | Triggers full training pipeline              |
-| GET    | `/fixtures`                   | Returns all or filtered fixtures             |
-| GET    | `/teams`                      | Returns list of EPL teams                    |
-| GET    | `/status`                     | Healthcheck                                  |
-| POST   | `/superbru/points`            | Returns SuperBru points based on predictions |
-| GET    | `/superbru/points/top/global` | Returns points from SuperBru leaderboard     |
-| GET    | `/matchweek`                  | Returns current/latest matchweek             |
- 
+- Python 3.11+, [uv](https://github.com/astral-sh/uv)
+- Node.js 18+
 
+### Backend
 
-#### Frontend UI
+```bash
+cp backend/.env.example backend/.env  # fill in required vars
+make backend-dev                       # starts FastAPI on :8000 with reload
+```
 
-#### Stack
-- React + TypeScript
-- Tailwind CSS
-- Axios for API communication
-- React Router for navigation
-- Recharts for data visualization (optional)
+### Frontend
 
-#### Key Components
-- PredictionForm: Select home and away teams
-- PredictionResult: Show results with probabilities
-- TeamSelector: Dynamic team dropdowns
-- TrainModelButton: Admin action to retrain model
+```bash
+make frontend-dev   # starts Vite dev server on :5173
+```
 
+### Train models
 
-#### 🐳 Deployment
-- Dockerized frontend and backend
-- Optional: Nginx as reverse proxy
-- Supports deployment to:
-- Render / Railway / Fly.io
-- AWS EC2 or Lightsail
-- Docker Compose (local)
+```bash
+make train-all                          # train a model for every season in the DB
+make train-season SEASON=2024-2025      # train for a single season
+```
 
+### Run tests
 
-#### 🧪 Testing
+```bash
+make tests
+```
 
-Backend (FastAPI)
-- pytest for unit and integration tests
-- FastAPI test client with mock routes
+## API Endpoints
 
-Frontend (React)
-- React Testing Library + Jest
-- API mocking with MSW (Mock Service Worker)
+All routes are prefixed with `/api`.
 
+### Seasons
 
-#### Future Enhancements
-- User authentication & favorites
-- Live match integration (e.g., with football-data.org API)
-- Cloud model storage (AWS S3)
-- Model versioning & evaluation dashboard
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/seasons` | List all seasons available in the DB |
+| GET | `/seasons/{season}/summary` | Season summary: superbru points, model performance |
+| GET | `/seasons/{season}/matchweek` | Current/most recent matchweek number |
+| GET | `/seasons/{season}/matchweek/{week}` | Match rows + week superbru points for one matchweek |
+
+### Fixtures
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/fixtures` | All fixtures, optionally filtered by `?season=` and `?matchweek=` |
+| GET | `/teams` | All teams in the DB |
+
+### Model
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/predict` | Run prediction pipeline on provided fixtures |
+| POST | `/train` | Trigger model training (optionally scoped to a season) |
+| POST | `/evaluate` | Evaluate predictions against ground truth |
+| GET | `/evaluate/validation` | Offline validation of the saved model |
+
+### Superbru
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/superbru/points/top/global` | Top global leaderboard points, cached per season |
+
+### Other
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/status` | Healthcheck |
+| GET | `/content/model_explanation` | Model explanation content |
+
+## ML Pipeline
+
+Models are trained and stored per season (e.g. `model_2024-2025.joblib`). Training uses all data _before_ the target season, then generates and caches predictions for that season. Finished seasons are served entirely from the DB cache — no recomputation on request.
+
+**Features used:** Elo ratings, rolling xG/shots, head-to-head record, points-per-game, home/away differentials.
+
+**Target:** Full-time home goals (FTHG) and away goals (FTAG), from which result (W/D/L) and score string are derived.
+
+## Caching Strategy
+
+| Data | Cache location | Expiry |
+|------|---------------|--------|
+| Match predictions | `PredictionsCache` DB table | 24h (current season) / permanent (finished) |
+| Season summary | `cache/season_summaries.json` | Permanent for finished seasons |
+| Superbru leaderboard | `cache/superbru_leaderboard.json` | 90 days (current season) / permanent (finished) |
+
+## Testing
+
+```bash
+make tests
+```
+
+23 integration tests cover all endpoints including 404 behaviour, field validation, NaN/Inf safety, season-scoped queries, and finished-season cache paths.
